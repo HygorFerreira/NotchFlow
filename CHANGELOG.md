@@ -2,7 +2,7 @@
 
 Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvimento** descreve mudanças presentes no código que ainda não possuem uma nova versão publicada. A versão configurada no projeto é **1.0.0**, build **1**.
 
-## Em desenvolvimento - atualizado em 2026-10-08
+## Em desenvolvimento - atualizado em 2026-10-09
 
 ### Identidade
 
@@ -19,6 +19,8 @@ Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvi
 - Calendário de eventos recolhível para dar mais espaço à lista de tarefas.
 - Ajustes organizados por rotina e aplicativo, com busca e rótulos acessíveis.
 - Última aba do painel preservada durante a sessão do aplicativo.
+- Liquid Glass opcional e transparência ajustável, com material translúcido nas versões anteriores ao macOS 26 e respeito a Reduzir Transparência.
+- Calendário, cartões de tarefas e resumo do dia com contraste e destaque aprimorados; animações de arraste respeitam Reduzir Movimento.
 
 ### Rotina e acompanhamento
 
@@ -35,6 +37,8 @@ Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvi
 - Backup da versão anterior dos dados, recuperação e avisos de falha de persistência.
 - Testes independentes de persistência e de regras de produtividade e hidratação.
 - Documentação reescrita em português, com guias de uso, desenvolvimento e contribuição.
+- README com cinco imagens atualizadas em português, geradas com dados de demonstração e enquadramento revisado.
+- Repositório privado do NotchFlow criado no GitHub.
 
 ## 1.0.0 - 2026-09-22
 

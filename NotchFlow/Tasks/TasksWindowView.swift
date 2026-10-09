@@ -75,7 +75,7 @@ struct TasksWindowView: View {
                 }
                 CalendarView(selectedDate: $selectedDate, busyDays: busyDays)
                     .padding(12)
-                    .background(Theme.panel, in: RoundedRectangle(cornerRadius: Theme.panelCorner))
+                    .flowSurface()
                 Text("YOUR SPACE")
                     .font(.system(size: 9, weight: .semibold))
                     .tracking(1.3)
@@ -140,7 +140,7 @@ struct TasksWindowView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(tab == .day ? headerTitle : String(localized: "Unscheduled"))
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.textPrimary)
                     if tab == .day {
                         Text(selectedDate.formatted(.dateTime.weekday(.wide).month(.wide).day()))
@@ -251,8 +251,10 @@ struct TasksWindowView: View {
         let completed = listedTasks.filter(\.isDone).count
         return HStack(spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 20))
+                .font(.system(size: 22))
                 .foregroundStyle(Theme.accent)
+                .frame(width: 42, height: 42)
+                .background(Theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
             VStack(alignment: .leading, spacing: 6) {
                 Text("\(completed) of \(listedTasks.count) completed")
                     .font(.system(size: 12, weight: .semibold).monospacedDigit())
@@ -267,7 +269,7 @@ struct TasksWindowView: View {
                 .help("Estimated focus time")
         }
         .padding(14)
-        .background(Theme.panel, in: RoundedRectangle(cornerRadius: Theme.panelCorner))
+        .flowSurface()
     }
 
     private var emptyState: some View {
@@ -275,6 +277,8 @@ struct TasksWindowView: View {
             Image(systemName: hasFilters ? "line.3.horizontal.decrease.circle" : "checklist")
                 .font(.system(size: 32, weight: .light))
                 .foregroundStyle(Theme.accent)
+                .frame(width: 72, height: 72)
+                .background(Theme.accent.opacity(0.10), in: RoundedRectangle(cornerRadius: 22))
             Text(hasFilters ? String(localized: "No tasks match this view") : String(localized: "No tasks yet"))
                 .font(.system(size: 16, weight: .semibold))
             Text(hasFilters ? String(localized: "Clear search and filters to see your tasks.") : String(localized: "Add a task to plan your next focus session."))
@@ -287,10 +291,10 @@ struct TasksWindowView: View {
                     store.selectedProject = nil
                     store.selectedTag = nil
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(FlowButtonStyle())
             } else {
                 Button("Add a task") { withAnimation { showAddForm = true } }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(FlowButtonStyle())
             }
         }
         .padding(24)

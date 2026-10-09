@@ -28,7 +28,7 @@ enum Snapshots {
                     .environmentObject(store)
                     .environment(navigation)
                     .background(Color(nsColor: .windowBackgroundColor))
-                render(view, size: CGSize(width: 820, height: 600), scheme: scheme,
+                render(view, size: CGSize(width: 820, height: 820), scheme: scheme,
                        to: out.appendingPathComponent("settings-\(page.rawValue)-\(scheme == .dark ? "dark" : "light").png"))
             }
         }
@@ -37,7 +37,7 @@ enum Snapshots {
                size: CGSize(width: 900, height: 640), scheme: .dark,
                to: out.appendingPathComponent("tasks.png"))
 
-        store.addMedication(name: isPortuguese ? "Vitamina D" : "Vitamin D", dosage: "1000 UI", reminderTimes: [Date()])
+        store.addMedication(name: isPortuguese ? "Vitamina D" : "Vitamin D", dosage: "1000 UI", reminderTimes: [Date().addingTimeInterval(3600)])
         var waterSettings = HydrationSettings()
         waterSettings.container = .bottle
         waterSettings.bottleMilliliters = 750
@@ -60,7 +60,7 @@ enum Snapshots {
                to: out.appendingPathComponent("machine.png"))
 
         render(WeeklySummaryView().environmentObject(store),
-               size: CGSize(width: 700, height: 740), scheme: .dark,
+               size: CGSize(width: 700, height: 880), scheme: .dark,
                to: out.appendingPathComponent("weekly-summary.png"))
         render(QuickCaptureView(onClose: {}).environmentObject(store),
                size: CGSize(width: 460, height: 420), scheme: .dark,

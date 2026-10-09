@@ -7,8 +7,8 @@ enum Theme {
     static let danger = Color(red: 0.95, green: 0.23, blue: 0.23)    // pause red
     static let medication = Color(red: 0.18, green: 0.78, blue: 0.72)
     static let pill = Color.black
-    static let panel = Color(hex: "#141C29")
-    static let panelHover = Color(hex: "#1E2B3D")
+    static let panel = Color(hex: "#172131")
+    static let panelHover = Color(hex: "#223249")
     static let textPrimary = Color.white
     static let textSecondary = Color(hex: "#A5B3C5")
     static let streakEmpty = Color(white: 0.14)
@@ -76,6 +76,47 @@ struct NotchTrayShape: Shape {
 }
 
 
+/// A persisted appearance preference shared by every window and the notch preview.
+enum FlowAppearance {
+    static let liquidGlassKey = "appearance.liquidGlass"
+    static let transparencyKey = "appearance.glassTransparency"
+}
+
+/// Native glass on macOS 26; material on earlier systems. Accessibility wins
+/// over the appearance preference when the user requests opaque surfaces.
+struct FlowBackdrop<S: Shape>: View {
+    let shape: S
+    var color: Color = Theme.panel
+    var allowsGlass = true
+    @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = false
+    @AppStorage(FlowAppearance.transparencyKey) private var transparency = 50.0
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    private var fraction: Double {
+        transparency.isFinite ? min(80, max(0, transparency)) / 100 : 0.5
+    }
+
+    @ViewBuilder var body: some View {
+        if liquidGlass && allowsGlass && !reduceTransparency && fraction > 0 {
+            #if compiler(>=6.2)
+            if #available(macOS 26.0, *) {
+                Color.clear
+                    .background(shape.fill(color.opacity(1 - fraction)))
+                    .glassEffect(.regular.tint(color.opacity((1 - fraction) * 0.3)), in: shape)
+            } else {
+                shape.fill(.regularMaterial)
+                    .overlay(shape.fill(color.opacity(1 - fraction)))
+            }
+            #else
+            shape.fill(.regularMaterial)
+                .overlay(shape.fill(color.opacity(1 - fraction)))
+            #endif
+        } else {
+            shape.fill(color)
+        }
+    }
+}
+
 /// Shared surfaces preserve native light appearance in Settings and the dark notch palette.
 struct FlowSurface: ViewModifier {
     @Environment(\.colorScheme) private var scheme
@@ -83,12 +124,17 @@ struct FlowSurface: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background {
-                RoundedRectangle(cornerRadius: Theme.panelCorner, style: .continuous)
-                    .fill(scheme == .dark ? Theme.panel : Color(nsColor: .controlBackgroundColor))
+                FlowBackdrop(
+                    shape: RoundedRectangle(cornerRadius: Theme.panelCorner, style: .continuous),
+                    color: scheme == .dark ? Theme.panel : Color(nsColor: .controlBackgroundColor))
             }
             .overlay {
                 RoundedRectangle(cornerRadius: Theme.panelCorner, style: .continuous)
-                    .strokeBorder(scheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.07))
+                    .strokeBorder(LinearGradient(
+                        colors: scheme == .dark
+                            ? [Color.white.opacity(0.12), Color.white.opacity(0.035)]
+                            : [Color.black.opacity(0.07), Color.black.opacity(0.04)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing))
             }
     }
 }

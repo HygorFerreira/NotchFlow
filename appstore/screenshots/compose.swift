@@ -8,7 +8,7 @@
 //    and copy ~/Library/Containers/dev.oprimo.NotchFlow/Data/tmp/snapshots to appstore/screenshots/raw/<lang>
 // 2. From the repo root:
 //        swift appstore/screenshots/compose.swift            (App Store: appstore/screenshots/<lang>/*.png)
-//        swift appstore/screenshots/compose.swift --readme   (README: docs/images/*.png, English, smaller)
+//        swift appstore/screenshots/compose.swift --readme   (README: docs/images/*.png, Portuguese, smaller)
 //
 
 import AppKit
@@ -41,9 +41,9 @@ let shots: [Shot] = [
          caption: ["en": "Standard or minimal, accent or RGB, on the screen you choose.",
                    "pt-BR": "Padrão ou mínimo, cor de destaque ou RGB, na tela que você escolher."]),
     Shot(file: "5-streak",
-         headline: ["en": "Keep the streak going", "pt-BR": "Mantenha a sequência"],
-         caption: ["en": "Today's focus time, finished blocks and days in a row.",
-                   "pt-BR": "Tempo de foco de hoje, blocos concluídos e dias seguidos."]),
+         headline: ["en": "See your week in focus", "pt-BR": "Veja sua semana em foco"],
+         caption: ["en": "Daily focus, completed blocks and progress toward your weekly goal.",
+                   "pt-BR": "Foco por dia, blocos concluídos e progresso na meta semanal."]),
 ]
 
 // MARK: - Pieces
@@ -71,12 +71,12 @@ struct MenuBar: View {
             HStack(spacing: 22) {
                 Image(systemName: "apple.logo").font(.system(size: 17))
                 Text("Finder").font(.system(size: 15, weight: .bold))
-                ForEach(["File", "Edit", "View", "Go"], id: \.self) { Text($0).font(.system(size: 15)) }
+                ForEach(readme ? ["Arquivo", "Editar", "Visualizar", "Ir"] : ["File", "Edit", "View", "Go"], id: \.self) { Text($0).font(.system(size: 15)) }
                 Spacer()
                 Image(systemName: "hourglass").font(.system(size: 16))
                 Image(systemName: "wifi").font(.system(size: 15))
                 Image(systemName: "battery.75percent").font(.system(size: 17))
-                Text("Tue 22 Sep  9:41").font(.system(size: 15))
+                Text("9:41").font(.system(size: 15))
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 22)
@@ -160,30 +160,30 @@ func screen(_ shot: Shot, lang: String) -> some View {
                 Image(nsImage: pill).resizable()
                     .frame(width: pill.size.width * 1.8, height: pill.size.height * 1.8)
             }
-            VStack(spacing: 70) {
+            VStack(spacing: 32) {
                 VStack(spacing: 14) {
                     Image(nsImage: minimal).resizable()
-                        .frame(width: minimal.size.width * 2.2, height: minimal.size.height * 2.2)
+                        .frame(width: minimal.size.width * 1.8, height: minimal.size.height * 1.8)
                     Text(lang == "en" ? "Minimal" : "Mínimo").font(.system(size: 24, weight: .semibold))
                 }
                 VStack(spacing: 14) {
                     Image(nsImage: rgb).resizable()
-                        .frame(width: rgb.size.width * 1.5, height: rgb.size.height * 1.5)
+                        .frame(width: rgb.size.width * 1.35, height: rgb.size.height * 1.35)
                     Text(lang == "en" ? "RGB line" : "Linha RGB").font(.system(size: 24, weight: .semibold))
                 }
             }
             .foregroundStyle(.white.opacity(0.85))
-            .padding(.top, 450)
+            .padding(.top, 420)
         }
     case "3-tasks":
-        Screen(headline: headline, caption: caption) { WindowFrame(image: image(lang, "tasks"), scale: 1.05) }
+        Screen(headline: headline, caption: caption) { WindowFrame(image: image(lang, "tasks"), scale: 0.88) }
     case "4-notch":
         Screen(headline: headline, caption: caption) {
-            WindowFrame(image: image(lang, "settings-notch-dark"), scale: 0.95)
+            WindowFrame(image: image(lang, "settings-notch-dark"), scale: 0.70)
         }
     default:
         Screen(headline: headline, caption: caption) {
-            WindowFrame(image: image(lang, "settings-focus-dark"), scale: 0.95)
+            WindowFrame(image: image(lang, "weekly-summary"), scale: 0.65)
         }
     }
 }
@@ -207,7 +207,7 @@ MainActor.assumeIsolated {
         let out = URL(fileURLWithPath: "docs/images")
         try? FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
         for shot in shots {
-            write(screen(shot, lang: "en"), scale: 1, to: out.appendingPathComponent("\(shot.file).png"))
+            write(screen(shot, lang: "pt-BR"), scale: 1, to: out.appendingPathComponent("\(shot.file).png"))
         }
     } else {
         for lang in ["en", "pt-BR"] {

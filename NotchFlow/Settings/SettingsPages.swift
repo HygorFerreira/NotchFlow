@@ -93,6 +93,8 @@ private struct PresetChip: View {
 // MARK: - Notch
 
 struct NotchSettingsPage: View {
+    @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = false
+    @AppStorage(FlowAppearance.transparencyKey) private var glassTransparency = 50.0
     @EnvironmentObject private var store: Store
 
     var body: some View {
@@ -116,6 +118,19 @@ struct NotchSettingsPage: View {
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
                 .padding(.leading, 4)
+            SettingsGroup(footer: "Native Liquid Glass on macOS 26 or later; translucent material on earlier versions. Respects Reduce Transparency.") {
+                SettingsToggleRow(
+                    symbol: "sparkles", color: SettingsPageID.notch.color,
+                    title: "Liquid Glass",
+                    subtitle: "Translucent surfaces in the expanded notch and window cards",
+                    isOn: $liquidGlass)
+                SettingsSliderRow(
+                    symbol: "circle.lefthalf.filled", color: SettingsPageID.notch.color,
+                    title: "Transparency",
+                    value: $glassTransparency, range: 0...80, step: 5,
+                    format: { "\(Int($0))%" })
+                    .disabled(!liquidGlass)
+            }
             SettingsGroup {
                 SettingsToggleRow(
                     symbol: "chart.line.flattrend.xyaxis", color: SettingsPageID.notch.color,
@@ -151,7 +166,7 @@ private struct NotchPreview: View {
             menuBar
             ZStack(alignment: .top) {
                 ZStack(alignment: .top) {
-                    NotchShape(bottomRadius: 10).fill(Color.black)
+                    FlowBackdrop(shape: NotchShape(bottomRadius: 10), color: .black)
                     if !minimal {
                         HStack(spacing: 0) {
                             HStack(spacing: 3) {

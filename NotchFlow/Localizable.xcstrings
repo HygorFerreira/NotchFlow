@@ -1,6 +1,46 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Liquid Glass" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liquid Glass"
+          }
+        }
+      }
+    },
+    "Translucent surfaces in the expanded notch and window cards" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superfícies translúcidas no notch expandido e nos cartões das janelas"
+          }
+        }
+      }
+    },
+    "Native Liquid Glass on macOS 26 or later; translucent material on earlier versions. Respects Reduce Transparency." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liquid Glass nativo no macOS 26 ou posterior; material translúcido nas versões anteriores. Respeita a opção Reduzir Transparência."
+          }
+        }
+      }
+    },
+    "Transparency" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transparência"
+          }
+        }
+      }
+    },
     "" : {
 
     },

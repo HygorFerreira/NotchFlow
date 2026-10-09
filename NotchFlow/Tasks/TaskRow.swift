@@ -16,6 +16,7 @@ struct TaskRow: View {
     @EnvironmentObject private var focus: FocusTimer
 
     @State private var isHovered = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var isRunningThis: Bool { focus.isActive && focus.activeTask?.id == task.id }
 
@@ -36,7 +37,7 @@ struct TaskRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
+                    .foregroundStyle(task.isDone ? Theme.textSecondary : Theme.textPrimary)
                     .strikethrough(task.isDone)
                     .lineLimit(1)
                     .help(task.title)
@@ -101,17 +102,25 @@ struct TaskRow: View {
                         .onEnded { _ in onDragEnd() }
                 )
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 12)
         // Fixed height so the reorder stride math (rowHeight + gap) is exact,
         // regardless of whether a row shows a notes line.
         .frame(height: 60)
-        .background(isDragging || isHovered ? Theme.panelHover : Theme.panel,
-                    in: RoundedRectangle(cornerRadius: 12))
+        .background {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(LinearGradient(
+                    colors: isRunningThis
+                        ? [Theme.accent.opacity(0.18), Theme.panel]
+                        : [isDragging || isHovered ? Theme.panelHover : Theme.panel, Theme.panel.opacity(0.85)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing))
+        }
         .overlay(RoundedRectangle(cornerRadius: 12)
             .stroke(isRunningThis ? Theme.accent.opacity(0.65) : Color.white.opacity(isHovered ? 0.12 : 0.04), lineWidth: 1))
+        .shadow(color: .black.opacity(isDragging ? 0.28 : 0), radius: 12, y: 6)
         .onHover { isHovered = $0 }
-        .scaleEffect(isDragging ? 1.02 : 1.0)
-        .animation(.easeOut(duration: 0.12), value: isDragging)
+        .scaleEffect(isDragging && !reduceMotion ? 1.02 : 1.0)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: isDragging)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: isHovered)
     }
 
     /// Two-way binding that writes the new estimate back to the store as soon

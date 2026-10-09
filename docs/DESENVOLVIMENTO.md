@@ -88,7 +88,7 @@ swift appstore/screenshots/compose.swift
 swift appstore/screenshots/compose.swift --readme
 ```
 
-O primeiro comando gera as composições da loja; o segundo gera as imagens do README em `docs/images/` a partir das capturas em inglês. Para atualizar o ícone, altere e execute `scripts/generate-icon.swift`, em vez de editar cada PNG manualmente.
+O primeiro comando gera as composições da loja; o segundo gera as imagens do README em `docs/images/` a partir das capturas em português. Para atualizar o ícone, altere e execute `scripts/generate-icon.swift`, em vez de editar cada PNG manualmente.
 
 ## Distribuição direta
 

@@ -87,7 +87,8 @@ private struct MedicationReminderDrop: View {
                 // pill, so it never needs clipping — and running it through the clip
                 // is exactly what shaved its rounded bottom corners flat.
                 ZStack(alignment: .top) {
-                    NotchShape(bottomRadius: pillCorner).fill(Color.black)
+                    FlowBackdrop(shape: NotchShape(bottomRadius: pillCorner), color: .black,
+                                 allowsGlass: vm.expanded)
                     content
                         .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
                 }

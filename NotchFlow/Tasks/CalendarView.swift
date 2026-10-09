@@ -74,7 +74,7 @@ struct CalendarView: View {
         } label: {
             VStack(spacing: 2) {
                 Text("\(cal.component(.day, from: day))")
-                    .font(.system(size: 12, weight: isToday ? .bold : .regular))
+                    .font(.system(size: 12, weight: isSelected || isToday ? .bold : .regular).monospacedDigit())
                     .foregroundStyle(isSelected ? .white : Theme.textPrimary)
                 // Today marker: tiny accent dot; busy days get a gray one.
                 // Hidden under the selected-color circle.
@@ -85,9 +85,9 @@ struct CalendarView: View {
             }
             .frame(maxWidth: .infinity, minHeight: cellHeight)
             .background(
-                Circle()
-                    .fill(isSelected ? Theme.accent : .clear)
-                    .frame(width: 26, height: 26)
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(isSelected ? Theme.accent : isToday ? Theme.accent.opacity(0.12) : .clear)
+                    .frame(width: 30, height: 30)
             )
             .contentShape(Rectangle())
         }
@@ -108,6 +108,7 @@ struct CalendarView: View {
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 30, height: 30)
+                .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 9))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
