@@ -1,0 +1,77 @@
+import Foundation
+
+/// User-tunable focus-timer knobs. Persisted in the same JSON file as tasks +
+/// sessions so the app boots with the user's last choice.
+struct FocusSettings: Codable, Equatable {
+    /// Default focus block length in minutes. Used when a task doesn't have a
+    /// per-task estimate (or as the default for newly added tasks).
+    var focusMinutes: Int = 25
+    /// Whether to post a macOS user notification when a focus block completes.
+    var notificationsEnabled: Bool = true
+    /// Whether to play the system beep at the end of a focus block.
+    var playSound: Bool = true
+    /// Whether the collapsed counting pill draws the accent progress timeline.
+    /// When off, the pill sits flush at the exact hardware-notch height and
+    /// shows only the time + task name (no overhang, no progress line).
+    var showTimeline: Bool = true
+    /// Override the system accent color for the progress timeline with an
+    /// animated rainbow (RGB) cycle plus a matching glow. Independent of
+    /// `showTimeline` — only takes effect while the timeline is drawn.
+    var rainbowTimeline: Bool = false
+    /// Minimal collapsed pill: hide the countdown + task title so the pill only
+    /// contours the hardware notch. The progress timeline is independent
+    /// (governed by `showTimeline`).
+    var minimalMode: Bool = false
+    /// Which physical display the notch anchors to. Resolved live by
+    /// `DisplayResolver` against the current set of `NSScreen`s, so a
+    /// disconnected saved display never crashes — it falls back to the
+    /// active screen. Default `.auto` preserves the historical behaviour
+    /// (follow `NSScreen.main`).
+    var displayPreference: DisplayPreference = .auto
+    /// Whether ⌘⇧Space toggles the focus session from any app. Off frees the
+    /// combination for another app that wants it.
+    var globalHotkeyEnabled: Bool = true
+    var quickCaptureHotkeyEnabled: Bool = true
+    var weeklyGoalMinutes: Int = 300
+
+    static let `default` = FocusSettings()
+
+    /// Clamp the focus range to the same bounds the TaskDetailView uses, so
+    /// the settings sheet and the per-task editor can never disagree.
+    static let focusRange: ClosedRange<Int> = 1...180
+
+    // MARK: - Tolerant decoding
+    //
+    // The synthesized decoder throws `keyNotFound` for any missing key, even
+    // when the property has a default. Since this struct is persisted and grows
+    // new fields over time, an older on-disk file (written before a field
+    // existed) would otherwise fail to decode — taking the whole payload with
+    // it. Decode every key `IfPresent` so missing fields fall back to defaults.
+
+    private enum CodingKeys: String, CodingKey {
+        case focusMinutes, notificationsEnabled, playSound
+        case showTimeline, rainbowTimeline, minimalMode
+        case displayPreference, globalHotkeyEnabled
+        case quickCaptureHotkeyEnabled, weeklyGoalMinutes
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = FocusSettings.default
+        focusMinutes = try c.decodeIfPresent(Int.self, forKey: .focusMinutes) ?? d.focusMinutes
+        notificationsEnabled = try c.decodeIfPresent(Bool.self, forKey: .notificationsEnabled) ?? d.notificationsEnabled
+        playSound = try c.decodeIfPresent(Bool.self, forKey: .playSound) ?? d.playSound
+        showTimeline = try c.decodeIfPresent(Bool.self, forKey: .showTimeline) ?? d.showTimeline
+        rainbowTimeline = try c.decodeIfPresent(Bool.self, forKey: .rainbowTimeline) ?? d.rainbowTimeline
+        minimalMode = try c.decodeIfPresent(Bool.self, forKey: .minimalMode) ?? d.minimalMode
+        // Missing in pre-feature data files → fall back to `.auto` (the
+        // pre-feature behaviour). A present-but-malformed value is tolerated
+        // by `DisplayPreference.init(from:)` which falls back to `.auto`.
+        displayPreference = try c.decodeIfPresent(DisplayPreference.self, forKey: .displayPreference) ?? d.displayPreference
+        globalHotkeyEnabled = try c.decodeIfPresent(Bool.self, forKey: .globalHotkeyEnabled) ?? d.globalHotkeyEnabled
+        quickCaptureHotkeyEnabled = try c.decodeIfPresent(Bool.self, forKey: .quickCaptureHotkeyEnabled) ?? d.quickCaptureHotkeyEnabled
+        weeklyGoalMinutes = max(1, min(10080, try c.decodeIfPresent(Int.self, forKey: .weeklyGoalMinutes) ?? d.weeklyGoalMinutes))
+    }
+}

@@ -1,0 +1,67 @@
+import AppKit
+import SwiftUI
+
+/// Owns the standalone "Tasks" window (calendar + day list + add form).
+@MainActor
+final class TasksWindowController: NSObject, NSWindowDelegate {
+    private var window: NSWindow?
+    private let store: Store
+    private let focus: FocusTimer
+
+    /// Fires when the window is about to close. The app delegate uses this to
+    /// drop the activation policy back to `.accessory` when the last user-
+    /// openable window goes away.
+    var onClose: (() -> Void)?
+
+    init(store: Store, focus: FocusTimer) {
+        self.store = store
+        self.focus = focus
+    }
+
+    func show() {
+        if window == nil {
+            let root = TasksWindowView()
+                .safeAreaInset(edge: .bottom, spacing: 0) { StorePersistenceBanner() }
+                .environmentObject(store)
+                .environmentObject(focus)
+
+            let win = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 900, height: 640),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+                backing: .buffered, defer: false)
+            win.isReleasedWhenClosed = false   // ARC owns the window; avoid AppKit's extra release on close
+            win.title = "Tasks"
+            win.titlebarAppearsTransparent = true
+            win.titleVisibility = .hidden
+            // Only the top titlebar strip moves the window. Background dragging
+            // would compete with the drag-to-reorder gesture on the task rows.
+            win.isMovableByWindowBackground = false
+            win.backgroundColor = NSColor.black
+            win.contentView = NSHostingView(rootView: root)
+            win.contentMinSize = NSSize(width: 840, height: 600)
+            win.delegate = self
+            window = win
+        }
+        centerOnActiveScreen()
+        NSApp.activate()
+        window?.makeKeyAndOrderFront(nil)
+    }
+
+    /// Center on the screen currently under the mouse, within its visibleFrame
+    /// (which excludes the menu bar / notch) so the window never opens under the notch.
+    private func centerOnActiveScreen() {
+        guard let win = window else { return }
+        let mouse = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first { $0.frame.contains(mouse) }
+            ?? NSScreen.main ?? NSScreen.screens.first
+        guard let vf = screen?.visibleFrame else { return }
+        let size = win.frame.size
+        win.setFrameOrigin(NSPoint(x: vf.midX - size.width / 2,
+                                   y: vf.midY - size.height / 2))
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
+        onClose?()
+    }
+}

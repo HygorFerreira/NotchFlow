@@ -1,0 +1,258 @@
+import SwiftUI
+
+/// Shared visual language, tuned to match the mockups (black pill, blue accent).
+enum Theme {
+    /// Follows the user's macOS accent color (System Settings › Appearance).
+    static let accent = Color(nsColor: .controlAccentColor)
+    static let danger = Color(red: 0.95, green: 0.23, blue: 0.23)    // pause red
+    static let medication = Color(red: 0.18, green: 0.78, blue: 0.72)
+    static let pill = Color.black
+    static let panel = Color(hex: "#141C29")
+    static let panelHover = Color(hex: "#1E2B3D")
+    static let textPrimary = Color.white
+    static let textSecondary = Color(hex: "#A5B3C5")
+    static let streakEmpty = Color(white: 0.14)
+
+    static let notchCorner: CGFloat = 22
+    static let panelCorner: CGFloat = 16
+    static let success = Color(hex: "#5DD6B2")
+    static let windowBackground = LinearGradient(
+        colors: [Color(hex: "#101824"), Color(hex: "#080C13")],
+        startPoint: .topLeading, endPoint: .bottomTrailing)
+}
+
+/// A rounded-bottom "notch" shape: flush square top (meets the screen edge),
+/// generously rounded bottom corners.
+struct NotchShape: Shape {
+    var topRadius: CGFloat = 8
+    var bottomRadius: CGFloat = Theme.notchCorner
+
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let tr = min(topRadius, rect.width / 2)
+        let br = min(bottomRadius, rect.width / 2)
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        // top edge with slight inner curve down into the notch
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - br))
+        p.addQuadCurve(to: CGPoint(x: rect.maxX - br, y: rect.maxY),
+                       control: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX + br, y: rect.maxY))
+        p.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.maxY - br),
+                       control: CGPoint(x: rect.minX, y: rect.maxY))
+        p.closeSubpath()
+        _ = tr
+        return p
+    }
+}
+
+/// An open-top rounded frame inset from the pill edges — the accent "tray" that
+/// hugs the left, bottom, and right (never the top, which meets the screen edge),
+/// with visible padding between it and the black pill. Used as a static outline
+/// when expanded and as a progress track when a timer is running.
+struct NotchTrayShape: Shape {
+    var inset: CGFloat = 6
+    var topInset: CGFloat = 6
+    var corner: CGFloat = 16
+
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let r = min(corner, (rect.width - inset * 2) / 2)
+        let left = rect.minX + inset
+        let right = rect.maxX - inset
+        let bottom = rect.maxY - inset
+        let top = rect.minY + topInset
+
+        p.move(to: CGPoint(x: left, y: top))
+        p.addLine(to: CGPoint(x: left, y: bottom - r))
+        p.addQuadCurve(to: CGPoint(x: left + r, y: bottom),
+                       control: CGPoint(x: left, y: bottom))
+        p.addLine(to: CGPoint(x: right - r, y: bottom))
+        p.addQuadCurve(to: CGPoint(x: right, y: bottom - r),
+                       control: CGPoint(x: right, y: bottom))
+        p.addLine(to: CGPoint(x: right, y: top))
+        return p
+    }
+}
+
+
+/// Shared surfaces preserve native light appearance in Settings and the dark notch palette.
+struct FlowSurface: ViewModifier {
+    @Environment(\.colorScheme) private var scheme
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                RoundedRectangle(cornerRadius: Theme.panelCorner, style: .continuous)
+                    .fill(scheme == .dark ? Theme.panel : Color(nsColor: .controlBackgroundColor))
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: Theme.panelCorner, style: .continuous)
+                    .strokeBorder(scheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.07))
+            }
+    }
+}
+
+extension View {
+    func flowSurface() -> some View { modifier(FlowSurface()) }
+}
+
+struct FlowButtonStyle: ButtonStyle {
+    var prominent = false
+    func makeBody(configuration: Configuration) -> some View {
+        FlowButtonBody(configuration: configuration, prominent: prominent)
+    }
+}
+
+private struct FlowButtonBody: View {
+    let configuration: ButtonStyleConfiguration
+    let prominent: Bool
+    @Environment(\.isEnabled) private var enabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hovered = false
+
+    var body: some View {
+        configuration.label
+            .font(.system(size: 12, weight: .semibold))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .foregroundStyle(configuration.role == .destructive ? Theme.danger : (prominent ? .white : .primary))
+            .background {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(prominent ? Theme.accent : Color.primary.opacity(hovered && enabled ? 0.12 : 0.06))
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(hovered && enabled ? 0.18 : 0.07))
+            }
+            .opacity(enabled ? (configuration.isPressed ? 0.72 : 1) : 0.4)
+            .onHover { hovered = $0 }
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
+    }
+}
+
+struct FlowTextFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        configuration
+            .textFieldStyle(.plain)
+            .font(.system(size: 13))
+            .padding(11)
+            .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 9))
+            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(Color.primary.opacity(0.12)))
+    }
+}
+
+struct FlowProgressBar: View {
+    var value: Double
+    var color: Color = Theme.accent
+    private var fraction: Double { value.isFinite ? min(1, max(0, value)) : 0 }
+    var body: some View {
+        GeometryReader { geometry in
+            Capsule().fill(color.opacity(0.14))
+                .overlay(alignment: .leading) {
+                    Capsule().fill(color.gradient).frame(width: geometry.size.width * fraction)
+                }
+        }
+        .frame(height: 6)
+        .accessibilityElement()
+        .accessibilityLabel("Progress")
+        .accessibilityValue(fraction.formatted(.percent.precision(.fractionLength(0))))
+    }
+}
+
+struct FlowNavigationRow: View {
+    let title: LocalizedStringKey
+    let symbol: String
+    var color: Color = Theme.accent
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: symbol)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(color)
+                    .frame(width: 30, height: 30)
+                    .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+                Text(title).font(.system(size: 12, weight: .medium))
+                Spacer()
+                Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold)).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(FlowButtonStyle())
+    }
+}
+
+struct FlowPageHeading: View {
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
+    let symbol: String
+    var color: Color = Theme.accent
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: 44, height: 44)
+                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 13))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.system(size: 24, weight: .bold, design: .rounded))
+                Text(subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+/// The same destinations stay within reach from every standalone overview window.
+struct FlowWindowNavigation: View {
+    enum Destination: String, CaseIterable, Identifiable {
+        case tasks = "Tasks", medications = "Medications", water = "Water", summary = "Weekly summary"
+        var id: Self { self }
+        var symbol: String {
+            switch self {
+            case .tasks: return "checklist"
+            case .medications: return "pills.fill"
+            case .water: return "drop.fill"
+            case .summary: return "chart.bar"
+            }
+        }
+        @MainActor func open() {
+            switch self {
+            case .tasks: AppDelegate.shared?.showTasksWindow()
+            case .medications: AppDelegate.shared?.showMedicationsWindow()
+            case .water: AppDelegate.shared?.showWaterWindow()
+            case .summary: AppDelegate.shared?.showWeeklySummaryWindow()
+            }
+        }
+    }
+    let current: Destination
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(Destination.allCases) { destination in
+                Button { destination.open() } label: {
+                    Label(destination.rawValue.localized, systemImage: destination.symbol)
+                        .font(.system(size: 11, weight: current == destination ? .semibold : .medium))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .foregroundStyle(current == destination ? Theme.accent : Theme.textSecondary)
+                        .background(current == destination ? Theme.accent.opacity(0.13) : .clear,
+                                    in: RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(current == destination ? .isSelected : [])
+            }
+            Spacer(minLength: 0)
+            Button { AppDelegate.shared?.showSettingsWindow() } label: {
+                Image(systemName: "gearshape").frame(width: 30, height: 30)
+            }
+            .buttonStyle(.plain)
+            .help("Settings")
+            .accessibilityLabel("Settings")
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(Color.black.opacity(0.12))
+        .overlay(alignment: .bottom) { Rectangle().fill(Color.white.opacity(0.06)).frame(height: 1) }
+    }
+}
