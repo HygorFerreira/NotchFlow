@@ -20,6 +20,25 @@ enum Snapshots {
         let store = demoStore()
         let focus = FocusTimer(store: store)
 
+        let aiMonitor = AIUsageMonitor.demo()
+        for scheme in [ColorScheme.dark, .light] {
+            render(AIUsageWindowView(monitor: aiMonitor), size: CGSize(width: 700, height: 740), scheme: scheme,
+                   to: out.appendingPathComponent("ai-usage-\(scheme == .dark ? "dark" : "light").png"))
+        }
+        render(AIUsageDashboardView(monitor: aiMonitor).padding(18).background(.black),
+               size: CGSize(width: 560, height: 190), scheme: .dark,
+               to: out.appendingPathComponent("ai-dashboard.png"))
+        let emptyMonitor = AIUsageMonitor(defaults: UserDefaults(suiteName: "notchflow-ai-empty-\(UUID())")!)
+        render(AIUsageWindowView(monitor: emptyMonitor), size: CGSize(width: 640, height: 550), scheme: .light,
+               to: out.appendingPathComponent("ai-empty.png"))
+        render(AIUsageWindowView(monitor: AIUsageMonitor.demo(stale: true)),
+               size: CGSize(width: 640, height: 740), scheme: .dark,
+               to: out.appendingPathComponent("ai-stale.png"))
+        if UserDefaults.standard.bool(forKey: "snapshotAIOnly") {
+            print("SNAPSHOTS \(out.path)")
+            exit(0)
+        }
+
         for scheme in [ColorScheme.dark, .light] {
             for page in SettingsPageID.allCases {
                 let navigation = SettingsNavigation()
@@ -33,11 +52,23 @@ enum Snapshots {
             }
         }
 
+        for scheme in [ColorScheme.dark, .light] {
+            let suffix = scheme == .dark ? "dark" : "light"
+            render(TasksWindowView().environmentObject(store).environmentObject(focus),
+                   size: CGSize(width: 900, height: 680), scheme: scheme,
+                   to: out.appendingPathComponent("tasks-\(suffix).png"))
+            render(WeeklySummaryView().environmentObject(store),
+                   size: CGSize(width: 700, height: 1000), scheme: scheme,
+                   to: out.appendingPathComponent("summary-\(suffix).png"))
+        }
+
         render(TasksWindowView().environmentObject(store).environmentObject(focus),
                size: CGSize(width: 900, height: 640), scheme: .dark,
                to: out.appendingPathComponent("tasks.png"))
 
-        store.addMedication(name: isPortuguese ? "Vitamina D" : "Vitamin D", dosage: "1000 UI", reminderTimes: [Date().addingTimeInterval(3600)])
+        // Demo rendering must never schedule real system notifications.
+        store.medications.append(Medication(name: isPortuguese ? "Vitamina D" : "Vitamin D",
+                                            dosage: "1000 UI", reminderTimes: [Date().addingTimeInterval(3600)]))
         var waterSettings = HydrationSettings()
         waterSettings.container = .bottle
         waterSettings.bottleMilliliters = 750
@@ -79,6 +110,11 @@ enum Snapshots {
 
         let metrics = NotchMetrics.primary
         let vm = NotchViewModel(store: store, focus: focus, metrics: metrics)
+        vm.debugShowReminder(.medication(Medication(name: "Vitamina D", dosage: "1 cápsula", reminderTimes: [])))
+        render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("notch-medication-reminder.png"))
+        vm.debugShowReminder(.water)
+        render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("notch-water-reminder.png"))
+        vm.dismissReminder()
         vm.expanded = true
         render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("notch-expanded.png"))
 
@@ -87,6 +123,16 @@ enum Snapshots {
             // Mid-block, so the countdown and the progress line both show.
             focus.debugAdvance(seconds: Double(first.estimateMinutes * 60) * 0.38)
         }
+        for scheme in [ColorScheme.dark, .light] {
+            render(TasksWindowView().environmentObject(store).environmentObject(focus),
+                   size: CGSize(width: 900, height: 680), scheme: scheme,
+                   to: out.appendingPathComponent("tasks-focus-\(scheme == .dark ? "dark" : "light").png"))
+        }
+        focus.pause()
+        render(TasksWindowView().environmentObject(store).environmentObject(focus),
+               size: CGSize(width: 900, height: 680), scheme: .light,
+               to: out.appendingPathComponent("tasks-paused.png"))
+        focus.togglePause()
         vm.expanded = false
         render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("notch-focus.png"))
         store.settings.rainbowTimeline = true

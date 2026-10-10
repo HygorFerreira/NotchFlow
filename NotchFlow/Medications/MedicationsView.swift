@@ -28,7 +28,7 @@ struct MedicationsView: View {
         .frame(minWidth: 640, minHeight: 460)
         .background(Theme.windowBackground)
         .safeAreaInset(edge: .top, spacing: 0) { FlowWindowNavigation(current: .medications) }
-        .preferredColorScheme(.dark)
+        .flowAppearance()
         .sheet(isPresented: $showingAddForm) {
             MedicationFormView { name, dosage, times in
                 store.addMedication(name: name, dosage: dosage, reminderTimes: times)
@@ -122,7 +122,7 @@ struct MedicationsView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
-        .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 10))
+        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 10))
     }
 
     private var emptyState: some View {
@@ -162,7 +162,7 @@ private struct MedicationRow: View {
                 .font(.system(size: 18))
                 .foregroundStyle(medication.isEnabled ? Theme.medication : Theme.textSecondary)
                 .frame(width: 32, height: 32)
-                .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+                .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 6) {
@@ -315,7 +315,7 @@ struct MedicationFormView: View {
         }
         .frame(width: 500, height: 520)
         .background(Theme.windowBackground)
-        .preferredColorScheme(.dark)
+        .flowAppearance()
         .onAppear { nameFocused = true }
     }
 

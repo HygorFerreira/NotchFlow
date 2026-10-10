@@ -21,7 +21,7 @@ final class CalendarService {
         case .denied:     return .denied
         case .restricted: return .restricted
         case .notDetermined: return .notDetermined
-        case .writeOnly:  return .authorized   // shouldn't happen on macOS, but be permissive
+        case .writeOnly:  return .notDetermined // Reading requires upgrading to full access.
         @unknown default: return .notDetermined
         }
     }

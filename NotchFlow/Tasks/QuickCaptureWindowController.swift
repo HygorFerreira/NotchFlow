@@ -100,7 +100,7 @@ struct QuickCaptureView: View {
         .frame(width: 460)
         .fixedSize(horizontal: false, vertical: true)
         .background(Theme.windowBackground)
-        .preferredColorScheme(.dark)
+        .flowAppearance()
         .onAppear { titleFocused = true }
         .onChange(of: store.persistenceError) { _, error in
             if didAdd && error == nil { onClose() }

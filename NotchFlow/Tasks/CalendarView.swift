@@ -4,15 +4,15 @@ import SwiftUI
 /// Layout notes:
 /// - Three-letter weekday labels in the user's language, so no two days read
 ///   the same (two letters collide in Portuguese: Qua/Qui, Seg/Sex).
-/// - Today gets a tiny accent dot under the number, so it's visible even
-///   when it isn't the selected day. Other days with unfinished tasks get a
-///   gray one, so planned days stand out at a glance.
+/// - Today gets an accent outline; the selected day gets a filled tile.
+///   Accent dots mark days with unfinished tasks, with a matching legend.
 /// - The grid uses indexed IDs (not `Date?.self`) so the leading empty
 ///   cells don't collide and get deduped by SwiftUI's diff.
 struct CalendarView: View {
     @Binding var selectedDate: Date
     /// Start-of-day dates that have at least one unfinished task.
     var busyDays: Set<Date> = []
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var visibleMonth: Date = Date()
 
     private let cal = Calendar.current
@@ -57,6 +57,13 @@ struct CalendarView: View {
                     }
                 }
             }
+            HStack(spacing: 12) {
+                Label("Today", systemImage: "square")
+                Label("Tasks planned", systemImage: "circle.fill")
+            }
+            .font(.system(size: 9, weight: .medium))
+            .foregroundStyle(Theme.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .onAppear { visibleMonth = selectedDate }
         .onChange(of: selectedDate) { _, date in
@@ -70,14 +77,13 @@ struct CalendarView: View {
         let isSelected = cal.isDate(day, inSameDayAs: selectedDate)
         let isToday = cal.isDateInToday(day)
         return Button {
-            selectedDate = day
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { selectedDate = day }
         } label: {
             VStack(spacing: 2) {
                 Text("\(cal.component(.day, from: day))")
                     .font(.system(size: 12, weight: isSelected || isToday ? .bold : .regular).monospacedDigit())
                     .foregroundStyle(isSelected ? .white : Theme.textPrimary)
-                // Today marker: tiny accent dot; busy days get a gray one.
-                // Hidden under the selected-color circle.
+                // Planned days retain their marker inside the selected tile.
                 Circle()
                     .fill(dotColor(isToday: isToday, isBusy: busyDays.contains(cal.startOfDay(for: day)),
                                    isSelected: isSelected))
@@ -87,19 +93,22 @@ struct CalendarView: View {
             .background(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
                     .fill(isSelected ? Theme.accent : isToday ? Theme.accent.opacity(0.12) : .clear)
+                    .overlay(RoundedRectangle(cornerRadius: 9)
+                        .strokeBorder(isToday && !isSelected ? Theme.accent.opacity(0.65) : .clear))
                     .frame(width: 30, height: 30)
             )
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(FlowCompactButtonStyle())
+        .help(busyDays.contains(cal.startOfDay(for: day)) ? String(localized: "Tasks planned") : day.formatted(date: .complete, time: .omitted))
+        .accessibilityHint(busyDays.contains(cal.startOfDay(for: day)) ? Text("Tasks planned") : Text(""))
         .accessibilityLabel(day.formatted(date: .complete, time: .omitted))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private func dotColor(isToday: Bool, isBusy: Bool, isSelected: Bool) -> Color {
         if isSelected { return isBusy ? .white.opacity(0.8) : .clear }
-        if isToday { return Theme.accent }
-        return isBusy ? Theme.textSecondary : .clear
+        return isBusy ? Theme.accent : .clear
     }
 
     private func navButton(_ icon: String, _ action: @escaping () -> Void) -> some View {
@@ -108,10 +117,10 @@ struct CalendarView: View {
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 30, height: 30)
-                .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 9))
+                .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 9))
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(FlowCompactButtonStyle())
         .help(icon == "chevron.left" ? String(localized: "Previous month") : String(localized: "Next month"))
         .accessibilityLabel(Text(icon == "chevron.left" ? String(localized: "Previous month") : String(localized: "Next month")))
     }

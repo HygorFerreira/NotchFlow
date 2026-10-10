@@ -1,47 +1,10 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Liquid Glass" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Liquid Glass"
-          }
-        }
-      }
-    },
-    "Translucent surfaces in the expanded notch and window cards" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Superfícies translúcidas no notch expandido e nos cartões das janelas"
-          }
-        }
-      }
-    },
-    "Native Liquid Glass on macOS 26 or later; translucent material on earlier versions. Respects Reduce Transparency." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Liquid Glass nativo no macOS 26 ou posterior; material translúcido nas versões anteriores. Respeita a opção Reduzir Transparência."
-          }
-        }
-      }
-    },
-    "Transparency" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transparência"
-          }
-        }
-      }
-    },
     "" : {
+
+    },
+    "—" : {
 
     },
     "#%@" : {
@@ -74,8 +37,17 @@
             "state" : "new",
             "value" : "%1$@: %2$lld doses taken"
           }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld doses tomadas"
+          }
         }
       }
+    },
+    "%@%%" : {
+
     },
     "%lld" : {
       "localizations" : {
@@ -268,6 +240,22 @@
         }
       }
     },
+    "%lld ml · Stay hydrated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ml · Stay hydrated"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ml · Hidrate-se"
+          }
+        }
+      }
+    },
     "%lld more minutes than the previous week" : {
       "localizations" : {
         "pt-BR" : {
@@ -289,7 +277,14 @@
       }
     },
     "%lld taken today" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tomadas hoje"
+          }
+        }
+      }
     },
     "%lld taken today · %@" : {
       "localizations" : {
@@ -297,6 +292,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld taken today · %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld tomadas hoje · %2$@"
           }
         }
       }
@@ -323,6 +324,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "⌘N"
+          }
+        }
+      }
+    },
+    "5-hour limit" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite de 5 horas"
           }
         }
       }
@@ -381,9 +393,6 @@
         }
       }
     },
-    "Abre a lista de medicamentos" : {
-
-    },
     "Access is restricted on this Mac" : {
       "localizations" : {
         "pt-BR" : {
@@ -394,12 +403,32 @@
         }
       }
     },
+    "Access unavailable. Reconnect the folder or allow Keychain access." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acesso indisponível. Reconecte a pasta ou permita o acesso às Chaves."
+          }
+        }
+      }
+    },
     "Access was denied. Turn it on in System Settings." : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O acesso foi negado. Ative nos Ajustes do Sistema."
+          }
+        }
+      }
+    },
+    "Account limits · automatic refresh every 2 min" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limites da conta · atualização automática a cada 2 min"
           }
         }
       }
@@ -515,7 +544,45 @@
       }
     },
     "Add your first medication" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicione seu primeiro medicamento"
+          }
+        }
+      }
+    },
+    "AI" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IA"
+          }
+        }
+      }
+    },
+    "AI usage" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consumo de IA"
+          }
+        }
+      }
+    },
+    "AI usage…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consumo de IA…"
+          }
+        }
+      }
     },
     "Alert" : {
       "localizations" : {
@@ -591,6 +658,16 @@
         }
       }
     },
+    "Appearance" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparência"
+          }
+        }
+      }
+    },
     "APPLICATION" : {
       "localizations" : {
         "pt-BR" : {
@@ -628,6 +705,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automático segue a tela com a barra de menus ativa"
+          }
+        }
+      }
+    },
+    "Awaiting updated limit" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aguardando atualização do limite"
           }
         }
       }
@@ -817,6 +904,37 @@
         }
       }
     },
+    "Choose a theme for your windows" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um tema para suas janelas"
+          }
+        }
+      }
+    },
+    "Choose Claude folder…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolher pasta do Claude…"
+          }
+        }
+      }
+    },
+    "Choose Codex folder…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolher pasta do Codex…"
+          }
+        }
+      }
+    },
     "Choose project" : {
       "localizations" : {
         "pt-BR" : {
@@ -949,6 +1067,26 @@
         }
       }
     },
+    "Connect" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar"
+          }
+        }
+      }
+    },
+    "Connect AI services" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar serviços de IA"
+          }
+        }
+      }
+    },
     "Connect calendar" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -956,6 +1094,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conectar calendário"
+          }
+        }
+      }
+    },
+    "Connect Keychain" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar Chaves"
+          }
+        }
+      }
+    },
+    "Connect the login you already use in Codex or Claude Code. Percentages refer to your subscription limits." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecte o login que você já usa no Codex ou Claude Code. As porcentagens representam os limites da sua assinatura."
+          }
+        }
+      }
+    },
+    "Connect to see your usage limits" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecte para ver seus limites de uso"
           }
         }
       }
@@ -1011,12 +1179,43 @@
         }
       }
     },
+    "Could not check for updates. Try again later." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar atualizações. Tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "Could not update usage. The last reading is shown when available." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível atualizar o consumo. A última leitura é exibida quando disponível."
+          }
+        }
+      }
+    },
     "CPU" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "CPU"
+          }
+        }
+      }
+    },
+    "Current session" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessão atual"
           }
         }
       }
@@ -1068,6 +1267,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ROTINA DIÁRIA"
+          }
+        }
+      }
+    },
+    "Dark" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuro"
           }
         }
       }
@@ -1153,6 +1362,32 @@
         }
       }
     },
+    "Disconnect" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desconectar"
+          }
+        }
+      }
+    },
+    "Dismiss reminder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss reminder"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispensar lembrete"
+          }
+        }
+      }
+    },
     "Display" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1204,6 +1439,22 @@
         }
       }
     },
+    "Drank water" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drank water"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bebi"
+          }
+        }
+      }
+    },
     "Each entry uses the selected container's full capacity." : {
       "localizations" : {
         "pt-BR" : {
@@ -1226,7 +1477,14 @@
       }
     },
     "Edit" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar"
+          }
+        }
+      }
     },
     "Edit medication" : {
       "localizations" : {
@@ -1264,6 +1522,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tempo estimado de foco"
+          }
+        }
+      }
+    },
+    "Every %lld minutes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every %lld minutes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cada %lld minutos"
           }
         }
       }
@@ -1445,22 +1719,6 @@
         }
       }
     },
-    "Hora de tomar %@" : {
-
-    },
-    "Hora de tomar %@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Hora de tomar %1$@, %2$@"
-          }
-        }
-      }
-    },
-    "Hora do medicamento" : {
-
-    },
     "How long a focus block runs" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1479,6 +1737,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eu uso"
+          }
+        }
+      }
+    },
+    "In focus" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Em foco"
           }
         }
       }
@@ -1518,12 +1786,64 @@
         }
       }
     },
+    "Last known reading" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Última leitura disponível"
+          }
+        }
+      }
+    },
+    "Last updated" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Última atualização"
+          }
+        }
+      }
+    },
+    "Light" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claro"
+          }
+        }
+      }
+    },
+    "Liquid Glass" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liquid Glass"
+          }
+        }
+      }
+    },
     "Live" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ao vivo"
+          }
+        }
+      }
+    },
+    "Longer window" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Janela prolongada"
           }
         }
       }
@@ -1600,10 +1920,24 @@
       }
     },
     "Medication actions" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ações do medicamento"
+          }
+        }
+      }
     },
     "Medication activity" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atividade de medicamentos"
+          }
+        }
+      }
     },
     "Medication name" : {
       "localizations" : {
@@ -1616,7 +1950,14 @@
       }
     },
     "Medication reminder" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora do medicamento"
+          }
+        }
+      }
     },
     "Medications" : {
       "localizations" : {
@@ -1629,7 +1970,14 @@
       }
     },
     "Medications…" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medicamentos…"
+          }
+        }
+      }
     },
     "Memory" : {
       "localizations" : {
@@ -1706,6 +2054,17 @@
     "ml" : {
 
     },
+    "Native Liquid Glass on macOS 26 or later; translucent material on earlier versions. Respects Reduce Transparency." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liquid Glass nativo no macOS 26 ou posterior; material translúcido nas versões anteriores. Respeita a opção Reduzir Transparência."
+          }
+        }
+      }
+    },
     "New task" : {
       "localizations" : {
         "pt-BR" : {
@@ -1752,6 +2111,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Next: %1$@ · %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximo: %1$@ · %2$@"
           }
         }
       }
@@ -1817,12 +2182,32 @@
         }
       }
     },
+    "No reading" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem leitura"
+          }
+        }
+      }
+    },
     "No Results" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nenhum resultado"
+          }
+        }
+      }
+    },
+    "No subscription login found. Sign in with the coding tool first." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum login de assinatura encontrado. Entre primeiro na ferramenta de programação."
           }
         }
       }
@@ -1848,7 +2233,14 @@
       }
     },
     "No upcoming reminders" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum lembrete próximo"
+          }
+        }
+      }
     },
     "No water logged yet" : {
       "localizations" : {
@@ -2020,7 +2412,14 @@
       }
     },
     "Open medication reminders" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir lembretes de medicamentos"
+          }
+        }
+      }
     },
     "Open notification settings" : {
       "localizations" : {
@@ -2095,6 +2494,16 @@
         }
       }
     },
+    "Open usage page" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir página de consumo"
+          }
+        }
+      }
+    },
     "Pause" : {
       "localizations" : {
         "pt-BR" : {
@@ -2111,6 +2520,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pausar ou retomar foco"
+          }
+        }
+      }
+    },
+    "Paused" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausado"
           }
         }
       }
@@ -2271,8 +2690,51 @@
         }
       }
     },
-    "Registra esta dose como tomada" : {
-
+    "Reconnect Keychain" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconectar Chaves"
+          }
+        }
+      }
+    },
+    "Refresh" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar"
+          }
+        }
+      }
+    },
+    "Remaining: %@" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restante: %@"
+          }
+        }
+      }
+    },
+    "Reminder interval" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder interval"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalo dos lembretes"
+          }
+        }
+      }
     },
     "Reminder times" : {
       "localizations" : {
@@ -2284,14 +2746,51 @@
         }
       }
     },
+    "Reminders appear while the app is running, from 8 am to 10 pm, until your daily goal is reached." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminders appear while the app is running, from 8 am to 10 pm, until your daily goal is reached."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os lembretes aparecem com o app aberto, das 8h às 22h, até atingir sua meta diária."
+          }
+        }
+      }
+    },
     "Remove medication intake record" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover registro de tomada"
+          }
+        }
+      }
     },
     "Remove reminder time" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover horário do lembrete"
+          }
+        }
+      }
     },
     "Remove this record" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover este registro"
+          }
+        }
+      }
     },
     "Remove water entry" : {
       "localizations" : {
@@ -2319,6 +2818,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Limpar busca e filtros"
+          }
+        }
+      }
+    },
+    "Resets at %@" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renova em %@"
           }
         }
       }
@@ -2487,12 +2996,44 @@
         }
       }
     },
+    "Select your .claude folder containing .credentials.json. On macOS, use Keychain if this file is absent." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecione sua pasta .claude contendo .credentials.json. No macOS, use Chaves se esse arquivo não existir."
+          }
+        }
+      }
+    },
+    "Select your .codex folder. NotchFlow reads auth.json to consult your account limits." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecione sua pasta .codex. O NotchFlow lê auth.json para consultar os limites da sua conta."
+          }
+        }
+      }
+    },
     "Selected weekdays" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dias da semana escolhidos"
+          }
+        }
+      }
+    },
+    "Session expired. Open the coding tool to renew your login." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessão expirada. Abra a ferramenta de programação para renovar seu login."
           }
         }
       }
@@ -2586,6 +3127,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar os eventos do calendário de hoje"
+          }
+        }
+      }
+    },
+    "Sign in to Claude Code, then connect Keychain. If your installation uses .credentials.json, choose ~/.claude instead." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre no Claude Code e conecte o app Chaves. Se sua instalação usa .credentials.json, escolha ~/.claude."
+          }
+        }
+      }
+    },
+    "Sign in to Codex, then choose ~/.codex. A ChatGPT subscription login in auth.json is required; API keys do not expose these limits." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre no Codex e escolha ~/.codex. É necessário um login da assinatura ChatGPT em auth.json; chaves de API não disponibilizam esses limites."
           }
         }
       }
@@ -2717,6 +3278,16 @@
         }
       }
     },
+    "System" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        }
+      }
+    },
     "Tags" : {
       "localizations" : {
         "pt-BR" : {
@@ -2739,6 +3310,12 @@
     },
     "Taken" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taken"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2849,6 +3426,16 @@
         }
       }
     },
+    "Tasks planned" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarefas planejadas"
+          }
+        }
+      }
+    },
     "Tasks window" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2880,6 +3467,16 @@
         }
       }
     },
+    "This account did not report usage limits." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta conta não informou limites de uso."
+          }
+        }
+      }
+    },
     "This alert time has already passed. Choose a later time to receive a notification." : {
       "localizations" : {
         "pt-BR" : {
@@ -2901,7 +3498,14 @@
       }
     },
     "Time" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horário"
+          }
+        }
+      }
     },
     "Time for a break." : {
       "localizations" : {
@@ -2913,6 +3517,22 @@
         }
       }
     },
+    "Time to drink water" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time to drink water"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de beber água"
+          }
+        }
+      }
+    },
     "Time to take %@ — %@." : {
       "localizations" : {
         "en" : {
@@ -2920,11 +3540,24 @@
             "state" : "new",
             "value" : "Time to take %1$@ — %2$@."
           }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de tomar %1$@ — %2$@."
+          }
         }
       }
     },
     "Time to take %@." : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de tomar %@."
+          }
+        }
+      }
     },
     "Time, alerts, project and repeat" : {
       "extractionState" : "stale",
@@ -2990,15 +3623,50 @@
         }
       }
     },
-    "Tomei" : {
-
-    },
     "Tomorrow: %@ · %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Tomorrow: %1$@ · %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amanhã: %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "Too many requests. Automatic refresh will retry later." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muitas solicitações. A atualização automática tentará novamente mais tarde."
+          }
+        }
+      }
+    },
+    "Translucent surfaces in the expanded notch and window cards" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superfícies translúcidas no notch expandido e nos cartões das janelas"
+          }
+        }
+      }
+    },
+    "Transparency" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transparência"
           }
         }
       }
@@ -3094,6 +3762,16 @@
         }
       }
     },
+    "Usage is refreshed every 2 minutes while NotchFlow is open. These services use internal endpoints that may change. Credentials are read only and never copied into NotchFlow data." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O consumo é atualizado a cada 2 minutos enquanto o NotchFlow está aberto. Os serviços usam endpoints internos que podem mudar. As credenciais são apenas lidas e nunca copiadas para os dados do NotchFlow."
+          }
+        }
+      }
+    },
     "Version %@" : {
       "localizations" : {
         "pt-BR" : {
@@ -3124,6 +3802,16 @@
         }
       }
     },
+    "View limits and connections" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver limites e conexões"
+          }
+        }
+      }
+    },
     "Waiting for a sample…" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3131,6 +3819,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aguardando leitura…"
+          }
+        }
+      }
+    },
+    "Waiting for the first reading…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aguardando a primeira leitura…"
           }
         }
       }
@@ -3155,6 +3853,22 @@
         }
       }
     },
+    "Water reminders below the notch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Water reminders below the notch"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lembretes de água abaixo do notch"
+          }
+        }
+      }
+    },
     "Water settings and history" : {
       "localizations" : {
         "pt-BR" : {
@@ -3175,12 +3889,33 @@
         }
       }
     },
+    "Weekly goal" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meta semanal"
+          }
+        }
+      }
+    },
     "Weekly goal: %lld minutes" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meta semanal: %lld minutos"
+          }
+        }
+      }
+    },
+    "Weekly limit" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite semanal"
           }
         }
       }
@@ -3285,6 +4020,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Você tem a versão mais recente"
+          }
+        }
+      }
+    },
+    "Your account limits at a glance" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os limites das suas contas em um só lugar"
           }
         }
       }
@@ -3397,6 +4142,166 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suas configurações de água"
+          }
+        }
+      }
+    },
+    "Enable a service to follow the account already signed in on your Mac. Sign in and switch accounts in the coding tool itself." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ative um serviço para acompanhar a conta já conectada no seu Mac. Entre e troque de conta na própria ferramenta de programação."
+          }
+        }
+      }
+    },
+    "Run this command in your terminal and finish signing in through the coding tool. Return here when you are done." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Execute este comando no terminal e conclua o login pela ferramenta de programação. Volte aqui quando terminar."
+          }
+        }
+      }
+    },
+    "Turn off to stop monitoring. You stay signed in to the coding tool." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desative para parar o acompanhamento. Sua conta continua conectada na ferramenta de programação."
+          }
+        }
+      }
+    },
+    "Switch account…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trocar conta…"
+          }
+        }
+      }
+    },
+    "Sign in…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrar…"
+          }
+        }
+      }
+    },
+    "Sign in with CLI…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrar pelo terminal…"
+          }
+        }
+      }
+    },
+    "Allow access…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir acesso…"
+          }
+        }
+      }
+    },
+    "Allow access" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir acesso"
+          }
+        }
+      }
+    },
+    "Connection options" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de conexão"
+          }
+        }
+      }
+    },
+    "Switch accounts in the coding tool; NotchFlow follows the login. Turning this off does not sign you out." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Troque de conta na ferramenta de programação; o NotchFlow acompanha o login. Desativar não encerra sua sessão."
+          }
+        }
+      }
+    },
+    "Turn on to monitor the existing login. If you are not signed in yet, use Sign in first." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ative para acompanhar o login existente. Se ainda não estiver conectado, use Entrar primeiro."
+          }
+        }
+      }
+    },
+    "Use a different folder only for a custom profile. macOS may require folder or Keychain permission to read an existing login." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use outra pasta apenas para um perfil personalizado. O macOS pode exigir permissão da pasta ou das Chaves para ler um login existente."
+          }
+        }
+      }
+    },
+    "Codex is not installed. Install it or sign in with Codex CLI." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Codex não está instalado. Instale o aplicativo ou entre pelo terminal."
+          }
+        }
+      }
+    },
+    "Allow NotchFlow to read the Codex login in this folder. Your account stays signed in through Codex." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita que o NotchFlow leia o login do Codex nesta pasta. Sua conta permanece conectada pelo Codex."
+          }
+        }
+      }
+    },
+    "Folder access is needed to read the Codex session. Use Allow access to try again." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "É necessário permitir o acesso à pasta para ler a sessão do Codex. Use Permitir acesso para tentar novamente."
+          }
+        }
+      }
+    },
+    "No subscription login found. Use Sign in to connect through the coding tool." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum login de assinatura encontrado. Use Entrar para conectar pela ferramenta de programação."
           }
         }
       }

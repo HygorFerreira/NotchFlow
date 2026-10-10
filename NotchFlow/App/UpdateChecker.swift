@@ -30,8 +30,7 @@ final class UpdateChecker: ObservableObject {
     }
 
     /// `owner/repo` for the releases endpoint.
-    // Set this to the NotchFlow release repository when one is available.
-    private static let releaseRepository: String? = nil
+    private static let releaseRepository = "HygorFerreira/NotchFlow"
 
     /// Don't hammer the API — re-check at most this often.
     private let minInterval: TimeInterval = 60 * 60 * 6
@@ -42,7 +41,7 @@ final class UpdateChecker: ObservableObject {
         #if APPSTORE
         return false
         #else
-        return releaseRepository != nil
+        return true
         #endif
     }
 
@@ -50,6 +49,8 @@ final class UpdateChecker: ObservableObject {
     @Published private(set) var isChecking = false
     /// When the last check finished, successful or not.
     @Published private(set) var lastChecked: Date?
+    /// A failed request must not be presented as a successful version check.
+    @Published private(set) var checkFailed = false
 
     /// The running app version (`CFBundleShortVersionString`), e.g. "0.0.1".
     var currentVersion: String {
@@ -58,16 +59,16 @@ final class UpdateChecker: ObservableObject {
 
     /// Fetch the latest release and publish it if it's newer than the running
     /// build. Safe to call repeatedly; throttled by `minInterval` unless
-    /// `force` is set. Network/parse failures are swallowed — a failed check
-    /// simply leaves the menu in its "up to date" state.
+    /// `force` is set. Failed checks preserve any previously found update and
+    /// expose an error state in Settings.
     func checkForUpdates(force: Bool = false) {
-        guard Self.isEnabled, let repo = Self.releaseRepository else { return }
+        guard Self.isEnabled, !isChecking else { return }
         if !force, let last = lastCheck, Date().timeIntervalSince(last) < minInterval {
             return
         }
         lastCheck = Date()
 
-        guard let url = URL(string: "https://api.github.com/repos/\(repo)/releases/latest") else { return }
+        guard let url = URL(string: "https://api.github.com/repos/\(Self.releaseRepository)/releases/latest") else { return }
         var request = URLRequest(url: url)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.setValue("NotchFlow", forHTTPHeaderField: "User-Agent")
@@ -75,6 +76,7 @@ final class UpdateChecker: ObservableObject {
         // Fully-qualified: the app defines its own `Task` model, which would
         // otherwise shadow Swift concurrency's `Task` here.
         isChecking = true
+        checkFailed = false
         _Concurrency.Task { [weak self] in
             guard let self else { return }
             defer {
@@ -83,11 +85,14 @@ final class UpdateChecker: ObservableObject {
             }
             do {
                 let (data, response) = try await URLSession.shared.data(for: request)
-                guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { return }
+                guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                    self.checkFailed = true
+                    return
+                }
                 let release = try JSONDecoder().decode(GitHubRelease.self, from: data)
                 self.apply(release)
             } catch {
-                // Offline or rate-limited — leave state unchanged.
+                self.checkFailed = true
             }
         }
     }

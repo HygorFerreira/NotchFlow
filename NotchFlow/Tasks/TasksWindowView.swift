@@ -8,6 +8,7 @@ struct TasksWindowView: View {
     @EnvironmentObject private var focus: FocusTimer
     @StateObject private var calendar = CalendarAuthModel()
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var search = ""
     @FocusState private var searchFocused: Bool
     @State private var selectedDate = Date()
@@ -104,9 +105,9 @@ struct TasksWindowView: View {
             }
             .padding(20)
             .frame(width: 290)
-            .background(Color(hex: "#0D1420"))
+            .background { FlowBackdrop(shape: Rectangle(), color: Theme.sidebar) }
 
-            Divider().overlay(Color.white.opacity(0.08))
+            Divider()
 
             // ---- Right: the day's task list ----
             todoPanel
@@ -115,7 +116,7 @@ struct TasksWindowView: View {
         }
         .frame(minWidth: 840, minHeight: 600)
         .background(Theme.windowBackground)
-        .preferredColorScheme(.dark)
+        .flowAppearance()
         .sheet(isPresented: $showAddForm) { addForm }
         .sheet(item: $editingTask) { task in
             TaskDetailView(task: task)
@@ -197,9 +198,9 @@ struct TasksWindowView: View {
                         .offset(y: offsetForIndex(index))
                         .opacity(draggingFrom != nil && draggingFrom != index ? 0.45 : 1.0)
                         .zIndex(draggingFrom == index ? 1 : 0)
-                        .animation(.spring(response: 0.28, dampingFraction: 0.85),
+                        .animation(reduceMotion ? nil : .spring(response: 0.28, dampingFraction: 0.85),
                                    value: targetIndex())
-                        .animation(.easeOut(duration: 0.12), value: draggingFrom)
+                        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: draggingFrom)
                     }
                 }
             }
@@ -237,7 +238,7 @@ struct TasksWindowView: View {
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.accent.opacity(0.45)))
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(FlowCompactButtonStyle())
                 .keyboardShortcut("n")
             }
         }
@@ -398,7 +399,7 @@ struct TasksWindowView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 8).padding(.vertical, 5)
-        .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 6))
+        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 6))
     }
 
     /// Open the detail sheet when the dashboard requested a specific task.
@@ -459,7 +460,7 @@ struct TasksWindowView: View {
         }
         .frame(width: 500, height: 570)
         .background(Theme.windowBackground)
-        .preferredColorScheme(.dark)
+        .flowAppearance()
         .onAppear { titleFocused = true }
     }
 

@@ -35,6 +35,30 @@ struct ProductivityTests {
         precondition(legacyStore.tasks[0].completedAt == nil, "Editing an old completed task must not invent a completion date")
         let legacySettings = try JSONDecoder().decode(FocusSettings.self, from: Data("{}".utf8))
         precondition(legacySettings.quickCaptureHotkeyEnabled && legacySettings.weeklyGoalMinutes == 300)
+        let extremeSettings = try JSONDecoder().decode(FocusSettings.self,
+            from: Data("{\"focusMinutes\":9223372036854775807}".utf8))
+        precondition(extremeSettings.focusMinutes == 180)
+
+        // A detail draft must not overwrite focus earned after it was opened.
+        let editStore = makeStore(fileURL: root.appendingPathComponent("edits.json"))
+        editStore.add(title: "Original")
+        var draft = editStore.tasks[0]
+        editStore.recordSession(FocusSession(taskId: draft.id, startedAt: date(6),
+            endedAt: date(6).addingTimeInterval(120), completed: false))
+        draft.title = "  Edited  "
+        draft.notes = String(repeating: "a", count: Task.notesLimit + 20)
+        draft.estimateMinutes = Int.max
+        editStore.update(draft)
+        precondition(editStore.tasks[0].focusedSeconds == 120)
+        precondition(editStore.tasks[0].title == "Edited")
+        precondition(editStore.tasks[0].notes.count == Task.notesLimit)
+        precondition(editStore.tasks[0].estimateMinutes == 180)
+        precondition(makeStore(fileURL: editStore.dataFileURL).tasks[0].focusedSeconds == 120)
+        let beforeDrag = editStore.tasks
+        editStore.moveTasks(in: [], from: IndexSet(integer: 0), to: 0)
+        editStore.moveTasks(in: beforeDrag, from: IndexSet(integer: 9), to: 0)
+        editStore.moveTasks(in: beforeDrag, from: IndexSet(integer: 0), to: 9)
+        precondition(editStore.tasks == beforeDrag, "Stale drag indices must not crash or mutate tasks")
 
         precondition(Task.normalizedTags("#Swift, swift, Work, , #work ") == ["swift", "work"])
         let daily = TaskRecurrence(frequency: .daily)
@@ -166,9 +190,12 @@ struct ProductivityTests {
         precondition(waterStore.waterTotal(on: date(8), calendar: calendar) == 300)
         precondition(waterStore.waterTotal(on: date(9), calendar: calendar) == 2000)
         precondition(waterStore.waterTotal(on: date(10), calendar: calendar) == 0)
+        waterSettings.remindersEnabled = true
+        waterSettings.reminderIntervalMinutes = 90
         waterSettings.bottleMilliliters = 750
         waterStore.updateHydrationSettings(waterSettings)
         let waterReload = makeStore(fileURL: waterURL)
+        precondition(waterReload.hydrationSettings.remindersEnabled && waterReload.hydrationSettings.reminderIntervalMinutes == 90)
         precondition(waterReload.hydrationSettings.bottleMilliliters == 750 && waterReload.hydrationSettings.container == .bottle)
         precondition(waterReload.waterTotal(on: date(9), calendar: calendar) == 2000)
         let lastWater = waterReload.waterIntakes(on: date(9), calendar: calendar).first!
@@ -190,6 +217,20 @@ struct ProductivityTests {
         precondition(HydrationSettings.capacity(from: "3.001", inLiters: true) == nil)
         let hydrationDefaults = try JSONDecoder().decode(HydrationSettings.self, from: Data("{}".utf8))
         precondition(hydrationDefaults.servingMilliliters == 250)
+        precondition(!hydrationDefaults.remindersEnabled && hydrationDefaults.reminderIntervalMinutes == 60)
+        let invalidInterval = try JSONDecoder().decode(HydrationSettings.self, from: Data("{\"reminderIntervalMinutes\":0}".utf8))
+        precondition(invalidInterval.reminderIntervalMinutes == 15)
+        var reminderSettings = HydrationSettings()
+        reminderSettings.remindersEnabled = true
+        precondition(!reminderSettings.isReminderDue(at: date(9, 9, 59), since: date(9, 9), totalMilliliters: 0, calendar: calendar))
+        precondition(reminderSettings.isReminderDue(at: date(9, 10), since: date(9, 9), totalMilliliters: 0, calendar: calendar))
+        precondition(!reminderSettings.isReminderDue(at: date(9, 10), since: date(9, 9, 30), totalMilliliters: 0, calendar: calendar))
+        precondition(!reminderSettings.isReminderDue(at: date(9, 10), since: date(9, 9), totalMilliliters: 2000, calendar: calendar))
+        precondition(!reminderSettings.isReminderDue(at: date(9, 22), since: date(9, 20), totalMilliliters: 0, calendar: calendar))
+        precondition(!reminderSettings.isReminderDue(at: date(9, 7), since: date(9, 5), totalMilliliters: 0, calendar: calendar))
+        reminderSettings.remindersEnabled = false
+        precondition(!reminderSettings.isReminderDue(at: date(9, 10), since: date(9, 9), totalMilliliters: 0, calendar: calendar))
+        print("PASS: hydration reminder interval, quiet hours, goal and disabled state")
         print("PASS: hydration migration, glass and bottle settings, immutable volumes, daily boundaries, persistence and removal")
         print("PASS: legacy decoding, metadata, recurrence, undo/redo, overdue dates, DST, filters, weekly totals and boundaries")
     }

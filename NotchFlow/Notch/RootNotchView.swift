@@ -14,66 +14,6 @@ struct RootNotchView: View {
     private var pillCorner: CGFloat { vm.expanded ? Theme.notchCorner : 12 }
 
 
-private struct MedicationReminderDrop: View {
-    let medication: Medication
-    let openAction: () -> Void
-    let takenAction: () -> Void
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Button(action: openAction) {
-                HStack(spacing: 9) {
-                    Image(systemName: "pills.fill")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.black)
-                        .frame(width: 34, height: 34)
-                        .background(Theme.medication, in: Circle())
-                        .symbolEffect(.pulse, options: .repeat(2))
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Hora do medicamento")
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(Theme.medication)
-                        Text(medication.name)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Theme.textPrimary)
-                            .lineLimit(1)
-                    }
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(
-                medication.dosage.isEmpty
-                    ? "Hora de tomar \(medication.name)"
-                    : "Hora de tomar \(medication.name), \(medication.dosage)"
-            )
-            .accessibilityHint("Abre a lista de medicamentos")
-
-            Spacer(minLength: 2)
-
-            Button(action: takenAction) {
-                Label("Tomei", systemImage: "checkmark")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.black)
-                    .padding(.horizontal, 10)
-                    .frame(height: 28)
-                    .background(Theme.medication, in: Capsule())
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint("Registra esta dose como tomada")
-        }
-        .padding(.horizontal, 8)
-        .frame(width: 340, height: 44)
-        .background(Theme.panel, in: Capsule())
-        .overlay {
-            Capsule()
-                .stroke(Theme.medication.opacity(0.6), lineWidth: 1)
-        }
-        .shadow(color: Theme.medication.opacity(0.2), radius: 8, y: 2)
-    }
-}
-
     var body: some View {
         // The pill and the tray take the window's size, never the content's:
         // the window owns the frame animation, and content that was taller
@@ -90,15 +30,24 @@ private struct MedicationReminderDrop: View {
                     FlowBackdrop(shape: NotchShape(bottomRadius: pillCorner), color: .black,
                                  allowsGlass: vm.expanded)
                     content
-                        .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+                        .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.notchContentHeight, alignment: .top)
                 }
+                .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.notchContentHeight)
                 .clipShape(NotchShape(bottomRadius: pillCorner))
                 trayOverlay
+                    .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.notchContentHeight)
+                if let reminder = vm.reminderAlert {
+                    RoutineReminderPill(reminder: reminder, serving: store.hydrationSettings.servingMilliliters,
+                                        confirm: vm.confirmReminder, dismiss: vm.dismissReminder)
+                        .padding(.top, vm.notchContentHeight + 10)
+                        .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
+                }
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
         }
         // The panel overlaps the menu bar and the notch; a safe-area inset
         // there must not shift or shrink the drawing.
+        .environment(\.colorScheme, .dark)
         .ignoresSafeArea()
         .contentShape(Rectangle())
         .onHover { hovering in vm.hover(hovering) }
@@ -109,30 +58,8 @@ private struct MedicationReminderDrop: View {
             NotchDashboardView()
                 .transition(.opacity)
         } else {
-            ZStack(alignment: .top) {
-                CollapsedTimerView()
-
-                if let medication = vm.medicationAlert {
-                    MedicationReminderDrop(
-                        medication: medication,
-                        openAction: {
-                            vm.dismissMedicationReminder()
-                            vm.openMedicationsWindow()
-                        },
-                        takenAction: {
-                            store.recordMedicationTaken(medication)
-                            vm.dismissMedicationReminder()
-                        }
-                    )
-                    .padding(.top, vm.notchHeight + 6)
-                    .transition(
-                        reduceMotion
-                            ? .opacity
-                            : .move(edge: .top).combined(with: .opacity)
-                    )
-                }
-            }
-            .transition(.opacity)
+            CollapsedTimerView()
+                .transition(.opacity)
         }
     }
 
@@ -212,5 +139,63 @@ private struct MedicationReminderDrop: View {
         }
         return LinearGradient(gradient: Gradient(stops: stops),
                               startPoint: .leading, endPoint: .trailing)
+    }
+}
+
+
+private struct RoutineReminderPill: View {
+    let reminder: NotchReminder
+    let serving: Int
+    let confirm: () -> Void
+    let dismiss: () -> Void
+
+    private var color: Color {
+        if case .water = reminder { return Color(red: 0.30, green: 0.76, blue: 0.96) }
+        return Theme.medication
+    }
+    private var symbol: String { reminder == .water ? "drop.fill" : "pills.fill" }
+    private var title: String {
+        reminder == .water ? String(localized: "Time to drink water") : String(localized: "Medication reminder")
+    }
+    private var detail: String {
+        switch reminder {
+        case .water: return String(localized: "\(serving) ml · Stay hydrated")
+        case .medication(let medication):
+            return medication.dosage.isEmpty ? medication.name : "\(medication.name) · \(medication.dosage)"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: 34, height: 34)
+                .background(color.opacity(0.15), in: Circle())
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.system(size: 10, weight: .medium)).foregroundStyle(color)
+                Text(detail).font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary).lineLimit(1).help(detail)
+            }
+            Spacer(minLength: 0)
+            Button(action: confirm) {
+                Text(reminder == .water ? String(localized: "Drank water") : String(localized: "Taken"))
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.black).padding(.horizontal, 10)
+                    .frame(height: 28).background(color, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            Button(action: dismiss) {
+                Image(systemName: "xmark").font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Theme.textSecondary).frame(width: 24, height: 28)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss reminder")
+        }
+        .padding(.horizontal, 10)
+        .frame(width: 380, height: 48)
+        .background(.black, in: Capsule())
+        .overlay { Capsule().stroke(color.opacity(0.45), lineWidth: 1) }
+        .shadow(color: color.opacity(0.15), radius: 5, y: 2)
     }
 }

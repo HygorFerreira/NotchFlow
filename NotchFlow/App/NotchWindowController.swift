@@ -45,7 +45,7 @@ final class NotchWindowController {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.reposition(animated: true) }
             .store(in: &cancellables)
-        viewModel.$medicationAlert
+        viewModel.$reminderAlert
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 DispatchQueue.main.async {

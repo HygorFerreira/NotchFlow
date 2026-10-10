@@ -17,6 +17,8 @@ Compile o esquema NotchFlow em Debug e execute os testes relevantes:
 ```bash
 bash scripts/test-store.sh
 bash scripts/test-productivity.sh
+bash scripts/test-ai-usage.sh
+bash scripts/test-focus.sh
 ```
 
 Para interfaces, confira o fluxo afetado, tamanhos mínimos de janela, textos em ambos os idiomas, navegação por teclado e estados vazio, desativado e de erro. O modo de snapshots ajuda a revisar o layout, mas não substitui a interação com o app.

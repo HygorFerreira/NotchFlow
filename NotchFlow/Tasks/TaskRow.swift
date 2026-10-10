@@ -22,26 +22,29 @@ struct TaskRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Button { store.toggleDone(task) } label: {
+            Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { store.toggleDone(task) } } label: {
                 Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 16))
                     .foregroundStyle(task.isDone ? Theme.accent : Theme.textSecondary)
                     .frame(width: 22, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(FlowCompactButtonStyle())
             .help(task.isDone ? String(localized: "Mark as incomplete") : String(localized: "Mark as complete"))
             .accessibilityLabel(Text(task.isDone ? String(localized: "Mark as incomplete") : String(localized: "Mark as complete")))
 
             Button(action: onOpen) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(task.title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(task.isDone ? Theme.textSecondary : Theme.textPrimary)
-                    .strikethrough(task.isDone)
-                    .lineLimit(1)
-                    .help(task.title)
-                if !task.notes.isEmpty {
+                HStack(spacing: 6) {
+                    Text(task.title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(task.isDone ? Theme.textSecondary : Theme.textPrimary)
+                        .strikethrough(task.isDone)
+                        .lineLimit(1)
+                        .help(task.title)
+                }
+                if isRunningThis { FlowFocusBadge() }
+                if !isRunningThis && !task.notes.isEmpty {
                     Text(task.notes)
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.textSecondary)
@@ -64,7 +67,7 @@ struct TaskRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(FlowCompactButtonStyle())
             .accessibilityHint("Open task details")
 
             Spacer(minLength: 8)
@@ -107,15 +110,20 @@ struct TaskRow: View {
         // regardless of whether a row shows a notes line.
         .frame(height: 60)
         .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(LinearGradient(
-                    colors: isRunningThis
-                        ? [Theme.accent.opacity(0.18), Theme.panel]
-                        : [isDragging || isHovered ? Theme.panelHover : Theme.panel, Theme.panel.opacity(0.85)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing))
+            FlowBackdrop(shape: RoundedRectangle(cornerRadius: 12, style: .continuous),
+                         color: isDragging || isHovered ? Theme.panelHover : Theme.panel)
+            if isRunningThis {
+                RoundedRectangle(cornerRadius: 12).fill(Theme.accent.opacity(0.08))
+            }
         }
         .overlay(RoundedRectangle(cornerRadius: 12)
-            .stroke(isRunningThis ? Theme.accent.opacity(0.65) : Color.white.opacity(isHovered ? 0.12 : 0.04), lineWidth: 1))
+            .stroke(isRunningThis ? Theme.accent.opacity(0.65) : Color.primary.opacity(isHovered ? 0.12 : 0.06), lineWidth: 1))
+        .overlay(alignment: .bottom) {
+            if isRunningThis {
+                FlowProgressBar(value: focus.progress, height: 3)
+                    .padding(.horizontal, 12).padding(.bottom, 2)
+            }
+        }
         .shadow(color: .black.opacity(isDragging ? 0.28 : 0), radius: 12, y: 6)
         .onHover { isHovered = $0 }
         .scaleEffect(isDragging && !reduceMotion ? 1.02 : 1.0)
@@ -147,7 +155,7 @@ struct TaskRow: View {
                 .contentShape(Rectangle())   // hit area = full 26×26, not just the circle
                 .background(bg, in: Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(FlowCompactButtonStyle())
         .accessibilityLabel(Text(icon == "trash" ? String(localized: "Delete task") : icon == "pause.fill" ? String(localized: "Pause") : isRunningThis ? String(localized: "Resume") : String(localized: "Start focus")))
     }
 }

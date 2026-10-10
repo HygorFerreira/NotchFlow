@@ -20,6 +20,8 @@ O NotchFlow funciona pela barra de menus e exibe uma pílula no topo da tela. Em
 
 O calendário é opcional e somente para leitura. CPU e memória são consultadas localmente enquanto a aba Máquina está visível. `⌘⇧Espaço` inicia ou encerra uma sessão de foco, e `⌘⇧N` abre a captura rápida quando os atalhos estão habilitados.
 
+O painel de IA é opcional e consulta limites das assinaturas do Codex e Claude Code usando o login existente nessas ferramentas. Pode solicitar acesso de leitura à pasta selecionada ou ao Chaves. O app não armazena os tokens; sem conexão, os demais recursos continuam disponíveis. As atualizações da variante `APPSTORE` são gerenciadas pela loja.
+
 ## English (U.S.)
 
 ### Promotional text
@@ -56,7 +58,7 @@ MADE FOR MAC
 • Portuguese (Brazilian) and English interfaces
 
 PRIVATE BY DEFAULT
-No account, advertising or analytics. Your routine stays on your Mac. Calendar access and notifications are optional. The current build has no configured update server.
+No NotchFlow account, advertising or analytics. Your routine stays on your Mac. Calendar access and notifications are optional. Optional AI usage connections use your existing coding-tool login to request subscription limits from the provider; NotchFlow does not store the tokens. App updates are managed by the App Store.
 
 ### Keywords
 
@@ -102,7 +104,7 @@ FEITO PARA O MAC
 • Interface em português do Brasil e inglês
 
 PRIVADO POR PADRÃO
-Sem conta, publicidade ou analytics. Sua rotina fica no Mac. Calendário e notificações são opcionais. A versão atual não possui servidor de atualizações configurado.
+Sem conta do NotchFlow, publicidade ou analytics. Sua rotina fica no Mac. Calendário e notificações são opcionais. As conexões opcionais de IA usam seu login existente nas ferramentas para consultar os limites da assinatura no provedor; o NotchFlow não armazena os tokens. As atualizações são gerenciadas pela App Store.
 
 ### Palavras-chave
 

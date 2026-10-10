@@ -106,6 +106,8 @@ struct WaterWindowView: View {
         glassCapacity != store.hydrationSettings.glassMilliliters
             || bottleCapacity != store.hydrationSettings.bottleMilliliters
             || draft.goalMilliliters != store.hydrationSettings.goalMilliliters
+            || draft.remindersEnabled != store.hydrationSettings.remindersEnabled
+            || draft.reminderIntervalMinutes != store.hydrationSettings.reminderIntervalMinutes
     }
     private func reloadDraft() {
         draft = store.hydrationSettings
@@ -140,7 +142,7 @@ struct WaterWindowView: View {
         .frame(minWidth: 620, minHeight: 640)
         .background(Theme.windowBackground)
         .safeAreaInset(edge: .top, spacing: 0) { FlowWindowNavigation(current: .water) }
-        .preferredColorScheme(.dark)
+        .flowAppearance()
         .onAppear { reloadDraft() }
         .onChange(of: draft) { _, _ in didSave = false }
         .onChange(of: glassInput) { _, _ in didSave = false }
@@ -148,7 +150,9 @@ struct WaterWindowView: View {
         .onChange(of: store.hydrationSettings) { old, new in
             // Container switches never overwrite unsaved volume/goal edits.
             if glassCapacity == old.glassMilliliters && bottleCapacity == old.bottleMilliliters
-                && draft.goalMilliliters == old.goalMilliliters { reloadDraft() }
+                && draft.goalMilliliters == old.goalMilliliters
+                && draft.remindersEnabled == old.remindersEnabled
+                && draft.reminderIntervalMinutes == old.reminderIntervalMinutes { reloadDraft() }
         }
         .onChange(of: liters) { old, _ in
             let glass = HydrationSettings.capacity(from: glassInput, inLiters: old)
@@ -190,6 +194,16 @@ struct WaterWindowView: View {
             Stepper(value: $draft.goalMilliliters, in: HydrationSettings.goalRange, step: 250) {
                 Text("Daily goal: \(waterVolume(draft.goalMilliliters))")
             }
+            Toggle("Water reminders below the notch", isOn: $draft.remindersEnabled)
+            if draft.remindersEnabled {
+                Picker("Reminder interval", selection: $draft.reminderIntervalMinutes) {
+                    ForEach([15, 30, 45, 60, 90, 120, 180], id: \.self) { minutes in
+                        Text("Every \(minutes) minutes").tag(minutes)
+                    }
+                }
+                Text("Reminders appear while the app is running, from 8 am to 10 pm, until your daily goal is reached.")
+                    .font(.caption).foregroundStyle(Theme.textSecondary)
+            }
             HStack {
                 Text(didSave ? String(localized: "Settings saved") : String(localized: "Each entry uses the selected container's full capacity."))
                     .font(.caption).foregroundStyle(didSave ? Theme.success : Theme.textSecondary)
@@ -200,6 +214,8 @@ struct WaterWindowView: View {
                     settings.glassMilliliters = glassCapacity
                     settings.bottleMilliliters = bottleCapacity
                     settings.goalMilliliters = draft.goalMilliliters
+                    settings.remindersEnabled = draft.remindersEnabled
+                    settings.reminderIntervalMinutes = draft.reminderIntervalMinutes
                     store.updateHydrationSettings(settings)
                     didSave = store.persistenceError == nil
                 }

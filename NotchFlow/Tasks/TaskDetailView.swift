@@ -107,7 +107,7 @@ struct TaskDetailView: View {
         .frame(width: 480)
         .frame(maxHeight: 700)
         .background(Theme.windowBackground)
-        .preferredColorScheme(.dark)
+        .flowAppearance()
     }
 
     private var actionBar: some View {

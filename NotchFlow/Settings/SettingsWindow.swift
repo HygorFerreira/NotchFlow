@@ -54,7 +54,7 @@ enum SettingsPageID: String, CaseIterable, Identifiable {
     var searchableSettings: [String] {
         switch self {
         case .focus: return ["Focus length", "Today's progress"]
-        case .notch: return ["Standard", "Minimal", "Liquid Glass", "Transparency", "Progress timeline", "RGB timeline"]
+        case .notch: return ["Appearance", "Standard", "Minimal", "Liquid Glass", "Transparency", "Progress timeline", "RGB timeline"]
         case .display: return ["Show the notch on", "Connected displays"]
         case .alerts: return ["Notification", "Sound", "Notifications are off"]
         case .calendar: return ["Calendar access"]
@@ -182,6 +182,7 @@ struct SettingsWindowView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipped()
         }
+        .flowAppearance()
     }
 }
 

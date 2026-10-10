@@ -28,6 +28,7 @@ struct NotchFlowApp: App {
             Button("Medications…") { appDelegate.showMedicationsWindow() }
                 .keyboardShortcut("m")
             Button("Water…") { appDelegate.showWaterWindow() }
+            Button("AI usage…") { appDelegate.showAIUsageWindow() }
             Button(focusMenu.isFocusing ? "Stop focus" : "Start focus") {
                 appDelegate.focus.toggleStartStop()
             }
@@ -75,6 +76,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var notchController: NotchWindowController?
     private var tasksController: TasksWindowController?
     private var waterController: WaterWindowController?
+    private var aiUsageController: AIUsageWindowController?
     private var medicationsController: MedicationsWindowController?
     private var settingsController: SettingsWindowController?
     private var summaryController: WeeklySummaryWindowController?
@@ -102,6 +104,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if Snapshots.isRequested { Snapshots.run() }
         #endif
         NSApp.setActivationPolicy(.accessory)   // no Dock icon; lives in the notch
+        AIUsageMonitor.shared.start()
 
         // Completing or deleting a task must stop its running session so the
         // collapsed pill's progress line resets instead of running on.
@@ -129,7 +132,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         store.rescheduleTaskReminders()
         taskReminderCancellable = NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
-            .sink { [weak self] _ in self?.store.rescheduleTaskReminders() }
+            .sink { [weak self] _ in
+                self?.store.rescheduleTaskReminders()
+                _Concurrency.Task { await AIUsageMonitor.shared.refreshAll() }
+            }
 
         // Mirror focus state into the menu so the menu label can show
         // "Start focus" / "Stop focus" live.
@@ -169,6 +175,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 vm?.displayPreference = preference
             }
         notchController = NotchWindowController(viewModel: vm)
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        // Preserve an in-flight block when quitting normally or logging out.
+        focus.stop(record: true)
     }
 
     func showTasksWindow() {
@@ -216,6 +227,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             bumpUserWindowCount()
         }
         waterController?.show()
+    }
+
+    func showAIUsageWindow() {
+        if aiUsageController == nil {
+            let controller = AIUsageWindowController()
+            controller.onClose = { [weak self] in
+                self?.aiUsageController = nil
+                self?.userWindowDidClose()
+            }
+            aiUsageController = controller
+            bumpUserWindowCount()
+        }
+        aiUsageController?.show()
     }
 
     func showMedicationsWindow() {

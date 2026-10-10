@@ -60,7 +60,8 @@ struct FocusSettings: Codable, Equatable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let d = FocusSettings.default
-        focusMinutes = try c.decodeIfPresent(Int.self, forKey: .focusMinutes) ?? d.focusMinutes
+        focusMinutes = min(Self.focusRange.upperBound, max(Self.focusRange.lowerBound,
+            try c.decodeIfPresent(Int.self, forKey: .focusMinutes) ?? d.focusMinutes))
         notificationsEnabled = try c.decodeIfPresent(Bool.self, forKey: .notificationsEnabled) ?? d.notificationsEnabled
         playSound = try c.decodeIfPresent(Bool.self, forKey: .playSound) ?? d.playSound
         showTimeline = try c.decodeIfPresent(Bool.self, forKey: .showTimeline) ?? d.showTimeline

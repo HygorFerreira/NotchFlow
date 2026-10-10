@@ -93,6 +93,7 @@ private struct PresetChip: View {
 // MARK: - Notch
 
 struct NotchSettingsPage: View {
+    @AppStorage(FlowAppearance.themeKey) private var themeMode = FlowAppearance.Mode.dark.rawValue
     @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = false
     @AppStorage(FlowAppearance.transparencyKey) private var glassTransparency = 50.0
     @EnvironmentObject private var store: Store
@@ -100,6 +101,17 @@ struct NotchSettingsPage: View {
     var body: some View {
         SettingsPage {
             SettingsSectionTitle(title: "Notch", subtitle: "What the notch shows while a focus block runs")
+            SettingsGroup {
+                SettingsRow(symbol: "circle.lefthalf.filled", color: SettingsPageID.notch.color,
+                            title: "Appearance", subtitle: "Choose a theme for your windows") {
+                    Picker("Appearance", selection: $themeMode) {
+                        ForEach(FlowAppearance.Mode.allCases, id: \.rawValue) { mode in
+                            Text(mode.title).tag(mode.rawValue)
+                        }
+                    }
+                    .labelsHidden().frame(width: 150)
+                }
+            }
             HStack(spacing: 14) {
                 VisualChoiceCard(title: "Standard", isSelected: !store.settings.minimalMode) {
                     store.settings.minimalMode = false
@@ -793,6 +805,7 @@ struct AboutSettingsPage: View {
     private var updateStatus: String {
         if updates.isChecking { return String(localized: "Checking…") }
         if let update = updates.availableUpdate { return String(localized: "Version \(update.version) is available") }
+        if updates.checkFailed { return String(localized: "Could not check for updates. Try again later.") }
         if updates.lastChecked != nil { return String(localized: "You have the latest version") }
         return String(localized: "Checks GitHub for new versions")
     }

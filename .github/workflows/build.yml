@@ -13,8 +13,12 @@ concurrency:
 
 jobs:
   build:
-    name: Build (Debug)
+    name: Build (${{ matrix.variant }})
     runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [Debug, Release, AppStore]
 
     steps:
       - name: Checkout
@@ -26,20 +30,43 @@ jobs:
           xcodebuild -version
 
       - name: Test persistence
+        if: matrix.variant == 'Debug'
         run: bash scripts/test-store.sh
 
       - name: Test productivity features
+        if: matrix.variant == 'Debug'
         run: bash scripts/test-productivity.sh
+
+      - name: Test AI usage
+        if: matrix.variant == 'Debug'
+        run: bash scripts/test-ai-usage.sh
+
+      - name: Test focus timer
+        if: matrix.variant == 'Debug'
+        run: bash scripts/test-focus.sh
 
       - name: Build
         run: |
           set -o pipefail
+          configuration=Release
+          extra=()
+          if [[ '${{ matrix.variant }}' == Debug ]]; then configuration=Debug; fi
+          if [[ '${{ matrix.variant }}' == AppStore ]]; then
+            extra+=('SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) APPSTORE')
+            extra+=(CODE_SIGN_ENTITLEMENTS=NotchFlow/NotchFlow-AppStore.entitlements)
+          fi
           xcodebuild \
             -project NotchFlow.xcodeproj \
             -scheme NotchFlow \
-            -configuration Debug \
+            -configuration "$configuration" \
             -destination 'platform=macOS' \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=YES \
-            build 2>&1 | tail -40
+            CODE_SIGNING_ALLOWED=NO \
+            "${extra[@]}" \
+            build 2>&1 | tee build.log | tail -60
+
+      - name: Preserve build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.variant }}
+          path: build.log

@@ -93,7 +93,8 @@ struct Task: Identifiable, Codable, Hashable {
         title = try c.decode(String.self, forKey: .title)
         notes = try c.decode(String.self, forKey: .notes)
         scheduledDate = try c.decodeIfPresent(Date.self, forKey: .scheduledDate)
-        estimateMinutes = try c.decode(Int.self, forKey: .estimateMinutes)
+        estimateMinutes = min(FocusSettings.focusRange.upperBound, max(FocusSettings.focusRange.lowerBound,
+            try c.decode(Int.self, forKey: .estimateMinutes)))
         isDone = try c.decode(Bool.self, forKey: .isDone)
         createdAt = try c.decode(Date.self, forKey: .createdAt)
         focusedSeconds = try c.decode(Int.self, forKey: .focusedSeconds)

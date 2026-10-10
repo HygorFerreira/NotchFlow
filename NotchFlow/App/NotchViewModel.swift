@@ -1,13 +1,18 @@
 import SwiftUI
 import Combine
 
+enum NotchReminder: Equatable {
+    case medication(Medication)
+    case water
+}
+
 /// Drives the notch panel's collapsed ⇄ expanded state and hands the window
 /// controller a target size to animate to.
 @MainActor
 final class NotchViewModel: ObservableObject {
     @Published var dashboardTab = "Activity"
     @Published var expanded = false
-    @Published private(set) var medicationAlert: Medication?
+    @Published private(set) var reminderAlert: NotchReminder?
 
     /// Mirrors `store.settings.displayPreference`. Owned here (not derived) so
     /// the controller can subscribe to a single source of truth without poking
@@ -78,7 +83,7 @@ final class NotchViewModel: ObservableObject {
         } else {
             baseHeight = notchHeight
         }
-        return medicationAlert == nil ? baseHeight : max(baseHeight, notchHeight + 58)
+        return baseHeight
     }
 
     /// Fixed height: always exactly two visible to-do rows (the list scrolls if
@@ -127,67 +132,102 @@ final class NotchViewModel: ObservableObject {
         } else {
             baseWidth = notchWidth
         }
-        return medicationAlert == nil ? baseWidth : max(baseWidth, 356)
+        return baseWidth
     }
     var expandedWidth: CGFloat { 620 }
 
     var targetSize: CGSize {
-        expanded
-            ? CGSize(width: expandedWidth, height: expandedHeight)
-            : CGSize(width: collapsedWidth, height: collapsedHeight)
+        CGSize(width: max(expanded ? expandedWidth : collapsedWidth, reminderAlert == nil ? 0 : 400),
+               height: notchContentHeight + (reminderAlert == nil ? 0 : 68))
     }
 
-    // MARK: Medication reminders
+    var notchContentHeight: CGFloat { expanded ? expandedHeight : collapsedHeight }
 
-    /// Keeps the in-notch reminder in sync with the same daily clock times used
-    /// by the system notifications. The alert is visual only; notifications
-    /// remain scheduled so reminders still arrive when the app isn't running.
+    // MARK: Routine reminders
+
     private func startMedicationReminderMonitor() {
         medicationTimerCancellable = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
             .prepend(Date())
-            .sink { [weak self] date in
-                self?.showDueMedicationReminder(at: date)
-            }
+            .sink { [weak self] date in self?.checkReminders(at: date) }
     }
 
-    private func showDueMedicationReminder(at date: Date) {
+    private func checkReminders(at date: Date) {
         let calendar = Calendar.current
-        let now = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-
-        guard let medication = store.medications.first(where: { medication in
-            medication.isEnabled && medication.reminderTimes.contains { reminderTime in
-                let reminder = calendar.dateComponents([.hour, .minute], from: reminderTime)
-                return reminder.hour == now.hour && reminder.minute == now.minute
-                    && !deliveredMedicationReminderKeys.contains(
-                        reminderKey(for: medication, components: now)
-                    )
+        let day = calendar.startOfDay(for: date)
+        if reminderDay != day {
+            reminderDay = day
+            deliveredMedicationReminderKeys.removeAll()
+        }
+        let now = calendar.dateComponents([.hour, .minute], from: date)
+        for medication in store.medications where medication.isEnabled {
+            for time in medication.reminderTimes {
+                let clock = calendar.dateComponents([.hour, .minute], from: time)
+                let key = "\(medication.id)-\(now.hour ?? 0)-\(now.minute ?? 0)"
+                if clock.hour == now.hour, clock.minute == now.minute,
+                   deliveredMedicationReminderKeys.insert(key).inserted {
+                    reminderQueue.append(.medication(medication))
+                }
             }
-        }) else { return }
-
-        deliveredMedicationReminderKeys.insert(reminderKey(for: medication, components: now))
-        medicationAlertDismissTask?.cancel()
-        withAnimation(.spring(response: 0.42, dampingFraction: 0.78)) {
-            medicationAlert = medication
         }
-
-        let dismissTask = DispatchWorkItem { [weak self] in
-            self?.dismissMedicationReminder()
+        // Drop queued or visible reminders when their medication is disabled/deleted.
+        reminderQueue.removeAll { !isReminderValid($0, at: date) }
+        if let reminderAlert, !isReminderValid(reminderAlert, at: date) {
+            dismissReminder()
         }
-        medicationAlertDismissTask = dismissTask
-        DispatchQueue.main.asyncAfter(deadline: .now() + 12, execute: dismissTask)
+        let settings = store.hydrationSettings
+        let lastDrink = store.waterIntakes.map(\.recordedAt).max() ?? waterReminderBaseline
+        let anchor = max(lastDrink, waterReminderBaseline)
+        if settings.isReminderDue(at: date, since: anchor, totalMilliliters: store.waterTotal(on: date)),
+           reminderAlert != .water, !reminderQueue.contains(.water) {
+            reminderQueue.append(.water)
+            waterReminderBaseline = date
+        }
+        presentNextReminder()
     }
 
-    func dismissMedicationReminder() {
+    private func isReminderValid(_ reminder: NotchReminder, at date: Date) -> Bool {
+        switch reminder {
+        case .medication(let medication):
+            return store.medications.contains { $0.id == medication.id && $0.isEnabled && $0 == medication }
+        case .water:
+            return store.hydrationSettings.remindersEnabled
+                && store.waterTotal(on: date) < store.hydrationSettings.goalMilliliters
+        }
+    }
+
+    private func presentNextReminder() {
+        guard reminderAlert == nil, !reminderQueue.isEmpty else { return }
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.78)) {
+            reminderAlert = reminderQueue.removeFirst()
+        }
+        let task = DispatchWorkItem { [weak self] in self?.dismissReminder() }
+        medicationAlertDismissTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + 20, execute: task)
+    }
+
+    func dismissReminder() {
         medicationAlertDismissTask?.cancel()
         medicationAlertDismissTask = nil
-        withAnimation(.easeOut(duration: 0.2)) {
-            medicationAlert = nil
-        }
+        if reminderAlert == .water { waterReminderBaseline = Date() }
+        withAnimation(.easeOut(duration: 0.2)) { reminderAlert = nil }
+        presentNextReminder()
     }
 
-    private func reminderKey(for medication: Medication, components: DateComponents) -> String {
-        "\(components.year ?? 0)-\(components.month ?? 0)-\(components.day ?? 0)-\(components.hour ?? 0)-\(components.minute ?? 0)-\(medication.id)"
+    #if DEBUG
+    func debugShowReminder(_ reminder: NotchReminder) {
+        medicationTimerCancellable?.cancel()
+        reminderAlert = reminder
+    }
+    #endif
+
+    func confirmReminder() {
+        guard let reminderAlert else { return }
+        switch reminderAlert {
+        case .medication(let medication): store.recordMedicationTaken(medication)
+        case .water: store.recordWater()
+        }
+        dismissReminder()
     }
 
     // MARK: Hover handling
@@ -198,6 +238,9 @@ final class NotchViewModel: ObservableObject {
     private var medicationAlertDismissTask: DispatchWorkItem?
     private var medicationTimerCancellable: AnyCancellable?
     private var deliveredMedicationReminderKeys: Set<String> = []
+    private var reminderQueue: [NotchReminder] = []
+    private var reminderDay: Date?
+    private var waterReminderBaseline = Date()
 
     /// Number of open child windows (popovers, menus) that should keep the
     /// panel expanded. A `.popover` presents in its own window, so moving the
@@ -216,7 +259,7 @@ final class NotchViewModel: ObservableObject {
         collapseTask = nil
 
         if inside {
-            guard medicationAlert == nil, !expanded else { return }
+            guard reminderAlert == nil, !expanded else { return }
             withAnimation(.easeInEaseOut(duration: 0.24)) { expanded = true }
         } else {
             scheduleCollapse()

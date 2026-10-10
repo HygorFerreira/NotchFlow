@@ -15,11 +15,20 @@ struct HydrationSettings: Codable, Equatable {
         var symbol: String { self == .glass ? "mug" : "waterbottle" }
     }
 
+    var remindersEnabled = false
+    var reminderIntervalMinutes = 60
     var container: Container = .glass
     var glassMilliliters = 250
     var bottleMilliliters = 500
     var goalMilliliters = 2000
     var servingMilliliters: Int { container == .glass ? glassMilliliters : bottleMilliliters }
+
+    func isReminderDue(at date: Date, since lastReminderOrDrink: Date, totalMilliliters: Int,
+                       calendar: Calendar = .current) -> Bool {
+        remindersEnabled && (8..<22).contains(calendar.component(.hour, from: date))
+            && totalMilliliters < goalMilliliters
+            && date.timeIntervalSince(lastReminderOrDrink) >= Double(reminderIntervalMinutes * 60)
+    }
 
     static let capacityRange = 50...3000
     static let goalRange = 250...10000
@@ -38,11 +47,13 @@ struct HydrationSettings: Codable, Equatable {
     init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case container, glassMilliliters, bottleMilliliters, goalMilliliters
+        case container, glassMilliliters, bottleMilliliters, goalMilliliters, remindersEnabled, reminderIntervalMinutes
     }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        remindersEnabled = try values.decodeIfPresent(Bool.self, forKey: .remindersEnabled) ?? false
+        reminderIntervalMinutes = min(180, max(15, try values.decodeIfPresent(Int.self, forKey: .reminderIntervalMinutes) ?? 60))
         container = try values.decodeIfPresent(Container.self, forKey: .container) ?? .glass
         glassMilliliters = min(3000, max(50, try values.decodeIfPresent(Int.self, forKey: .glassMilliliters) ?? 250))
         bottleMilliliters = min(3000, max(50, try values.decodeIfPresent(Int.self, forKey: .bottleMilliliters) ?? 500))

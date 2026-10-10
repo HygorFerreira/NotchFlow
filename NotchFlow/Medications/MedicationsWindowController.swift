@@ -27,7 +27,7 @@ final class MedicationsWindowController: NSObject, NSWindowDelegate {
             window.title = String(localized: "Medications")
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
-            window.backgroundColor = .black
+            window.backgroundColor = .windowBackgroundColor
             window.contentView = NSHostingView(rootView: root)
             window.contentMinSize = NSSize(width: 680, height: 520)
             window.delegate = self

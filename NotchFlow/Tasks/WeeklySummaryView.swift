@@ -3,6 +3,7 @@ import Charts
 
 struct WeeklySummaryView: View {
     @EnvironmentObject private var store: Store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selectedWeek = Date()
 
     private var summary: WeeklySummary {
@@ -34,9 +35,9 @@ struct WeeklySummaryView: View {
                 }
 
                 HStack(spacing: 12) {
-                    metric("Focus time", value: duration(summary.totalSeconds))
-                    metric("Completed tasks", value: "\(summary.completedTasks)")
-                    metric("Completed blocks", value: "\(summary.completedBlocks)")
+                    metric("Focus time", value: duration(summary.totalSeconds), symbol: "timer", color: Theme.accent)
+                    metric("Completed tasks", value: "\(summary.completedTasks)", symbol: "checkmark.circle", color: Theme.success)
+                    metric("Completed blocks", value: "\(summary.completedBlocks)", symbol: "square.stack", color: .purple)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
@@ -44,8 +45,15 @@ struct WeeklySummaryView: View {
                     Chart(summary.days) { day in
                         BarMark(x: .value("Day", day.date, unit: .day),
                                 y: .value("Minutes", day.seconds / 60))
-                            .foregroundStyle(Theme.accent.gradient)
+                            .foregroundStyle(Calendar.current.isDateInToday(day.date) ? Theme.accent : Theme.accent.opacity(0.65))
                             .cornerRadius(5)
+                            .annotation(position: .top) {
+                                if day.seconds > 0 {
+                                    Text("\(Int(day.seconds / 60))")
+                                        .font(.system(size: 10, weight: .medium).monospacedDigit())
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                             .accessibilityLabel(day.date.formatted(.dateTime.weekday(.wide)))
                             .accessibilityValue(duration(day.seconds))
                     }
@@ -54,6 +62,7 @@ struct WeeklySummaryView: View {
                             AxisValueLabel(format: .dateTime.weekday(.abbreviated), anchor: .top)
                         }
                     }
+                    .chartYScale(domain: 0...max(30, (summary.days.map { $0.seconds / 60 }.max() ?? 0) * 1.2))
                     .chartYAxisLabel(String(localized: "Minutes"))
                     .frame(height: 190)
                     Text(comparison(summary)).font(.subheadline).foregroundStyle(.secondary)
@@ -61,16 +70,20 @@ struct WeeklySummaryView: View {
                 .padding(16)
                 .flowSurface()
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Stepper(value: $store.settings.weeklyGoalMinutes, in: 15...10080, step: 15) {
-                        Text("Weekly goal: \(store.settings.weeklyGoalMinutes) minutes")
+                HStack(spacing: 20) {
+                    goalRing(summary)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Weekly goal").font(.headline)
+                        Stepper(value: $store.settings.weeklyGoalMinutes, in: 15...10080, step: 15) {
+                            Text("Weekly goal: \(store.settings.weeklyGoalMinutes) minutes")
+                                .font(.system(size: 12))
+                        }
+                        FlowProgressBar(value: goalFraction(summary))
+                        Text("\(Int(summary.totalSeconds / 60)) / \(store.settings.weeklyGoalMinutes) min")
+                            .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                     }
-                    FlowProgressBar(value: summary.totalSeconds / 60 / Double(max(1, store.settings.weeklyGoalMinutes)))
-                    Text("\(Int(summary.totalSeconds / 60)) / \(store.settings.weeklyGoalMinutes) min")
-                        .font(.caption).foregroundStyle(.secondary)
                 }
-
-                .padding(16)
+                .padding(20)
                 .flowSurface()
 
                 Text("Focus by task").font(.headline)
@@ -84,16 +97,19 @@ struct WeeklySummaryView: View {
                     .flowSurface()
                 }
                 ForEach(summary.taskTimes) { task in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(task.title).lineLimit(2)
-                            if !task.project.isEmpty { Text(task.project).font(.caption).foregroundStyle(.secondary) }
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(task.title).lineLimit(2)
+                                if !task.project.isEmpty { Text(task.project).font(.caption).foregroundStyle(.secondary) }
+                            }
+                            Spacer()
+                            Text(duration(task.seconds)).font(.system(size: 12, weight: .semibold)).monospacedDigit()
                         }
-                        Spacer()
-                        Text(duration(task.seconds)).monospacedDigit()
+                        FlowProgressBar(value: task.seconds / max(1, summary.totalSeconds))
                     }
                     .padding(12)
-                    .background(Theme.panel, in: RoundedRectangle(cornerRadius: 8))
+                    .flowSurface()
                 }
                 Text("Completed-task totals include tasks completed since this feature was added and still in your list.")
                     .font(.caption).foregroundStyle(.secondary)
@@ -103,17 +119,45 @@ struct WeeklySummaryView: View {
         .frame(minWidth: 620, minHeight: 600)
         .background(Theme.windowBackground)
         .safeAreaInset(edge: .top, spacing: 0) { FlowWindowNavigation(current: .summary) }
-        .preferredColorScheme(.dark)
+        .flowAppearance()
     }
 
-    private func metric(_ title: LocalizedStringKey, value: String) -> some View {
+    private func metric(_ title: LocalizedStringKey, value: String, symbol: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 6) {
+            Image(systemName: symbol)
+                .font(.system(size: 15, weight: .semibold)).foregroundStyle(color)
+                .frame(width: 32, height: 32)
+                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             Text(title).font(.caption).foregroundStyle(.secondary)
             Text(value).font(.title2.bold()).monospacedDigit()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .flowSurface()
+    }
+
+    private func goalFraction(_ summary: WeeklySummary) -> Double {
+        summary.totalSeconds / 60 / Double(max(1, store.settings.weeklyGoalMinutes))
+    }
+
+    private func goalRing(_ summary: WeeklySummary) -> some View {
+        let fraction = goalFraction(summary)
+        return ZStack {
+            Circle().stroke(Theme.accent.opacity(0.12), lineWidth: 8)
+            Circle().trim(from: 0, to: min(1, max(0, fraction)))
+                .stroke(Theme.accent.gradient, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            VStack(spacing: 3) {
+                Image(systemName: fraction >= 1 ? "checkmark" : "target").foregroundStyle(Theme.accent)
+                Text(fraction.formatted(.percent.precision(.fractionLength(0))))
+                    .font(.system(size: 18, weight: .bold, design: .rounded)).monospacedDigit()
+            }
+        }
+        .frame(width: 92, height: 92)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Weekly goal")
+        .accessibilityValue(fraction.formatted(.percent.precision(.fractionLength(0))))
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: fraction)
     }
 
     private func duration(_ seconds: TimeInterval) -> String {

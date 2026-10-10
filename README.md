@@ -20,11 +20,14 @@ Feito com **SwiftUI e AppKit**, para **macOS 14 ou superior**, com interface em 
 | Lembretes | Definir horário de início e alertas para tarefas; cadastrar medicamentos e registrar quando foram tomados. |
 | Água | Escolher copo ou garrafa, definir capacidades independentes em ml ou L, acompanhar a meta, o histórico e o gráfico semanal. |
 | Máquina | Consultar CPU e memória no painel, com atualização a cada dois segundos enquanto a área está visível. |
+| IA | Conectar Codex e Claude Code, consultar porcentagens dos limites da assinatura e horários de renovação, com atualização automática a cada dois minutos. |
 | Resumo semanal | Comparar semanas, consultar foco por dia e por tarefa e ajustar a meta semanal. |
-| Personalização | Escolher tela, estilo do notch, Liquid Glass, transparência, alertas, atalhos e abertura ao iniciar sessão. |
+| Personalização | Escolher tela, tema claro/escuro/sistema, estilo do notch, Liquid Glass, transparência, alertas, atalhos e abertura ao iniciar sessão. |
 | Calendário | Consultar eventos mediante permissão do macOS, sem alterar o calendário. |
 
-As janelas compartilham navegação, campos e botões consistentes. Os formulários mantêm suas ações visíveis durante a rolagem, e o painel do notch lembra a última aba escolhida durante a sessão.
+Os lembretes de medicamentos aparecem em uma pílula abaixo do notch, com a ação **Tomei**. Em **Água → Suas configurações de água**, ative os lembretes e escolha o intervalo (15 a 180 minutos). Com o app aberto, os avisos de água aparecem das 8h às 22h, pausam ao atingir a meta diária e permitem registrar **Bebi** diretamente na pílula. Avisos simultâneos são apresentados em sequência; cada aviso fica visível por 20 segundos.
+
+As janelas compartilham navegação, campos e botões consistentes. Em **Ajustes → Notch → Aparência**, escolha Claro, Escuro ou Sistema. A tarefa em foco exibe o tempo restante e uma barra de progresso; o calendário distingue hoje, o dia selecionado e os dias planejados. O resumo semanal destaca as métricas e o avanço da meta. Os formulários mantêm suas ações visíveis durante a rolagem, e o painel do notch lembra a última aba escolhida durante a sessão.
 
 Em **Ajustes → Notch**, ative **Liquid Glass** e ajuste a transparência das superfícies. O efeito usa vidro nativo no macOS 26 ou superior e material translúcido nas versões anteriores. A opção **Reduzir Transparência** do macOS tem prioridade; as animações de arraste das tarefas também respeitam **Reduzir Movimento**.
 
@@ -95,6 +98,12 @@ Os atalhos globais podem ser desativados nos ajustes. Se outro aplicativo ocupar
 
 ## Dados e privacidade
 
+Em **IA → Conectar serviços** ou no menu **Consumo de IA…**, ative o interruptor do serviço. O NotchFlow aproveita o login existente: **Entrar…** e **Trocar conta…** encaminham ao Codex ou às instruções de login do Claude Code no terminal. Depois do login, volte ao NotchFlow; ele atualiza as leituras automaticamente ao retornar.
+
+Quando o sandbox bloquear a leitura do Codex, **Permitir acesso…** solicita uma autorização para a pasta de login, já indicada no seletor. No Claude Code, o macOS pode pedir acesso às credenciais no app Chaves. **Opções de conexão** permite escolher uma pasta apenas para perfis personalizados ou instalações com `.credentials.json`. Desative o interruptor para parar o acompanhamento sem sair da conta na ferramenta de origem.
+
+O painel mostra os limites informados pela assinatura, incluindo sessão e semana quando disponíveis. As credenciais são somente lidas para consultar o respectivo serviço. Desativar o interruptor interrompe as consultas e apaga as leituras e permissões de pasta guardadas pelo NotchFlow. Sessões expiradas, falhas de rede e leituras antigas aparecem explicitamente. Os endpoints internos dos serviços podem mudar; conexões baseadas apenas em chaves de API não oferecem esses limites de assinatura.
+
 Os registros ficam localmente em `Application Support/NotchFlow/data.json`, no diretório disponibilizado pelo macOS para a execução do app. Em builds com sandbox, esse diretório fica dentro do contêiner do aplicativo. Não há conta, publicidade ou analytics.
 
 Desinstalar apenas o aplicativo não garante a exclusão dos dados. Veja a [política de privacidade](PRIVACY.md) e as instruções de backup no [guia de uso](docs/USO.md).
@@ -106,7 +115,7 @@ Desinstalar apenas o aplicativo não garante a exclusão dos dados. Veja a [pol�
 - [Histórico de alterações](CHANGELOG.md): melhorias atuais e marcos anteriores.
 - [Textos para a App Store](appstore/LISTING.md): rascunho em português e inglês.
 
-O código está versionado no repositório privado do GitHub. Um canal público de downloads, URLs de suporte e publicação na App Store ainda precisam ser configurados. A consulta de atualizações está desativada enquanto não houver um repositório de releases definido.
+O código está versionado no repositório privado do GitHub. Um canal público de downloads, URLs de suporte e publicação na App Store ainda precisam ser configurados. Na distribuição direta, o app consulta as releases de `HygorFerreira/NotchFlow` ao iniciar; a verificação manual fica em **Ajustes > Sobre > Atualizações > Verificar agora**. Releases estáveis com versão superior à instalada oferecem um botão para abrir a página de download. A consulta depende de releases acessíveis pela API pública do GitHub; um repositório privado sem autenticação gera uma mensagem de falha. Na compilação `APPSTORE`, as atualizações são administradas pela loja.
 
 ## Licença
 

@@ -30,7 +30,7 @@ struct FocusTimePicker: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             .padding(.horizontal, 8).padding(.vertical, 5)
-            .background(Color.white.opacity(0.06), in: Capsule())
+            .background { FlowBackdrop(shape: Capsule(), color: Theme.panelHover) }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -81,7 +81,7 @@ struct FocusTimePicker: View {
         .padding(14)
         .frame(width: 270)
         .background(Theme.windowBackground)
-        .preferredColorScheme(.dark)
+        .flowAppearance()
     }
 
     private func stepperButton(systemImage: String, delta: Int) -> some View {

@@ -19,12 +19,16 @@ final class FocusTimer: ObservableObject {
     /// slept). `nil` while paused or idle.
     private var endsAt: Date?
     private unowned let store: Store
+    private let now: () -> Date
 
     /// Aborted blocks shorter than this are not recorded, so starting a task by
     /// mistake and stopping it right away doesn't light up the activity grid.
     static let minimumRecordedSeconds: TimeInterval = 60
 
-    init(store: Store) { self.store = store }
+    init(store: Store, now: @escaping () -> Date = Date.init) {
+        self.store = store
+        self.now = now
+    }
 
     var isActive: Bool { state != .idle }
 
@@ -35,7 +39,7 @@ final class FocusTimer: ObservableObject {
     }
 
     var timeLabel: String {
-        let t = max(0, Int(remaining.rounded()))
+        let t = max(0, Int(remaining.rounded(.up)))
         return String(format: "%02d:%02d", t / 60, t % 60)
     }
 
@@ -51,9 +55,9 @@ final class FocusTimer: ObservableObject {
             NotificationService.shared.requestAuthorizationIfNeeded()
         }
         activeTask = task
-        total = TimeInterval(max(1, durationMinutes) * 60)
+        total = Self.duration(secondsFor: durationMinutes)
         remaining = total
-        startedAt = Date()
+        startedAt = now()
         resume()
     }
 
@@ -68,6 +72,7 @@ final class FocusTimer: ObservableObject {
     func pause() {
         guard state == .running else { return }
         updateRemaining()
+        guard remaining > 0 else { complete(); return }
         state = .paused
         endsAt = nil
         timer?.invalidate()
@@ -76,7 +81,7 @@ final class FocusTimer: ObservableObject {
 
     private func resume() {
         state = .running
-        endsAt = Date().addingTimeInterval(remaining)
+        endsAt = now().addingTimeInterval(remaining)
         timer?.invalidate()
         let t = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
@@ -100,11 +105,10 @@ final class FocusTimer: ObservableObject {
     }
     #endif
 
-    /// Re-derive `remaining` from the deadline, whole seconds so the label and
-    /// the progress line move in clean steps.
+    /// Keep subsecond precision so repeated pauses cannot add or lose time.
     private func updateRemaining() {
         guard let endsAt else { return }
-        remaining = max(0, endsAt.timeIntervalSinceNow.rounded())
+        remaining = min(total, max(0, endsAt.timeIntervalSince(now())))
     }
 
     private func complete() {
@@ -148,13 +152,13 @@ final class FocusTimer: ObservableObject {
     func taskDidChange(_ task: Task) {
         guard isActive, activeTask?.id == task.id else { return }
         activeTask = task
-        let newTotal = TimeInterval(max(1, task.estimateMinutes) * 60)
+        let newTotal = Self.duration(secondsFor: task.estimateMinutes)
         guard newTotal != total else { return }
         updateRemaining()
         let focused = total - remaining
         total = newTotal
         remaining = max(0, newTotal - focused)
-        if state == .running { endsAt = Date().addingTimeInterval(remaining) }
+        if state == .running { endsAt = now().addingTimeInterval(remaining) }
         if remaining <= 0 { complete() }
     }
 
@@ -196,5 +200,10 @@ final class FocusTimer: ObservableObject {
         activeTask = nil
         startedAt = nil
         endsAt = nil
+    }
+
+    private static func duration(secondsFor minutes: Int) -> TimeInterval {
+        TimeInterval(min(FocusSettings.focusRange.upperBound,
+                         max(FocusSettings.focusRange.lowerBound, minutes))) * 60
     }
 }

@@ -14,6 +14,7 @@ struct NotchDashboardView: View {
         case health = "Health"
         case machine = "Machine"
         case water = "Water"
+        case ai = "AI"
 
         var id: Self { self }
 
@@ -23,6 +24,7 @@ struct NotchDashboardView: View {
             case .health: return "heart.fill"
             case .machine: return "desktopcomputer"
             case .water: return "drop.fill"
+            case .ai: return "sparkles"
             }
         }
     }
@@ -41,6 +43,8 @@ struct NotchDashboardView: View {
                     MachineDashboardView()
                 case .water:
                     WaterDashboardView()
+                case .ai:
+                    AIUsageDashboardView()
                 }
             }
         }
@@ -67,12 +71,12 @@ struct NotchDashboardView: View {
                         )
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(FlowCompactButtonStyle(selected: selectedTab == tab))
                 .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
         }
         .padding(3)
-        .background(Theme.panel, in: RoundedRectangle(cornerRadius: 10))
+        .background { FlowBackdrop(shape: RoundedRectangle(cornerRadius: 10), color: Theme.panel) }
     }
 
     private var activityDashboard: some View {
@@ -284,7 +288,8 @@ private struct TodoRow: View {
                     .foregroundStyle(Theme.textPrimary)
                     .strikethrough(task.isDone)
                     .lineLimit(1)
-                if let start = task.scheduledStart {
+                if isRunningThis { FlowFocusBadge() }
+                if !isRunningThis, let start = task.scheduledStart {
                     HStack(spacing: 3) {
                         Text(start.formatted(date: .omitted, time: .shortened))
                         if task.reminderMinutesBefore != nil { Image(systemName: "bell") }
@@ -292,7 +297,7 @@ private struct TodoRow: View {
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textSecondary)
                 }
-                if !task.notes.isEmpty {
+                if !isRunningThis && !task.notes.isEmpty {
                     Text(task.notes)
                         .font(.system(size: 10))
                         .foregroundStyle(Theme.textSecondary)

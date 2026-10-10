@@ -1,6 +1,6 @@
 # Política de privacidade do NotchFlow
 
-Atualizada em **8 de outubro de 2026**. Responsável pelo aplicativo: **Hygor Ferreira**.
+Atualizada em **10 de outubro de 2026**. Responsável pelo aplicativo: **Hygor Ferreira**.
 
 ## Dados locais
 
@@ -28,9 +28,13 @@ O painel consulta métricas do sistema para mostrar utilização de CPU e memór
 
 ## Rede e atualizações
 
-Na configuração atual, a consulta de atualizações está desativada porque não há repositório de releases definido. Os dados da rotina não são enviados pela aplicação.
+O acompanhamento de IA é opcional. Ao conectar Codex ou Claude Code, o NotchFlow lê a sessão existente na pasta selecionada ou no item de credenciais do Claude Code no app Chaves, conforme autorização do macOS. O token é usado somente em requisições HTTPS ao serviço correspondente (ChatGPT ou Anthropic) para consultar limites de consumo. Não é copiado para os arquivos de dados nem para as preferências do NotchFlow, e o aplicativo não altera nem renova essas credenciais.
 
-Caso um repositório seja configurado futuramente para distribuição direta, o verificador poderá consultar a API do GitHub para identificar versões novas. Essas requisições estarão sujeitas ao processamento de metadados de rede pelo serviço, como o endereço IP. A compilação com a condição `APPSTORE` desativa esse verificador; atualizações pela loja são administradas pela Apple.
+As consultas ocorrem a cada dois minutos enquanto o app está aberto e ao retornar ao aplicativo. Os serviços recebem o token de autenticação, o identificador da conta quando necessário e metadados normais de rede, como o endereço IP. Tarefas, prompts e respostas não são enviados. Percentuais, horários de renovação, última leitura e permissões de pasta são guardados nas preferências locais para continuidade entre aberturas. Desativar o interruptor do serviço remove esses dados e interrompe novas consultas; o login na ferramenta de origem permanece ativo. Quando já autorizada pelo macOS, a leitura da sessão existente usa sua localização padrão automaticamente.
+
+Na distribuição direta, o aplicativo consulta a API de releases do GitHub para o repositório `HygorFerreira/NotchFlow` ao iniciar e quando você solicita uma verificação nos ajustes. Os dados da rotina não são enviados pela aplicação.
+
+Essas requisições estão sujeitas ao processamento de metadados de rede pelo GitHub, como o endereço IP. Ao escolher baixar uma atualização, o app abre a página da release no navegador. A compilação com a condição `APPSTORE` desativa esse verificador; atualizações pela loja são administradas pela Apple.
 
 ## Backup e exclusão
 

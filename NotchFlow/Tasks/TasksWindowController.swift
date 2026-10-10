@@ -36,7 +36,7 @@ final class TasksWindowController: NSObject, NSWindowDelegate {
             // Only the top titlebar strip moves the window. Background dragging
             // would compete with the drag-to-reorder gesture on the task rows.
             win.isMovableByWindowBackground = false
-            win.backgroundColor = NSColor.black
+            win.backgroundColor = .windowBackgroundColor
             win.contentView = NSHostingView(rootView: root)
             win.contentMinSize = NSSize(width: 840, height: 600)
             win.delegate = self

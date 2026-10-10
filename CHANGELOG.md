@@ -2,7 +2,22 @@
 
 Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvimento** descreve mudanças presentes no código que ainda não possuem uma nova versão publicada. A versão configurada no projeto é **1.0.0**, build **1**.
 
-## Em desenvolvimento - atualizado em 2026-10-09
+## Em desenvolvimento - atualizado em 2026-10-10
+
+- Revisão de estabilidade: edição de tarefas preserva foco já registrado e ordenação; títulos, notas e durações são validados no Store.
+- Timer preserva frações de segundo nas pausas, conclui ao pausar após o prazo e limita durações extremas sem overflow.
+- Conexão Claude invalida o cache quando a credencial é atualizada no Chaves; leitura de limites de IA tolera durações numéricas extremas.
+- Calendário exige acesso de leitura, sem tratar permissão de escrita como autorização para consultar eventos.
+- Testes de regressão do timer e CI para Debug, Release e App Store.
+- Sessões em andamento são registradas ao encerrar normalmente o app; arrastes com índices desatualizados são ignorados com segurança.
+- Traduções em português dos lembretes e ações de medicamentos completadas; snapshots não agendam notificações de demonstração.
+
+- Conexão de IA por interruptores, com aproveitamento do login existente, ações de entrar/trocar conta na ferramenta de origem e seleção de pastas apenas nas opções avançadas ou quando exigida pelo sandbox (2026-10-10).
+
+- Aba IA e janela de consumo com conexão às sessões do Codex e Claude Code, indicadores dos limites da assinatura, renovação e atualização automática a cada dois minutos; leitura antiga e falhas identificadas, sem guardar tokens.
+
+- Busca de atualizações restaurada pelas releases de `HygorFerreira/NotchFlow`, com verificação manual nos ajustes e aviso quando a consulta falha.
+- Pílula de lembretes abaixo do notch para medicamentos e água, com registro rápido e intervalo de hidratação configurável.
 
 ### Identidade
 

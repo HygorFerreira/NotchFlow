@@ -40,6 +40,7 @@ O script encerra uma instância em execução antes de abrir o produto compilado
 | --- | --- |
 | `NotchFlow/App/` | Inicialização, menu, janelas do notch, estado do painel, atualizações e snapshots. |
 | `NotchFlow/Models/` | Modelos de rotina, métricas, resumo e Store com persistência JSON. |
+| `NotchFlow/AI/` | Conexões de consumo do Codex/Claude, leitura autorizada de credenciais e painéis de limites da assinatura. |
 | `NotchFlow/Focus/` | Timer, atalhos globais e notificações locais. |
 | `NotchFlow/Notch/` | Painéis de atividade, saúde, máquina e apresentação do timer. |
 | `NotchFlow/Tasks/` | Calendário, tarefas, captura rápida, formulários e resumo semanal. |
@@ -64,12 +65,18 @@ O timer calcula o restante com base no horário de término. Atalhos globais usa
 
 ## Testes
 
+`bash scripts/test-ai-usage.sh` valida leitura de limites, respostas parciais, datas, migração entre formatos do Claude, persistência sem tokens e estados de autenticação/restrição de requisições com rede simulada.
+
 ```bash
 bash scripts/test-store.sh
 bash scripts/test-productivity.sh
+bash scripts/test-ai-usage.sh
+bash scripts/test-focus.sh
 ```
 
 Esses scripts compilam executáveis Swift independentes; não dependem de um target de testes do Xcode. Cubra regras de negócio, migração, persistência e recuperação conforme a área alterada. Para mudanças visuais, faça a compilação e confira os fluxos reais e as prévias.
+
+O teste do timer usa relógio controlado para conferir pausas, conclusão, edição de tarefas e limites de duração. O CI compila Debug, Release e a variante `APPSTORE`, além de executar as quatro suítes. Se `xcode-select` apontar para CommandLineTools, use `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` antes do comando para selecionar o Xcode apenas naquela execução.
 
 ## Gerar imagens
 
@@ -126,4 +133,4 @@ A opção `--upload` envia o build ao App Store Connect. As credenciais e os cer
 4. Configure as URLs de suporte e privacidade e revise [LISTING.md](../appstore/LISTING.md).
 5. Valide assinatura, exportação e notarização conforme o canal escolhido.
 
-O repositório de releases em `UpdateChecker.swift` está indefinido, portanto não há consulta de atualizações na configuração atual. Para ativá-la em distribuição direta, configure um repositório do NotchFlow e atualize a documentação de privacidade.
+O verificador em `UpdateChecker.swift` consulta `HygorFerreira/NotchFlow` pela API de releases do GitHub na distribuição direta. A consulta automática ocorre ao iniciar, com intervalo mínimo de seis horas entre verificações na sessão; **Verificar agora** ignora esse intervalo. Apenas releases estáveis com versão superior à instalada são oferecidas. O endpoint precisa estar acessível sem autenticação: repositórios privados ou sem releases acessíveis podem retornar erro, exibido nos ajustes. A condição `APPSTORE` mantém o verificador desativado.

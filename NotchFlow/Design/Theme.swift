@@ -1,23 +1,33 @@
 import SwiftUI
 
-/// Shared visual language, tuned to match the mockups (black pill, blue accent).
+/// Shared adaptive palette; the physical notch keeps its dark appearance.
 enum Theme {
     /// Follows the user's macOS accent color (System Settings › Appearance).
     static let accent = Color(nsColor: .controlAccentColor)
     static let danger = Color(red: 0.95, green: 0.23, blue: 0.23)    // pause red
     static let medication = Color(red: 0.18, green: 0.78, blue: 0.72)
     static let pill = Color.black
-    static let panel = Color(hex: "#172131")
-    static let panelHover = Color(hex: "#223249")
-    static let textPrimary = Color.white
-    static let textSecondary = Color(hex: "#A5B3C5")
+    static let panel = adaptive(light: "#FFFFFF", dark: "#172131")
+    static let panelHover = adaptive(light: "#EDF2F9", dark: "#223249")
+    static let textPrimary = Color.primary
+    static let textSecondary = Color(nsColor: .secondaryLabelColor)
     static let streakEmpty = Color(white: 0.14)
+
+    static let sidebar = adaptive(light: "#EEF2F8", dark: "#0D1420")
+
+    private static func adaptive(light: String, dark: String) -> Color {
+        let lightColor = NSColor(Color(hex: light))
+        let darkColor = NSColor(Color(hex: dark))
+        return Color(nsColor: NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? darkColor : lightColor
+        })
+    }
 
     static let notchCorner: CGFloat = 22
     static let panelCorner: CGFloat = 16
-    static let success = Color(hex: "#5DD6B2")
+    static let success = adaptive(light: "#16866A", dark: "#5DD6B2")
     static let windowBackground = LinearGradient(
-        colors: [Color(hex: "#101824"), Color(hex: "#080C13")],
+        colors: [adaptive(light: "#F5F7FB", dark: "#101824"), adaptive(light: "#E9EEF6", dark: "#080C13")],
         startPoint: .topLeading, endPoint: .bottomTrailing)
 }
 
@@ -78,6 +88,16 @@ struct NotchTrayShape: Shape {
 
 /// A persisted appearance preference shared by every window and the notch preview.
 enum FlowAppearance {
+    static let themeKey = "appearance.theme"
+    enum Mode: String, CaseIterable {
+        case system, light, dark
+        var scheme: ColorScheme? {
+            switch self { case .system: nil; case .light: .light; case .dark: .dark }
+        }
+        var title: LocalizedStringKey {
+            switch self { case .system: "System"; case .light: "Light"; case .dark: "Dark" }
+        }
+    }
     static let liquidGlassKey = "appearance.liquidGlass"
     static let transparencyKey = "appearance.glassTransparency"
 }
@@ -139,7 +159,19 @@ struct FlowSurface: ViewModifier {
     }
 }
 
+struct FlowAppearanceModifier: ViewModifier {
+    @AppStorage(FlowAppearance.themeKey) private var mode = FlowAppearance.Mode.dark.rawValue
+    func body(content: Content) -> some View {
+        #if DEBUG
+        content.preferredColorScheme(Snapshots.isRequested ? nil : (FlowAppearance.Mode(rawValue: mode) ?? .dark).scheme)
+        #else
+        content.preferredColorScheme((FlowAppearance.Mode(rawValue: mode) ?? .dark).scheme)
+        #endif
+    }
+}
+
 extension View {
+    func flowAppearance() -> some View { modifier(FlowAppearanceModifier()) }
     func flowSurface() -> some View { modifier(FlowSurface()) }
 }
 
@@ -164,15 +196,17 @@ private struct FlowButtonBody: View {
             .padding(.vertical, 9)
             .foregroundStyle(configuration.role == .destructive ? Theme.danger : (prominent ? .white : .primary))
             .background {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(prominent ? Theme.accent : Color.primary.opacity(hovered && enabled ? 0.12 : 0.06))
+                FlowBackdrop(shape: RoundedRectangle(cornerRadius: 10, style: .continuous),
+                             color: prominent ? Theme.accent : (hovered && enabled ? Theme.panelHover : Theme.panel))
             }
             .overlay {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .strokeBorder(Color.primary.opacity(hovered && enabled ? 0.18 : 0.07))
             }
             .opacity(enabled ? (configuration.isPressed ? 0.72 : 1) : 0.4)
+            .scaleEffect(configuration.isPressed && enabled && !reduceMotion ? 0.98 : 1)
             .onHover { hovered = $0 }
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
             .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
     }
 }
@@ -190,6 +224,7 @@ struct FlowTextFieldStyle: TextFieldStyle {
 
 struct FlowProgressBar: View {
     var value: Double
+    var height: CGFloat = 6
     var color: Color = Theme.accent
     private var fraction: Double { value.isFinite ? min(1, max(0, value)) : 0 }
     var body: some View {
@@ -199,7 +234,7 @@ struct FlowProgressBar: View {
                     Capsule().fill(color.gradient).frame(width: geometry.size.width * fraction)
                 }
         }
-        .frame(height: 6)
+        .frame(height: height)
         .accessibilityElement()
         .accessibilityLabel("Progress")
         .accessibilityValue(fraction.formatted(.percent.precision(.fractionLength(0))))
@@ -285,7 +320,7 @@ struct FlowWindowNavigation: View {
                         .background(current == destination ? Theme.accent.opacity(0.13) : .clear,
                                     in: RoundedRectangle(cornerRadius: 8))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(FlowCompactButtonStyle(selected: current == destination))
                 .accessibilityAddTraits(current == destination ? .isSelected : [])
             }
             Spacer(minLength: 0)
@@ -298,7 +333,53 @@ struct FlowWindowNavigation: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(Color.black.opacity(0.12))
-        .overlay(alignment: .bottom) { Rectangle().fill(Color.white.opacity(0.06)).frame(height: 1) }
+        .background {
+            FlowBackdrop(shape: Rectangle(), color: Theme.sidebar)
+        }
+        .overlay(alignment: .bottom) { Rectangle().fill(Color.primary.opacity(0.08)).frame(height: 1) }
+    }
+}
+
+/// Compact controls share pointer, keyboard, and press feedback.
+struct FlowCompactButtonStyle: ButtonStyle {
+    var selected = false
+    func makeBody(configuration: Configuration) -> some View {
+        CompactButtonBody(configuration: configuration, selected: selected)
+    }
+}
+
+private struct CompactButtonBody: View {
+    let configuration: ButtonStyleConfiguration
+    let selected: Bool
+    @State private var hovered = false
+    @Environment(\.isEnabled) private var enabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    var body: some View {
+        configuration.label
+            .background(Color.primary.opacity(hovered && enabled ? 0.07 : 0),
+                        in: RoundedRectangle(cornerRadius: 8))
+            .overlay(RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(selected ? Theme.accent.opacity(0.4) : Color.clear))
+            .opacity(enabled ? (configuration.isPressed ? 0.7 : 1) : 0.4)
+            .scaleEffect(configuration.isPressed && enabled && !reduceMotion ? 0.96 : 1)
+            .onHover { hovered = $0 }
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+struct FlowFocusBadge: View {
+    @EnvironmentObject private var focus: FocusTimer
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: focus.state == .paused ? "pause.circle.fill" : "timer")
+            Text(focus.state == .paused ? "Paused" : "In focus")
+            Text(focus.timeLabel).monospacedDigit()
+        }
+        .font(.system(size: 9, weight: .semibold))
+        .foregroundStyle(Theme.accent)
+        .padding(.horizontal, 6).padding(.vertical, 3)
+        .background(Theme.accent.opacity(0.12), in: Capsule())
+        .accessibilityElement(children: .combine)
     }
 }

@@ -92,6 +92,15 @@ final class Store: ObservableObject {
         guard !task.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, task.recurrence.isValid else { return }
         let wasDone = tasks[idx].isDone
         var updated = task
+        updated.title = String(task.title.trimmingCharacters(in: .whitespacesAndNewlines).prefix(Task.titleLimit))
+        updated.notes = String(task.notes.prefix(Task.notesLimit))
+        updated.estimateMinutes = min(FocusSettings.focusRange.upperBound, max(FocusSettings.focusRange.lowerBound, task.estimateMinutes))
+        // Editors hold a snapshot. Activity recorded and ordering changed while
+        // that editor was open belong to the live store, not the draft.
+        updated.focusedSeconds = tasks[idx].focusedSeconds
+        updated.sortOrder = tasks[idx].sortOrder
+        updated.createdAt = tasks[idx].createdAt
+        updated.recurrenceParentID = tasks[idx].recurrenceParentID
         updated.project = task.project.trimmingCharacters(in: .whitespacesAndNewlines)
         updated.tags = Task.normalizedTags(task.tags.joined(separator: ","))
         if updated.recurrence.frequency != .none && updated.scheduledDate == nil {
@@ -173,6 +182,9 @@ final class Store: ObservableObject {
     /// 1024-step spacing. Collisions across lists don't matter because each
     /// list is sorted independently.
     func moveTasks(in list: [Task], from source: IndexSet, to destination: Int) {
+        // A live filter/deletion can change the list while a drag is in flight.
+        guard !source.isEmpty, source.allSatisfy({ list.indices.contains($0) }),
+              (0...list.count).contains(destination) else { return }
         var working = list
         working.move(fromOffsets: source, toOffset: destination)
         for (i, t) in working.enumerated() {
@@ -190,6 +202,7 @@ final class Store: ObservableObject {
         settings.glassMilliliters = min(3000, max(50, settings.glassMilliliters))
         settings.bottleMilliliters = min(3000, max(50, settings.bottleMilliliters))
         settings.goalMilliliters = min(10000, max(250, settings.goalMilliliters))
+        settings.reminderIntervalMinutes = min(180, max(15, settings.reminderIntervalMinutes))
         hydrationSettings = settings
         save()
     }

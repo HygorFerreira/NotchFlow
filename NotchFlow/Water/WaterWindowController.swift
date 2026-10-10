@@ -27,7 +27,7 @@ final class WaterWindowController: NSObject, NSWindowDelegate {
             window.title = String(localized: "Water")
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
-            window.backgroundColor = .black
+            window.backgroundColor = .windowBackgroundColor
             window.contentView = NSHostingView(rootView: root)
             window.contentMinSize = NSSize(width: 680, height: 740)
             window.delegate = self

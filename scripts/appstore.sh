@@ -6,7 +6,8 @@
 #   ./scripts/appstore.sh --upload   archive and upload the build to App Store Connect
 #
 # The build is compiled with the APPSTORE condition, which drops the GitHub release check (the store delivers
-# updates), and signed without the network entitlement it no longer needs. Signing is automatic through the Apple account signed in to Xcode (Settings > Accounts). The first run
+# updates). Network access remains enabled for the optional AI usage connections.
+# Signing is automatic through the Apple account signed in to Xcode (Settings > Accounts). The first run
 # creates the Apple Distribution and Mac Installer Distribution certificates and the App Store profile if they are
 # missing. The app record must already exist in App Store Connect before --upload.
 #
