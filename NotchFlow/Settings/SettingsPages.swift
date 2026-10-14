@@ -93,8 +93,8 @@ private struct PresetChip: View {
 // MARK: - Notch
 
 struct NotchSettingsPage: View {
-    @AppStorage(FlowAppearance.themeKey) private var themeMode = FlowAppearance.Mode.dark.rawValue
-    @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = false
+    @AppStorage(FlowAppearance.themeKey) private var themeMode = FlowAppearance.Mode.system.rawValue
+    @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = true
     @AppStorage(FlowAppearance.transparencyKey) private var glassTransparency = 50.0
     @EnvironmentObject private var store: Store
 
@@ -786,10 +786,9 @@ struct AboutSettingsPage: View {
                     ) {
                         if let update = updates.availableUpdate {
                             Button(String(localized: "Download \(update.version)")) { updates.openReleasePage() }
-                        } else {
-                            Button("Check Now") { updates.checkForUpdates(force: true) }
-                                .disabled(updates.isChecking)
                         }
+                        Button("Check Now") { updates.checkForUpdates(force: true) }
+                            .disabled(updates.isChecking)
                     }
                 }
                 SettingsRow(
@@ -804,8 +803,8 @@ struct AboutSettingsPage: View {
 
     private var updateStatus: String {
         if updates.isChecking { return String(localized: "Checking…") }
+        if updates.checkFailed { return updates.errorMessage ?? String(localized: "Could not check for updates. Try again later.") }
         if let update = updates.availableUpdate { return String(localized: "Version \(update.version) is available") }
-        if updates.checkFailed { return String(localized: "Could not check for updates. Try again later.") }
         if updates.lastChecked != nil { return String(localized: "You have the latest version") }
         return String(localized: "Checks GitHub for new versions")
     }

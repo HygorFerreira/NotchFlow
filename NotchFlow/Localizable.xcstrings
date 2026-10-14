@@ -7,6 +7,9 @@
     "—" : {
 
     },
+    "/ %lld" : {
+
+    },
     "#%@" : {
 
     },
@@ -55,16 +58,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld"
-          }
-        }
-      }
-    },
-    "%lld / %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld / %2$lld"
           }
         }
       }
@@ -267,6 +260,7 @@
       }
     },
     "%lld of %lld completed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -564,12 +558,32 @@
         }
       }
     },
+    "AI limit renewed" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite de IA renovado"
+          }
+        }
+      }
+    },
     "AI usage" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Consumo de IA"
+          }
+        }
+      }
+    },
+    "AI usage limit" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite de uso de IA"
           }
         }
       }
@@ -780,6 +794,9 @@
         }
       }
     },
+    "BRL" : {
+
+    },
     "Built-in" : {
       "localizations" : {
         "pt-BR" : {
@@ -890,6 +907,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alterar o tamanho do recipiente preserva os registros anteriores."
+          }
+        }
+      }
+    },
+    "Check for Updates…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar atualizações…"
           }
         }
       }
@@ -1267,6 +1294,16 @@
         }
       }
     },
+    "Currency" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moeda"
+          }
+        }
+      }
+    },
     "Current session" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1420,6 +1457,16 @@
         }
       }
     },
+    "Discard changes" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar alterações"
+          }
+        }
+      }
+    },
     "Disconnect" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1538,6 +1585,16 @@
         }
       }
     },
+    "Each threshold alerts once per window, even after restarting. Renewal is detected on the next successful refresh. Enable NotchFlow notifications in System Settings." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada patamar gera um aviso por janela de uso, mesmo após reiniciar. A renovação é detectada na próxima atualização bem-sucedida. Permita as notificações do NotchFlow nos Ajustes do Sistema."
+          }
+        }
+      }
+    },
     "Edit" : {
       "localizations" : {
         "pt-BR" : {
@@ -1588,6 +1645,16 @@
         }
       }
     },
+    "Enter the monthly price you actually pay. Estimate = monthly price ÷ 4.35 × weekly usage. This allocates subscription value; it is not an extra charge or a token bill. Requires a current weekly reading." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informe o preço mensal que você paga. Estimativa = preço mensal ÷ 4,35 × consumo semanal. É uma parcela do valor da assinatura, não uma cobrança extra ou por tokens. Exige uma leitura semanal atualizada."
+          }
+        }
+      }
+    },
     "Estimated focus time" : {
       "localizations" : {
         "pt-BR" : {
@@ -1597,6 +1664,9 @@
           }
         }
       }
+    },
+    "EUR" : {
+
     },
     "Every %lld minutes" : {
       "localizations" : {
@@ -1759,6 +1829,16 @@
         }
       }
     },
+    "GitHub temporarily refused the check. Try again later." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O GitHub recusou a consulta temporariamente. Tente novamente mais tarde."
+          }
+        }
+      }
+    },
     "Glass" : {
       "localizations" : {
         "pt-BR" : {
@@ -1844,6 +1924,26 @@
         }
       }
     },
+    "Inside" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interno"
+          }
+        }
+      }
+    },
+    "Keep editing" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar editando"
+          }
+        }
+      }
+    },
     "L" : {
 
     },
@@ -1874,6 +1974,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Última leitura disponível"
+          }
+        }
+      }
+    },
+    "Last recorded at %@" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Último registro às %@"
           }
         }
       }
@@ -1957,6 +2067,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uso da máquina"
+          }
+        }
+      }
+    },
+    "Main ring: session limit" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anel principal: limite da sessão"
+          }
+        }
+      }
+    },
+    "Main ring: weekly limit" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anel principal: limite semanal"
           }
         }
       }
@@ -2136,6 +2266,36 @@
     "ml" : {
 
     },
+    "Monthly price" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preço mensal"
+          }
+        }
+      }
+    },
+    "Move down" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover para baixo"
+          }
+        }
+      }
+    },
+    "Move up" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover para cima"
+          }
+        }
+      }
+    },
     "Native Liquid Glass on macOS 26 or later; translucent material on earlier versions. Respects Reduce Transparency." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2260,6 +2420,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sem projeto"
+          }
+        }
+      }
+    },
+    "No public release is available. Releases must be accessible without signing in." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma versão pública disponível. As releases precisam estar acessíveis sem login."
           }
         }
       }
@@ -2472,6 +2642,26 @@
         }
       }
     },
+    "Notify when a limit renews" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avisar quando um limite renovar"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativado"
+          }
+        }
+      }
+    },
     "One clear next step" : {
       "localizations" : {
         "pt-BR" : {
@@ -2500,6 +2690,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abrir ao iniciar sessão"
+          }
+        }
+      }
+    },
+    "Open in New Window" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir em nova janela"
           }
         }
       }
@@ -2597,6 +2797,16 @@
         }
       }
     },
+    "Outside" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Externo"
+          }
+        }
+      }
+    },
     "Pause" : {
       "localizations" : {
         "pt-BR" : {
@@ -2633,6 +2843,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tocar"
+          }
+        }
+      }
+    },
+    "Play alert sound" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocar som de alerta"
           }
         }
       }
@@ -2896,6 +3116,16 @@
         }
       }
     },
+    "Renews in %@" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renova em %@"
+          }
+        }
+      }
+    },
     "Repeat" : {
       "localizations" : {
         "pt-BR" : {
@@ -3008,6 +3238,16 @@
         }
       }
     },
+    "Rings and renewal" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anéis e renovação"
+          }
+        }
+      }
+    },
     "Run this command in your terminal and finish signing in through the coding tool. Return here when you are done." : {
       "localizations" : {
         "pt-BR" : {
@@ -3049,6 +3289,16 @@
         }
       }
     },
+    "Save changes before closing?" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar alterações antes de fechar?"
+          }
+        }
+      }
+    },
     "Save settings" : {
       "localizations" : {
         "pt-BR" : {
@@ -3081,6 +3331,7 @@
       }
     },
     "Search" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -3132,6 +3383,16 @@
         }
       }
     },
+    "Session alerts at 80% and 100%" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertas de sessão em 80% e 100%"
+          }
+        }
+      }
+    },
     "Session expired. Open the coding tool to renew your login." : {
       "localizations" : {
         "pt-BR" : {
@@ -3163,6 +3424,7 @@
       }
     },
     "Settings saved" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -3213,6 +3475,16 @@
         }
       }
     },
+    "Show percentage" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exibir porcentagem"
+          }
+        }
+      }
+    },
     "Show the notch on" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3220,6 +3492,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar o notch em"
+          }
+        }
+      }
+    },
+    "Show time until renewal" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exibir tempo até a renovação"
           }
         }
       }
@@ -3400,6 +3682,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Parar foco"
+          }
+        }
+      }
+    },
+    "Subscription cost estimate" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimativa de custo da assinatura"
           }
         }
       }
@@ -3613,6 +3905,16 @@
         }
       }
     },
+    "The thin ring shows the other allowance. Gray rings mean no reading; faded rings show an outdated reading." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O anel fino mostra a outra cota. Anéis cinza indicam ausência de leitura; anéis esmaecidos indicam uma leitura desatualizada."
+          }
+        }
+      }
+    },
     "This account did not report usage limits." : {
       "localizations" : {
         "pt-BR" : {
@@ -3659,6 +3961,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hora de uma pausa."
+          }
+        }
+      }
+    },
+    "Time remaining" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tempo restante"
           }
         }
       }
@@ -3857,6 +4169,16 @@
         }
       }
     },
+    "Undo" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desfazer"
+          }
+        }
+      }
+    },
     "Undo last water entry" : {
       "localizations" : {
         "pt-BR" : {
@@ -3928,6 +4250,16 @@
         }
       }
     },
+    "Usage alerts" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertas de consumo"
+          }
+        }
+      }
+    },
     "Usage is refreshed every 2 minutes while NotchFlow is open. These services use internal endpoints that may change. Credentials are read only and never copied into NotchFlow data." : {
       "localizations" : {
         "pt-BR" : {
@@ -3938,12 +4270,25 @@
         }
       }
     },
+    "USD" : {
+
+    },
     "Use a different folder only for a custom profile. macOS may require folder or Keychain permission to read an existing login." : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Use outra pasta apenas para um perfil personalizado. O macOS pode exigir permissão da pasta ou das Chaves para ler um login existente."
+          }
+        }
+      }
+    },
+    "Used this window (estimate)" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consumido nesta janela (estimativa)"
           }
         }
       }
@@ -4065,6 +4410,26 @@
         }
       }
     },
+    "Weekly alerts at 80% and 100%" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertas semanais em 80% e 100%"
+          }
+        }
+      }
+    },
+    "Weekly allowance value" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valor da cota semanal"
+          }
+        }
+      }
+    },
     "Weekly goal" : {
       "localizations" : {
         "pt-BR" : {
@@ -4092,6 +4457,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Limite semanal"
+          }
+        }
+      }
+    },
+    "Weekly limit in main ring" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite semanal no anel principal"
+          }
+        }
+      }
+    },
+    "Weekly ring" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anel semanal"
           }
         }
       }
@@ -4308,6 +4693,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suas tarefas nunca saem do seu Mac."
+          }
+        }
+      }
+    },
+    "Your unsaved changes will be lost if you discard them." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As alterações não salvas serão perdidas se você descartá-las."
           }
         }
       }

@@ -3,6 +3,9 @@ import SwiftUI
 
 @MainActor
 final class AIUsageWindowController: NSObject, NSWindowDelegate {
+    private let focus: FocusTimer
+    init(focus: FocusTimer) { self.focus = focus }
+
     private var window: NSWindow?
     var onClose: (() -> Void)?
 
@@ -14,7 +17,7 @@ final class AIUsageWindowController: NSObject, NSWindowDelegate {
             window.title = String(localized: "AI usage")
             window.isReleasedWhenClosed = false
             window.contentMinSize = NSSize(width: 640, height: 550)
-            window.contentView = NSHostingView(rootView: AIUsageWindowView())
+            window.contentView = NSHostingView(rootView: AIUsageWindowView().environment(\.flowFocusTimer, focus))
             window.delegate = self
             window.center()
             self.window = window

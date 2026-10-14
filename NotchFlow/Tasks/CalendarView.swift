@@ -82,7 +82,7 @@ struct CalendarView: View {
             VStack(spacing: 2) {
                 Text("\(cal.component(.day, from: day))")
                     .font(.system(size: 12, weight: isSelected || isToday ? .bold : .regular).monospacedDigit())
-                    .foregroundStyle(isSelected ? .white : Theme.textPrimary)
+                    .foregroundStyle(isSelected ? Theme.onAccent : Theme.textPrimary)
                 // Planned days retain their marker inside the selected tile.
                 Circle()
                     .fill(dotColor(isToday: isToday, isBusy: busyDays.contains(cal.startOfDay(for: day)),
@@ -107,7 +107,7 @@ struct CalendarView: View {
     }
 
     private func dotColor(isToday: Bool, isBusy: Bool, isSelected: Bool) -> Color {
-        if isSelected { return isBusy ? .white.opacity(0.8) : .clear }
+        if isSelected { return isBusy ? Theme.onAccent.opacity(0.8) : .clear }
         return isBusy ? Theme.accent : .clear
     }
 

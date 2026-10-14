@@ -1,12 +1,13 @@
 import AppKit
 import SwiftUI
 
-/// Owns the standalone "Tasks" window (calendar + day list + add form).
+/// Owns the main workspace, preserving navigation state across all overview screens.
 @MainActor
 final class TasksWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private let store: Store
     private let focus: FocusTimer
+    private let navigation = WorkspaceNavigation()
 
     /// Fires when the window is about to close. The app delegate uses this to
     /// drop the activation policy back to `.accessory` when the last user-
@@ -18,19 +19,20 @@ final class TasksWindowController: NSObject, NSWindowDelegate {
         self.focus = focus
     }
 
-    func show() {
+    func show(_ destination: WorkspaceDestination = .tasks) {
+        navigation.select(destination)
         if window == nil {
-            let root = TasksWindowView()
+            let root = TasksWindowView(navigation: navigation)
                 .safeAreaInset(edge: .bottom, spacing: 0) { StorePersistenceBanner() }
                 .environmentObject(store)
                 .environmentObject(focus)
 
             let win = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 900, height: 640),
+                contentRect: NSRect(x: 0, y: 0, width: 1020, height: 740),
                 styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                 backing: .buffered, defer: false)
             win.isReleasedWhenClosed = false   // ARC owns the window; avoid AppKit's extra release on close
-            win.title = "Tasks"
+            win.title = "NotchFlow"
             win.titlebarAppearsTransparent = true
             win.titleVisibility = .hidden
             // Only the top titlebar strip moves the window. Background dragging
@@ -38,11 +40,12 @@ final class TasksWindowController: NSObject, NSWindowDelegate {
             win.isMovableByWindowBackground = false
             win.backgroundColor = .windowBackgroundColor
             win.contentView = NSHostingView(rootView: root)
-            win.contentMinSize = NSSize(width: 840, height: 600)
+            win.contentMinSize = NSSize(width: 940, height: 680)
             win.delegate = self
             window = win
+            if !win.setFrameUsingName("NotchFlowWorkspace") { centerOnActiveScreen() }
+            win.setFrameAutosaveName("NotchFlowWorkspace")
         }
-        centerOnActiveScreen()
         NSApp.activate()
         window?.makeKeyAndOrderFront(nil)
     }

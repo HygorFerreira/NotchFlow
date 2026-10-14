@@ -2,6 +2,7 @@ import SwiftUI
 import Charts
 
 struct WeeklySummaryView: View {
+    @Environment(\.workspaceNavigation) private var workspace
     @EnvironmentObject private var store: Store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selectedWeek = Date()
@@ -37,7 +38,7 @@ struct WeeklySummaryView: View {
                 HStack(spacing: 12) {
                     metric("Focus time", value: duration(summary.totalSeconds), symbol: "timer", color: Theme.accent)
                     metric("Completed tasks", value: "\(summary.completedTasks)", symbol: "checkmark.circle", color: Theme.success)
-                    metric("Completed blocks", value: "\(summary.completedBlocks)", symbol: "square.stack", color: .purple)
+                    metric("Completed blocks", value: "\(summary.completedBlocks)", symbol: "square.stack", color: Theme.warm)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
@@ -116,24 +117,14 @@ struct WeeklySummaryView: View {
             }
             .padding(24)
         }
-        .frame(minWidth: 620, minHeight: 600)
+        .frame(minWidth: workspace == nil ? 620 : 0, minHeight: workspace == nil ? 600 : 0)
         .background(Theme.windowBackground)
         .safeAreaInset(edge: .top, spacing: 0) { FlowWindowNavigation(current: .summary) }
         .flowAppearance()
     }
 
     private func metric(_ title: LocalizedStringKey, value: String, symbol: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Image(systemName: symbol)
-                .font(.system(size: 15, weight: .semibold)).foregroundStyle(color)
-                .frame(width: 32, height: 32)
-                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
-            Text(title).font(.caption).foregroundStyle(.secondary)
-            Text(value).font(.title2.bold()).monospacedDigit()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .flowSurface()
+        FlowMetricCard(title: title, value: value, symbol: symbol, color: color)
     }
 
     private func goalFraction(_ summary: WeeklySummary) -> Double {

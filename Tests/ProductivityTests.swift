@@ -20,6 +20,16 @@ struct ProductivityTests {
         defer { try? fm.removeItem(at: root) }
         let store = makeStore(fileURL: root.appendingPathComponent("data.json"))
 
+        let navigation = WorkspaceNavigation()
+        precondition(navigation.destination == .tasks && navigation.visited == [.tasks])
+        navigation.select(.water)
+        navigation.select(.ai)
+        navigation.select(.tasks)
+        precondition(navigation.destination == .tasks && navigation.visited == [.tasks, .water, .ai])
+        navigation.select(.tasks)
+        precondition(navigation.visited.count == 3, "Revisiting screens must retain their identities without adding duplicates")
+        print("PASS: workspace destinations, lazy visits and stable navigation identities")
+
         // Missing new keys must decode existing user files without resetting them.
         let oldTask = Task(title: "Legacy", sortOrder: 1024)
         var legacy = try JSONSerialization.jsonObject(with: JSONEncoder().encode(oldTask)) as! [String: Any]
@@ -59,6 +69,59 @@ struct ProductivityTests {
         editStore.moveTasks(in: beforeDrag, from: IndexSet(integer: 9), to: 0)
         editStore.moveTasks(in: beforeDrag, from: IndexSet(integer: 0), to: 9)
         precondition(editStore.tasks == beforeDrag, "Stale drag indices must not crash or mutate tasks")
+
+        // Accessible reordering uses the same order as dragging and respects group boundaries.
+        let reorderStore = makeStore(fileURL: root.appendingPathComponent("accessible-order.json"))
+        for title in ["First", "Second", "Third", "Completed"] { reorderStore.add(title: title, date: nil) }
+        reorderStore.toggleDone(reorderStore.tasks[3])
+        let third = reorderStore.unscheduled[2]
+        reorderStore.moveTask(third, in: reorderStore.unscheduled, by: -1)
+        precondition(reorderStore.unscheduled.map(\.title) == ["First", "Third", "Second", "Completed"])
+        reorderStore.moveTask(third, in: reorderStore.unscheduled, by: 1)
+        precondition(reorderStore.unscheduled.map(\.title) == ["First", "Second", "Third", "Completed"])
+        let beforeInvalidMove = reorderStore.tasks
+        reorderStore.moveTask(reorderStore.unscheduled[0], in: reorderStore.unscheduled, by: -1)
+        reorderStore.moveTask(third, in: reorderStore.unscheduled, by: 1)
+        reorderStore.moveTask(third, in: [], by: -1)
+        reorderStore.moveTask(third, in: reorderStore.unscheduled, by: Int.max)
+        precondition(reorderStore.tasks == beforeInvalidMove)
+        precondition(makeStore(fileURL: reorderStore.dataFileURL).unscheduled == reorderStore.unscheduled)
+        print("PASS: accessible reorder direction, boundaries, completion groups, invalid offsets and persistence")
+
+        // Native undo restores the live task, persists it, and re-arms reminders.
+        var undoSchedules: [[Task]] = []
+        let undoStore = Store(fileURL: root.appendingPathComponent("undo.json"),
+                              taskReminderScheduler: { undoSchedules.append($0) })
+        undoStore.add(title: "Before")
+        undoStore.add(title: "Restore me", project: "Work", tags: ["review"])
+        let staleDraft = undoStore.tasks[1]
+        undoStore.recordSession(FocusSession(taskId: staleDraft.id, startedAt: date(6),
+            endedAt: date(6).addingTimeInterval(90), completed: false))
+        let liveTask = undoStore.tasks[1]
+        undoStore.add(title: "After")
+        let manager = UndoManager()
+        manager.groupsByEvent = false
+        manager.beginUndoGrouping()
+        undoStore.delete(staleDraft, undoManager: manager)
+        manager.endUndoGrouping()
+        precondition(manager.canUndo && !undoStore.tasks.contains { $0.id == liveTask.id })
+        undoStore.add(title: "Unrelated new task")
+        manager.undo()
+        precondition(undoStore.tasks[1] == liveTask, "Undo must restore live focus time and metadata, not the stale draft")
+        precondition(undoStore.tasks.last?.title == "Unrelated new task", "Undo must preserve unrelated edits")
+        precondition(undoSchedules.last == undoStore.tasks, "Undo must reschedule task reminders")
+        precondition(makeStore(fileURL: undoStore.dataFileURL).tasks == undoStore.tasks, "Undo must persist the restored task")
+        precondition(manager.canRedo)
+        manager.redo()
+        precondition(!undoStore.tasks.contains { $0.id == liveTask.id })
+        manager.undo()
+        precondition(undoStore.tasks.filter { $0.id == liveTask.id }.count == 1)
+        var deactivations = 0
+        undoStore.onTaskDeactivated = { _, _ in deactivations += 1 }
+        let absent = Task(title: "Absent")
+        undoStore.delete(absent, undoManager: manager)
+        precondition(deactivations == 0, "Deleting an absent task must be a no-op")
+        print("PASS: native deletion undo/redo, live metadata, unrelated edits, reminder rescheduling and persistence")
 
         precondition(Task.normalizedTags("#Swift, swift, Work, , #work ") == ["swift", "work"])
         let daily = TaskRecurrence(frequency: .daily)

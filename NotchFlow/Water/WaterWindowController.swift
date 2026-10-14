@@ -5,10 +5,12 @@ import SwiftUI
 final class WaterWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private let store: Store
+    private let focus: FocusTimer
     var onClose: (() -> Void)?
 
-    init(store: Store) {
+    init(store: Store, focus: FocusTimer) {
         self.store = store
+        self.focus = focus
     }
 
     func show() {
@@ -16,6 +18,7 @@ final class WaterWindowController: NSObject, NSWindowDelegate {
             let root = WaterWindowView()
                 .safeAreaInset(edge: .bottom, spacing: 0) { StorePersistenceBanner() }
                 .environmentObject(store)
+                .environment(\.flowFocusTimer, focus)
 
             let window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 680, height: 740),

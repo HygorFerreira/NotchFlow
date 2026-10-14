@@ -41,6 +41,10 @@ jobs:
         if: matrix.variant == 'Debug'
         run: bash scripts/test-ai-usage.sh
 
+      - name: Test update checker
+        if: matrix.variant == 'Debug'
+        run: bash scripts/test-updates.sh
+
       - name: Test focus timer
         if: matrix.variant == 'Debug'
         run: bash scripts/test-focus.sh

@@ -52,6 +52,50 @@ struct AIUsageTests {
                 preconditionFailure("Missing readings must not become zero usage")
             } catch AIUsageError.noLimits {}
         }
+        precondition(codex.weeklyWindow?.usedPercent == 73)
+        precondition(codex.primaryWindow(weekly: false)?.usedPercent == 42)
+        precondition(codex.primaryWindow(weekly: true)?.usedPercent == 73)
+        var preferences = AIUsagePreferences()
+        preferences.monthlyPrice = 100
+        let cost = preferences.weeklyCost(for: codex, at: now)!
+        precondition(abs(cost - 100 / 4.35 * 0.73) < 0.00001)
+        precondition(preferences.weeklyCost(for: codex, at: now.addingTimeInterval(301)) == nil)
+        precondition(preferences.weeklyCost(for: partial, at: now) == nil)
+        preferences.monthlyPrice = .nan
+        precondition(preferences.weeklyCost(for: codex, at: now) == nil)
+        preferences.sessionAlerts = true
+        preferences.weeklyAlerts = true
+        preferences.resetAlerts = true
+        func reading(_ percent: Double, reset: Date, fetched: Date = now) -> AIUsageReading {
+            AIUsageReading(windows: [AIUsageWindow(id: "session", title: "Current session",
+                                                   usedPercent: percent, resetsAt: reset)], fetchedAt: fetched)
+        }
+        var alertState = AIUsageAlertState()
+        let reset = now.addingTimeInterval(3600)
+        precondition(alertState.consume(reading(79, reset: reset), provider: .codex, preferences: preferences, now: now).isEmpty)
+        precondition(alertState.consume(reading(80, reset: reset), provider: .codex, preferences: preferences, now: now).map(\.kind) == [.threshold(80)])
+        precondition(alertState.consume(reading(79, reset: reset), provider: .codex, preferences: preferences, now: now).isEmpty)
+        precondition(alertState.consume(reading(81, reset: reset), provider: .codex, preferences: preferences, now: now).isEmpty)
+        // Restart preserves the high-water mark.
+        alertState = try JSONDecoder().decode(AIUsageAlertState.self, from: JSONEncoder().encode(alertState))
+        precondition(alertState.consume(reading(90, reset: reset), provider: .codex, preferences: preferences, now: now).isEmpty)
+        precondition(alertState.consume(reading(100, reset: reset), provider: .codex, preferences: preferences, now: now).map(\.kind) == [.threshold(100)])
+        precondition(alertState.consume(reading(110, reset: reset), provider: .codex, preferences: preferences, now: now).isEmpty)
+        let next = reset.addingTimeInterval(10)
+        let newReset = next.addingTimeInterval(3600)
+        precondition(alertState.consume(reading(5, reset: newReset, fetched: next), provider: .codex, preferences: preferences, now: next).map(\.kind) == [.reset])
+        precondition(alertState.consume(reading(80, reset: newReset, fetched: next), provider: .codex, preferences: preferences, now: next).map(\.kind) == [.threshold(80)])
+        var staleState = AIUsageAlertState()
+        precondition(staleState.consume(reading(100, reset: reset, fetched: now.addingTimeInterval(-600)), provider: .codex, preferences: preferences, now: now).isEmpty)
+        precondition(staleState.windows.isEmpty)
+        // Session and weekly limits alert independently; an exhausted first reading alerts once.
+        var bothState = AIUsageAlertState()
+        let both = AIUsageReading(windows: [
+            AIUsageWindow(id: "session", title: "Current session", usedPercent: 100, resetsAt: reset),
+            AIUsageWindow(id: "weekly", title: "Weekly limit", usedPercent: 85, resetsAt: reset)
+        ], fetchedAt: now)
+        precondition(bothState.consume(both, provider: .claude, preferences: preferences, now: now).map(\.kind) == [.threshold(100), .threshold(80)])
+        precondition(bothState.consume(both, provider: .claude, preferences: preferences, now: now).isEmpty)
         let encoded = try JSONEncoder().encode(codex)
         let restored = try JSONDecoder().decode(AIUsageReading.self, from: encoded)
         precondition(restored == codex)
@@ -64,11 +108,33 @@ struct AIUsageTests {
         config.protocolClasses = [UsageStub.self]
         let monitor = AIUsageMonitor(defaults: defaults, session: URLSession(configuration: config),
                                     credentialData: { _ in Data(#"{"tokens":{"access_token":"test-token","account_id":"test-account"}}"#.utf8) })
+        var invalidPreferences = AIUsagePreferences()
+        invalidPreferences.monthlyPrice = -.infinity
+        invalidPreferences.currency = "invalid"
+        monitor.updatePreferences(.codex, invalidPreferences)
+        precondition(monitor.preferences[.codex]?.monthlyPrice == 0)
+        precondition(monitor.preferences[.codex]?.currency == "BRL")
         UsageStub.body = Data(#"{"rate_limit":{"primary_window":{"used_percent":42}}}"#.utf8)
         await monitor.refresh(.codex)
         precondition(monitor.readings[.codex]?.windows.first?.usedPercent == 42)
         precondition(monitor.errors[.codex] == nil)
         precondition(UsageStub.authorization == "Bearer test-token")
+        var alertPreferences = monitor.preferences[.codex]!
+        alertPreferences.sessionAlerts = true
+        alertPreferences.monthlyPrice = 120
+        monitor.updatePreferences(.codex, alertPreferences)
+        var delivered: [AIUsageAlert] = []
+        monitor.onAlert = { delivered.append($0) }
+        UsageStub.body = Data(#"{"rate_limit":{"primary_window":{"used_percent":81}}}"#.utf8)
+        await monitor.refresh(.codex)
+        await monitor.refresh(.codex)
+        precondition(delivered.map(\.kind) == [.threshold(80)])
+        let restarted = AIUsageMonitor(defaults: defaults, session: URLSession(configuration: config),
+            credentialData: { _ in Data(#"{"tokens":{"access_token":"test-token","account_id":"test-account"}}"#.utf8) })
+        restarted.onAlert = { delivered.append($0) }
+        await restarted.refresh(.codex)
+        precondition(delivered.count == 1)
+        precondition(restarted.preferences[.codex]?.monthlyPrice == 120)
         let saved = defaults.data(forKey: "aiUsage.codex.reading")!
         precondition(!String(decoding: saved, as: UTF8.self).contains("test-token"))
         UsageStub.status = 401

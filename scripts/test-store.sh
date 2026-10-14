@@ -7,6 +7,7 @@ swiftc -parse-as-library \
   -module-cache-path "$test_dir/module-cache" \
   NotchFlow/Models/*.swift \
   NotchFlow/Focus/NotificationService.swift \
+  NotchFlow/Design/Color+Hex.swift \
   Tests/StorePersistenceTests.swift \
   -o "$test_dir/store-tests"
 "$test_dir/store-tests"

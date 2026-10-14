@@ -10,9 +10,16 @@ import SwiftUI
 /// The PNGs land in the app's temporary folder (the sandbox allows nothing else); the path is printed.
 @MainActor
 enum Snapshots {
-    static var isRequested: Bool { UserDefaults.standard.bool(forKey: "snapshot") }
+    static var isRequested: Bool {
+        UserDefaults.standard.bool(forKey: "snapshot") || UserDefaults.standard.bool(forKey: "preview")
+    }
+    private static var previewWindows: [NSWindow] = []
 
     static func run() {
+        if UserDefaults.standard.bool(forKey: "preview") {
+            showPreview()
+            return
+        }
         let out = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("snapshots", isDirectory: true)
         try? FileManager.default.removeItem(at: out)
         try? FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
@@ -143,6 +150,59 @@ enum Snapshots {
 
         print("SNAPSHOTS \(out.path)")
         exit(0)
+    }
+
+    /// Live, isolated preview: native glass is composited by WindowServer and
+    /// cannot always be captured accurately through NSView.cacheDisplay.
+    private static func showPreview() {
+        let store = demoStore()
+        let focus = FocusTimer(store: store)
+        NSApp.setActivationPolicy(.regular)
+        let tasks = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 960, height: 720),
+                             styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                             backing: .buffered, defer: false)
+        tasks.title = "NotchFlow · Preview"
+        tasks.isReleasedWhenClosed = false
+        tasks.contentViewController = NSHostingController(rootView:
+            TasksWindowView().environmentObject(store).environmentObject(focus))
+        tasks.setContentSize(NSSize(width: 960, height: 720))
+        tasks.center()
+        let navigation = SettingsNavigation()
+        let settings = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 820, height: 650),
+                                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                                backing: .buffered, defer: false)
+        settings.title = "Settings · Preview"
+        settings.isReleasedWhenClosed = false
+        settings.contentViewController = NSHostingController(rootView:
+            SettingsWindowView().environmentObject(store).environment(navigation))
+        settings.setContentSize(NSSize(width: 820, height: 650))
+        settings.center()
+        // Additional overview windows share the demo timer for cross-window UX checks.
+        store.medications.append(Medication(name: "Vitamina D", dosage: "1000 UI", reminderTimes: [Date()]))
+        let water = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 680, height: 740),
+                             styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                             backing: .buffered, defer: false)
+        water.title = "Water · Preview"
+        water.isReleasedWhenClosed = false
+        water.contentViewController = NSHostingController(rootView:
+            WaterWindowView().environmentObject(store).environment(\.flowFocusTimer, focus))
+        water.setContentSize(NSSize(width: 680, height: 740))
+        water.center()
+        let medications = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 740, height: 600),
+                                   styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                                   backing: .buffered, defer: false)
+        medications.title = "Medications · Preview"
+        medications.isReleasedWhenClosed = false
+        medications.contentViewController = NSHostingController(rootView:
+            MedicationsView().environmentObject(store).environment(\.flowFocusTimer, focus))
+        medications.setContentSize(NSSize(width: 740, height: 600))
+        medications.center()
+        previewWindows = [tasks, settings, water, medications]
+        water.orderFront(nil)
+        medications.orderFront(nil)
+        settings.orderFront(nil)
+        tasks.makeKeyAndOrderFront(nil)
+        NSApp.activate()
     }
 
     private static func notch(_ vm: NotchViewModel) -> some View {

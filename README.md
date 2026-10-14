@@ -14,6 +14,7 @@ Feito com **SwiftUI e AppKit**, para **macOS 14 ou superior**, com interface em 
 
 Atualizado em **10 de outubro de 2026**. Versão configurada no projeto: **1.0.0**, build **1**. As novidades abaixo estão no código em desenvolvimento; não indicam uma nova versão publicada.
 
+- **Anéis, alertas e custos de IA:** Codex e Claude com anéis de sessão e semana (interno, externo ou desativado), seleção do limite principal, porcentagens e tempo até a renovação. Alertas opcionais em 80% e 100%, aviso de renovação e som configurável por serviço. Estimativa do valor consumido da assinatura com preço mensal informado por você, em BRL, USD ou EUR.
 - **Consumo de IA:** acompanhamento dos limites das assinaturas do Codex e Claude Code, com login existente, horários de renovação e atualização automática a cada dois minutos. O painel identifica leituras antigas, sessões expiradas e falhas de conexão.
 - **Lembretes no notch:** avisos de água e medicamentos em uma pílula com ações rápidas **Bebi** e **Tomei**, além de intervalo de hidratação configurável.
 - **Aparência:** Liquid Glass opcional, transparência ajustável, melhorias no calendário e no resumo semanal, com respeito às preferências de acessibilidade do macOS.
@@ -87,6 +88,8 @@ bash scripts/run.sh release
 
 O aplicativo aparece na barra de menus. Use o ícone de ampulheta para abrir tarefas, água, medicamentos, resumo semanal ou ajustes. O ícone do Dock aparece quando uma janela é aberta.
 
+A janela principal reúne **Tarefas, Medicamentos, Água, Resumo semanal e Consumo de IA** na mesma barra lateral. Trocar de área preserva a busca, os filtros e o estado das telas já visitadas enquanto a janela permanece aberta. Selecionar uma data no calendário abre as tarefas daquele dia. Para trabalhar lado a lado, use **Abrir em nova janela** na barra de ferramentas ou no menu de contexto da área desejada.
+
 ## Primeiros passos
 
 1. Abra **Tarefas**, escolha uma data e cadastre sua primeira atividade.
@@ -117,6 +120,10 @@ Quando o sandbox bloquear a leitura do Codex, **Permitir acesso…** solicita um
 
 O painel mostra os limites informados pela assinatura, incluindo sessão e semana quando disponíveis. As credenciais são somente lidas para consultar o respectivo serviço. Desativar o interruptor interrompe as consultas e apaga as leituras e permissões de pasta guardadas pelo NotchFlow. Sessões expiradas, falhas de rede e leituras antigas aparecem explicitamente. Os endpoints internos dos serviços podem mudar; conexões baseadas apenas em chaves de API não oferecem esses limites de assinatura.
 
+Em **Consumo de IA…**, expanda **Anéis e renovação**, **Alertas de consumo** ou **Estimativa de custo da assinatura** em cada serviço. O atalho `⌘⇧I` abre essa janela quando o NotchFlow está ativo. Os alertas começam desativados; ao ativá-los, permita as notificações do NotchFlow no macOS. Cada patamar gera um aviso por janela de uso, com estado preservado ao reiniciar; desativar o serviço limpa esse estado. A renovação é identificada na próxima consulta bem-sucedida.
+
+A estimativa usa **preço mensal ÷ 4,35 × porcentagem da cota semanal consumida**. Informe o valor que você realmente paga. O resultado é uma parcela estimada do valor da assinatura, não uma cobrança adicional, uma fatura por tokens ou um custo por projeto. Leituras antigas ou falhas de conexão ocultam a estimativa. Preços e preferências ficam salvos localmente, sem consulta a catálogos externos.
+
 Os registros ficam localmente em `Application Support/NotchFlow/data.json`, no diretório disponibilizado pelo macOS para a execução do app. Em builds com sandbox, esse diretório fica dentro do contêiner do aplicativo. Não há conta, publicidade ou analytics.
 
 Desinstalar apenas o aplicativo não garante a exclusão dos dados. Veja a [política de privacidade](PRIVACY.md) e as instruções de backup no [guia de uso](docs/USO.md).
@@ -130,6 +137,7 @@ bash scripts/test-store.sh
 bash scripts/test-productivity.sh
 bash scripts/test-ai-usage.sh
 bash scripts/test-focus.sh
+bash scripts/test-updates.sh
 ```
 
 Os scripts compilam executáveis Swift independentes. O fluxo de integração contínua em [build.yml](.github/workflows/build.yml) executa essas quatro suítes e compila as configurações Debug, Release e a variante `APPSTORE`.
@@ -139,7 +147,7 @@ Os scripts compilam executáveis Swift independentes. O fluxo de integração co
 - [Histórico de alterações](CHANGELOG.md): melhorias atuais e marcos anteriores.
 - [Textos para a App Store](appstore/LISTING.md): rascunho em português e inglês.
 
-O código está versionado no repositório privado do GitHub. Um canal público de downloads, URLs de suporte e publicação na App Store ainda precisam ser configurados. Na distribuição direta, o app consulta as releases de `HygorFerreira/NotchFlow` ao iniciar; a verificação manual fica em **Ajustes > Sobre > Atualizações > Verificar agora**. Releases estáveis com versão superior à instalada oferecem um botão para abrir a página de download. A consulta depende de releases acessíveis pela API pública do GitHub; um repositório privado sem autenticação gera uma mensagem de falha. Na compilação `APPSTORE`, as atualizações são administradas pela loja.
+O código está versionado no repositório privado do GitHub. Um canal público de downloads, URLs de suporte e publicação na App Store ainda precisam ser configurados. Na distribuição direta, o app consulta as releases de `HygorFerreira/NotchFlow` ao iniciar; a verificação manual fica no menu **Buscar atualizações…** ou em **Ajustes > Sobre > Atualizações > Verificar agora**. Releases estáveis com versão superior à instalada oferecem um botão para abrir a página de download. A consulta depende de releases acessíveis pela API pública do GitHub; um repositório privado sem autenticação gera uma mensagem de falha. Na compilação `APPSTORE`, as atualizações são administradas pela loja.
 
 ## Licença
 

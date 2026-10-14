@@ -12,6 +12,7 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "NotchFlow", category: "MedicationReminders")
     @MainActor private var reminderOperation: _Concurrency.Task<Void, Never>?
     @MainActor @Published private(set) var taskReminderError: String?
+    @MainActor var onOpenAIUsage: (() -> Void)?
     @MainActor var onOpenTask: ((UUID) -> Void)?
     @MainActor var onStartTask: ((UUID) -> Void)?
     private static let taskCategory = "task.start"
@@ -36,6 +37,10 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
 
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse) async {
+        if response.notification.request.content.categoryIdentifier == "ai.usage" {
+            await MainActor.run { self.onOpenAIUsage?() }
+            return
+        }
         guard response.notification.request.content.categoryIdentifier == Self.taskCategory,
               let rawID = response.notification.request.content.userInfo["taskID"] as? String,
               let id = UUID(uuidString: rawID) else { return }
@@ -184,6 +189,23 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
 
     private func reminderIdentifier(medicationID: UUID, index: Int) -> String {
         "\(reminderPrefix(medicationID: medicationID))\(index)"
+    }
+
+    func postAIUsageAlert(_ alert: AIUsageAlert) {
+        let content = UNMutableNotificationContent()
+        switch alert.kind {
+        case .threshold(let percent):
+            content.title = String(localized: "AI usage limit")
+            content.body = "\(alert.provider.name) · \(alert.window.title.localized): \(percent)%"
+        case .reset:
+            content.title = String(localized: "AI limit renewed")
+            content.body = "\(alert.provider.name) · \(alert.window.title.localized)"
+        }
+        content.categoryIdentifier = "ai.usage"
+        content.sound = alert.sound ? .default : nil
+        UNUserNotificationCenter.current().add(UNNotificationRequest(
+            identifier: "ai.usage.\(alert.provider.rawValue).\(alert.window.id).\(UUID())",
+            content: content, trigger: nil), withCompletionHandler: nil)
     }
 
     /// Post the "focus block complete" notification immediately. Caller

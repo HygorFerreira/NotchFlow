@@ -5,7 +5,7 @@ import LocalAuthentication
 import CryptoKit
 import Darwin
 
-/// Credentials belong to the coding tools. Only bookmarks and usage readings are persisted here.
+/// Credentials belong to the coding tools. Persist only folder grants, readings, preferences and alert state.
 @MainActor
 final class AIUsageMonitor: ObservableObject {
     static let shared = AIUsageMonitor()
@@ -13,6 +13,10 @@ final class AIUsageMonitor: ObservableObject {
     @Published private(set) var errors: [AIProvider: String] = [:]
     @Published private(set) var connected: Set<AIProvider> = []
     @Published private(set) var refreshing: Set<AIProvider> = []
+    @Published private(set) var preferences: [AIProvider: AIUsagePreferences] = [:]
+    var onAlert: ((AIUsageAlert) -> Void)?
+    private var alertStates: [AIProvider: AIUsageAlertState] = [:]
+    private var accountIDs: [AIProvider: String] = [:]
     private let defaults: UserDefaults
     private let session: URLSession
     private let credentialData: ((AIProvider) throws -> Data)?
@@ -35,6 +39,11 @@ final class AIUsageMonitor: ObservableObject {
         configuration.timeoutIntervalForRequest = 20
         self.session = session ?? URLSession(configuration: configuration, delegate: AIUsageRedirectGuard(), delegateQueue: nil)
         for provider in AIProvider.allCases {
+            preferences[provider] = defaults.data(forKey: key(provider, "preferences"))
+                .flatMap { try? JSONDecoder().decode(AIUsagePreferences.self, from: $0) } ?? AIUsagePreferences()
+            alertStates[provider] = defaults.data(forKey: key(provider, "alertState"))
+                .flatMap { try? JSONDecoder().decode(AIUsageAlertState.self, from: $0) } ?? AIUsageAlertState()
+            accountIDs[provider] = defaults.string(forKey: key(provider, "accountID"))
             if defaults.bool(forKey: key(provider, "enabled")) { connected.insert(provider) }
             bookmarks[provider] = defaults.data(forKey: key(provider, "bookmark"))
             if connected.contains(provider), let data = defaults.data(forKey: key(provider, "reading")) {
@@ -42,6 +51,14 @@ final class AIUsageMonitor: ObservableObject {
             }
             retryAfter[provider] = defaults.object(forKey: key(provider, "retry")) as? Date
         }
+    }
+
+    func updatePreferences(_ provider: AIProvider, _ value: AIUsagePreferences) {
+        var validated = value
+        validated.monthlyPrice = value.monthlyPrice.isFinite ? min(1_000_000, max(0, value.monthlyPrice)) : 0
+        if !["BRL", "USD", "EUR"].contains(value.currency) { validated.currency = "BRL" }
+        preferences[provider] = validated
+        defaults.set(try? JSONEncoder().encode(validated), forKey: key(provider, "preferences"))
     }
 
     func start() {
@@ -153,9 +170,11 @@ final class AIUsageMonitor: ObservableObject {
         errors[provider] = nil
         bookmarks[provider] = nil
         retryAfter[provider] = nil
+        alertStates[provider] = AIUsageAlertState()
+        accountIDs[provider] = nil
         refreshing.remove(provider)
         if provider == .claude { cachedClaude = nil }
-        for field in ["enabled", "reading", "bookmark", "retry"] { defaults.removeObject(forKey: key(provider, field)) }
+        for field in ["enabled", "reading", "bookmark", "retry", "alertState", "accountID"] { defaults.removeObject(forKey: key(provider, field)) }
     }
 
     func refresh(_ provider: AIProvider) async {
@@ -186,6 +205,17 @@ final class AIUsageMonitor: ObservableObject {
             guard (200..<300).contains(http.statusCode) else { throw AIUsageError.response }
             let reading = try AIUsageParser.parse(data, provider: provider)
             guard generation[provider] == version, connected.contains(provider) else { return }
+            if let account = auth.account, accountIDs[provider] != account {
+                alertStates[provider] = AIUsageAlertState()
+                accountIDs[provider] = account
+                defaults.set(account, forKey: key(provider, "accountID"))
+            }
+            var state = alertStates[provider] ?? AIUsageAlertState()
+            let alerts = state.consume(reading, provider: provider,
+                                       preferences: preferences[provider] ?? AIUsagePreferences(), now: Date())
+            alertStates[provider] = state
+            defaults.set(try? JSONEncoder().encode(state), forKey: key(provider, "alertState"))
+            alerts.forEach { onAlert?($0) }
             readings[provider] = reading
             errors[provider] = nil
             retryAfter[provider] = nil

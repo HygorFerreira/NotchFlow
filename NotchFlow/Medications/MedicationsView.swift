@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MedicationsView: View {
+    @Environment(\.workspaceNavigation) private var workspace
     @EnvironmentObject private var store: Store
     @State private var editingMedication: Medication?
     @State private var showingAddForm = false
@@ -25,7 +26,7 @@ struct MedicationsView: View {
                 medicationList
             }
         }
-        .frame(minWidth: 640, minHeight: 460)
+        .frame(minWidth: workspace == nil ? 640 : 0, minHeight: workspace == nil ? 460 : 0)
         .background(Theme.windowBackground)
         .safeAreaInset(edge: .top, spacing: 0) { FlowWindowNavigation(current: .medications) }
         .flowAppearance()
@@ -69,6 +70,12 @@ struct MedicationsView: View {
                 ForEach(store.medications) { medication in
                     MedicationRow(
                         medication: medication,
+                        lastIntake: store.medicationIntakesToday.first { $0.medicationID == medication.id },
+                        onUndo: {
+                            if let intake = store.medicationIntakesToday.first(where: { $0.medicationID == medication.id }) {
+                                store.deleteMedicationIntake(intake)
+                            }
+                        },
                         onToggle: { store.setMedicationEnabled(medication, enabled: $0) },
                         onTaken: { store.recordMedicationTaken(medication) },
                         onEdit: { editingMedication = medication },
@@ -151,6 +158,8 @@ struct MedicationsView: View {
 
 private struct MedicationRow: View {
     let medication: Medication
+    let lastIntake: MedicationIntake?
+    let onUndo: () -> Void
     let onToggle: (Bool) -> Void
     let onTaken: () -> Void
     let onEdit: () -> Void
@@ -179,6 +188,15 @@ private struct MedicationRow: View {
                 Text(timeDescription)
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.textSecondary)
+                if let lastIntake {
+                    HStack(spacing: 8) {
+                        Text("Last recorded at \(lastIntake.takenAt.formatted(date: .omitted, time: .shortened))")
+                            .foregroundStyle(Theme.success)
+                        Button("Undo", action: onUndo)
+                            .buttonStyle(.borderless)
+                    }
+                    .font(.system(size: 11))
+                }
             }
 
             Spacer()
@@ -227,6 +245,8 @@ private struct MedicationRow: View {
 struct MedicationFormView: View {
     @Environment(\.dismiss) private var dismiss
 
+    private let originalReminderTimes: [Date]
+    @State private var confirmDiscard = false
     private let medication: Medication?
     private let onSave: (String, String, [Date]) -> Void
 
@@ -243,7 +263,9 @@ struct MedicationFormView: View {
         self.onSave = onSave
         _name = State(initialValue: medication?.name ?? "")
         _dosage = State(initialValue: medication?.dosage ?? "")
-        _reminderTimes = State(initialValue: medication?.reminderTimes ?? [Self.defaultTime])
+        let times = medication?.reminderTimes ?? [Self.defaultTime]
+        originalReminderTimes = times
+        _reminderTimes = State(initialValue: times)
     }
 
     var body: some View {
@@ -317,24 +339,43 @@ struct MedicationFormView: View {
         .background(Theme.windowBackground)
         .flowAppearance()
         .onAppear { nameFocused = true }
+        .interactiveDismissDisabled(hasChanges)
+        .confirmationDialog("Save changes before closing?", isPresented: $confirmDiscard, titleVisibility: .visible) {
+            Button("Save", action: saveAndClose).disabled(!canSave)
+            Button("Discard changes", role: .destructive) { dismiss() }
+            Button("Keep editing", role: .cancel) { }
+        } message: {
+            Text("Your unsaved changes will be lost if you discard them.")
+        }
     }
 
     private var actionBar: some View {
             HStack {
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button("Cancel") {
+                    if hasChanges { confirmDiscard = true } else { dismiss() }
+                }
                     .keyboardShortcut(.cancelAction)
                     .buttonStyle(FlowButtonStyle())
-                Button("Save") {
-                    onSave(name.trimmingCharacters(in: .whitespacesAndNewlines),
-                           dosage.trimmingCharacters(in: .whitespacesAndNewlines),
-                           reminderTimes)
-                    dismiss()
-                }
+                Button("Save", action: saveAndClose)
                 .keyboardShortcut(.defaultAction)
                 .buttonStyle(FlowButtonStyle(prominent: true))
-                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(!canSave)
             }
+    }
+
+    private var hasChanges: Bool {
+        name != (medication?.name ?? "") || dosage != (medication?.dosage ?? "")
+            || reminderTimes != originalReminderTimes
+    }
+
+    private var canSave: Bool { !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    private func saveAndClose() {
+        guard canSave else { return }
+        onSave(name.trimmingCharacters(in: .whitespacesAndNewlines),
+               dosage.trimmingCharacters(in: .whitespacesAndNewlines), reminderTimes)
+        dismiss()
     }
 
     private static var defaultTime: Date {

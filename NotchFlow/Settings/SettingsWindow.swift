@@ -162,10 +162,10 @@ struct SettingsWindowView: View {
     @Environment(SettingsNavigation.self) private var navigation
 
     var body: some View {
-        HStack(spacing: 0) {
+        NavigationSplitView {
             SettingsSidebar()
-                .frame(width: 220)
-                .ignoresSafeArea(.container, edges: .top)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+        } detail: {
             Group {
                 switch navigation.page {
                 case .focus: FocusSettingsPage()
@@ -180,8 +180,11 @@ struct SettingsWindowView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .safeAreaPadding(.top, 32)
             .clipped()
         }
+        .navigationSplitViewStyle(.balanced)
+        .background(Theme.windowBackground)
         .flowAppearance()
     }
 }
@@ -190,90 +193,37 @@ struct SettingsWindowView: View {
 private struct SettingsSidebar: View {
     @Environment(SettingsNavigation.self) private var navigation
     @State private var query = ""
-    @FocusState private var isSearching: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                Image(systemName: "waveform.path").foregroundStyle(Theme.accent)
-                Text("NotchFlow").font(.system(size: 17, weight: .bold, design: .rounded))
-            }
-            .padding(.horizontal, 18)
-            .padding(.top, 48)
-            .padding(.bottom, 18)
-            searchField
-                .padding(.horizontal, 10)
-                .padding(.bottom, 10)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 2) {
-                    if query.trimmingCharacters(in: .whitespaces).isEmpty {
-                        pages
-                    } else {
-                        results
+        VStack(spacing: 0) {
+            List(selection: Binding<SettingsPageID?>(
+                get: { navigation.page },
+                set: { if let page = $0 { navigation.page = page } })) {
+                if query.trimmingCharacters(in: .whitespaces).isEmpty {
+                    ForEach(Array(SettingsPageID.sections.enumerated()), id: \.offset) { index, section in
+                        Section(index == 0 ? String(localized: "DAILY ROUTINE") : String(localized: "APPLICATION")) {
+                            ForEach(section) { page in
+                                Label {
+                                    Text(page.title.localized)
+                                        .foregroundStyle(navigation.page == page ? Color.white : Color.primary)
+                                } icon: {
+                                    SettingsIcon(symbol: page.symbol, color: page.color, size: 24)
+                                }
+                                .padding(.vertical, 3)
+                                .tag(page)
+                            }
+                        }
                     }
+                } else {
+                    results
                 }
-                .padding(.horizontal, 10)
-                .padding(.bottom, 10)
             }
-            .scrollIndicators(.never)
+            .listStyle(.sidebar)
+            .tint(Theme.accent)
+            .searchable(text: $query, placement: .sidebar)
             footer
         }
-        .frame(maxHeight: .infinity, alignment: .top)
-        .background { SidebarMaterial() }
-        .overlay(alignment: .trailing) {
-            Rectangle().fill(Color.primary.opacity(0.1)).frame(width: 1)
-        }
-        // ⌘F from anywhere in the window, as in System Settings.
-        .background {
-            Button("") { isSearching = true }
-                .keyboardShortcut("f", modifiers: .command)
-                .hidden()
-        }
-    }
-
-    private var searchField: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-            TextField("Search", text: $query)
-                .textFieldStyle(.plain)
-                .focused($isSearching)
-                .onExitCommand { query = "" }
-            if !query.isEmpty {
-                Button {
-                    query = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Clear search")
-            }
-        }
-        .font(.system(size: 13))
-        .padding(.horizontal, 9)
-        .frame(height: 30)
-        .background(
-            Capsule().fill(Color.primary.opacity(0.06))
-                .overlay(Capsule().strokeBorder(Color.primary.opacity(0.1)))
-        )
-    }
-
-    @ViewBuilder
-    private var pages: some View {
-        ForEach(Array(SettingsPageID.sections.enumerated()), id: \.offset) { index, section in
-            Text(index == 0 ? String(localized: "DAILY ROUTINE") : String(localized: "APPLICATION"))
-                .font(.system(size: 9, weight: .semibold))
-                .tracking(1.1)
-                .foregroundStyle(.secondary)
-                .padding(.leading, 10)
-                .padding(.top, index == 0 ? 4 : 16)
-                .padding(.bottom, 6)
-            ForEach(section) { page in
-                SidebarRow(page: page, isSelected: navigation.page == page) {
-                    navigation.page = page
-                }
-            }
-        }
+        .navigationTitle("NotchFlow")
     }
 
     @ViewBuilder
@@ -338,31 +288,18 @@ private struct SidebarRow: View {
                 SettingsIcon(symbol: page.symbol, color: page.color, size: 24)
                 Text(page.title.localized)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                    .foregroundStyle(isSelected ? Color.white : Color.primary)
+                    .foregroundStyle(Color.primary)
                 Spacer()
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 9)
             .background(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(isSelected ? Color.accentColor : Color.clear)
+                    .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
             )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
-}
-
-/// The sidebar's glass: the desktop behind the window shows through, softened.
-private struct SidebarMaterial: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = .sidebar
-        view.blendingMode = .behindWindow
-        view.state = .followsWindowActiveState
-        return view
-    }
-
-    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
 }

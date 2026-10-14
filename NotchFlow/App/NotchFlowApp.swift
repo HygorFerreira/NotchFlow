@@ -29,6 +29,7 @@ struct NotchFlowApp: App {
                 .keyboardShortcut("m")
             Button("Water…") { appDelegate.showWaterWindow() }
             Button("AI usage…") { appDelegate.showAIUsageWindow() }
+                .keyboardShortcut("i", modifiers: [.command, .shift])
             Button(focusMenu.isFocusing ? "Stop focus" : "Start focus") {
                 appDelegate.focus.toggleStartStop()
             }
@@ -36,6 +37,12 @@ struct NotchFlowApp: App {
             Divider()
             Button("Settings…") { appDelegate.showSettingsWindow() }
                 .keyboardShortcut(",")
+            if UpdateChecker.isEnabled {
+                Button(updateChecker.isChecking ? "Checking…" : "Check for Updates…") {
+                    appDelegate.showSettingsWindow(.about)
+                    updateChecker.checkForUpdates(force: true)
+                }.disabled(updateChecker.isChecking)
+            }
             if let update = updateChecker.availableUpdate {
                 Button("Update to \(update.version) available…") {
                     updateChecker.openReleasePage()
@@ -101,9 +108,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.shared = self
         #if DEBUG
-        if Snapshots.isRequested { Snapshots.run() }
+        if Snapshots.isRequested { Snapshots.run(); return }
         #endif
         NSApp.setActivationPolicy(.accessory)   // no Dock icon; lives in the notch
+        NotificationService.shared.onOpenAIUsage = { [weak self] in self?.showAIUsageWindow() }
+        AIUsageMonitor.shared.onAlert = { NotificationService.shared.postAIUsageAlert($0) }
         AIUsageMonitor.shared.start()
 
         // Completing or deleting a task must stop its running session so the
@@ -182,7 +191,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         focus.stop(record: true)
     }
 
-    func showTasksWindow() {
+    func showTasksWindow() { showWorkspace(.tasks) }
+    func showWeeklySummaryWindow() { showWorkspace(.summary) }
+    func showWaterWindow() { showWorkspace(.water) }
+    func showAIUsageWindow() { showWorkspace(.ai) }
+    func showMedicationsWindow() { showWorkspace(.medications) }
+
+    func showWorkspace(_ destination: WorkspaceDestination) {
         if tasksController == nil {
             let c = TasksWindowController(store: store, focus: focus)
             // Drop the controller on close so the next open counts as a new
@@ -195,7 +210,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             tasksController = c
             bumpUserWindowCount()
         }
-        tasksController?.show()
+        tasksController?.show(destination)
     }
 
     func showQuickCapture() {
@@ -203,9 +218,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         quickCaptureController?.show()
     }
 
-    func showWeeklySummaryWindow() {
+    private func showStandaloneSummaryWindow() {
         if summaryController == nil {
-            let controller = WeeklySummaryWindowController(store: store)
+            let controller = WeeklySummaryWindowController(store: store, focus: focus)
             controller.onClose = { [weak self] in
                 self?.summaryController = nil
                 self?.userWindowDidClose()
@@ -216,9 +231,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         summaryController?.show()
     }
 
-    func showWaterWindow() {
+    private func showStandaloneWaterWindow() {
         if waterController == nil {
-            let controller = WaterWindowController(store: store)
+            let controller = WaterWindowController(store: store, focus: focus)
             controller.onClose = { [weak self] in
                 self?.waterController = nil
                 self?.userWindowDidClose()
@@ -229,9 +244,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         waterController?.show()
     }
 
-    func showAIUsageWindow() {
+    private func showStandaloneAIWindow() {
         if aiUsageController == nil {
-            let controller = AIUsageWindowController()
+            let controller = AIUsageWindowController(focus: focus)
             controller.onClose = { [weak self] in
                 self?.aiUsageController = nil
                 self?.userWindowDidClose()
@@ -242,9 +257,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         aiUsageController?.show()
     }
 
-    func showMedicationsWindow() {
+    private func showStandaloneMedicationsWindow() {
         if medicationsController == nil {
-            let controller = MedicationsWindowController(store: store)
+            let controller = MedicationsWindowController(store: store, focus: focus)
             controller.onClose = { [weak self] in
                 self?.medicationsController = nil
                 self?.userWindowDidClose()
@@ -253,6 +268,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             bumpUserWindowCount()
         }
         medicationsController?.show()
+    }
+
+    func showStandaloneWindow(_ destination: WorkspaceDestination) {
+        switch destination {
+        case .tasks: showTasksWindow()
+        case .summary: showStandaloneSummaryWindow()
+        case .water: showStandaloneWaterWindow()
+        case .ai: showStandaloneAIWindow()
+        case .medications: showStandaloneMedicationsWindow()
+        }
     }
 
     func showSettingsWindow(_ page: SettingsPageID? = nil) {

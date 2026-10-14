@@ -5,9 +5,10 @@ import SwiftUI
 final class WeeklySummaryWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private let store: Store
+    private let focus: FocusTimer
     var onClose: (() -> Void)?
 
-    init(store: Store) { self.store = store }
+    init(store: Store, focus: FocusTimer) { self.store = store; self.focus = focus }
 
     func show() {
         if window == nil {
@@ -18,7 +19,8 @@ final class WeeklySummaryWindowController: NSObject, NSWindowDelegate {
             window.isReleasedWhenClosed = false
             window.contentView = NSHostingView(rootView: WeeklySummaryView()
                 .safeAreaInset(edge: .bottom, spacing: 0) { StorePersistenceBanner() }
-                .environmentObject(store))
+                .environmentObject(store)
+                .environment(\.flowFocusTimer, focus))
             window.contentMinSize = NSSize(width: 620, height: 600)
             window.delegate = self
             window.center()

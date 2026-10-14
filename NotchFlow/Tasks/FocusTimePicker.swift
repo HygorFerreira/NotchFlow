@@ -30,7 +30,7 @@ struct FocusTimePicker: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             .padding(.horizontal, 8).padding(.vertical, 5)
-            .background { FlowBackdrop(shape: Capsule(), color: Theme.panelHover) }
+            .background { FlowBackdrop(shape: Capsule(), color: Theme.panelHover, allowsGlass: true) }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

@@ -8,7 +8,7 @@ enum SettingsPalette {
     static let previewBackdrop = LinearGradient(
         colors: [Color(hex: "#1E3A8A"), Color(hex: "#4C1D95"), Color(hex: "#0F172A")],
         startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let selection = Color.accentColor
+    static let selection = Theme.accent
     static let card = Color.primary.opacity(0.05)
     static let cardStroke = Color.primary.opacity(0.07)
 }
@@ -59,7 +59,7 @@ struct SettingsSectionTitle: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title.localized)
-                .font(.system(size: 23, weight: .bold, design: .rounded))
+                .font(.system(size: 23, weight: .bold))
             if let subtitle {
                 Text(subtitle.localized)
                     .font(.system(size: 12))
@@ -226,8 +226,7 @@ struct SettingsSliderRow: View {
     }
 }
 
-/// A wide filled bar you drag, like the sliders in Control Center. For a range that goes both ways around zero
-/// (position, brightness) the fill grows from the middle, so the neutral point stays visible.
+/// Native slider follows the active macOS appearance and accessibility settings.
 struct ThickSlider: View {
     @Binding var value: Double
     let range: ClosedRange<Double>
@@ -236,75 +235,14 @@ struct ThickSlider: View {
     var label: String = ""
     var format: (Double) -> String = { String(format: "%.1f", $0) }
 
-    @Environment(\.isEnabled) private var isEnabled
-
-    private var span: Double { range.upperBound - range.lowerBound }
-    private var origin: Double { range.lowerBound < 0 && range.upperBound > 0 ? 0 : range.lowerBound }
-    private func fraction(_ v: Double) -> Double { span > 0 ? (v - range.lowerBound) / span : 0 }
-
-    private let trackHeight: CGFloat = 12
-    private let knobSize: CGFloat = 22
-
     var body: some View {
-        GeometryReader { geo in
-            // The knob's centre travels between the two ends, so it never hangs off the bar.
-            let travel = max(geo.size.width - knobSize, 1)
-            let x = { (v: Double) in knobSize / 2 + fraction(v) * travel }
-            // One-way settings fill from the very left of the bar; two-way ones from the zero mark.
-            let start = origin == range.lowerBound ? 0 : x(origin)
-            let knob = x(min(max(value, range.lowerBound), range.upperBound))
-            ZStack(alignment: .leading) {
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.primary.opacity(0.1))
-                    Rectangle()
-                        .fill(LinearGradient(colors: [tint.opacity(0.95), tint.opacity(0.75)], startPoint: .top, endPoint: .bottom))
-                        .frame(width: abs(knob - start))
-                        .offset(x: min(start, knob))
-                }
-                .frame(height: trackHeight)
-                .clipShape(Capsule())
-                if origin != range.lowerBound {
-                    // The zero mark of a two-way setting.
-                    Capsule().fill(Color.primary.opacity(0.35)).frame(width: 2, height: trackHeight + 6).offset(x: start - 1)
-                }
-                Circle()
-                    .fill(.white)
-                    .overlay(Circle().strokeBorder(Color.black.opacity(0.08)))
-                    .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
-                    .frame(width: knobSize, height: knobSize)
-                    .offset(x: knob - knobSize / 2)
-            }
-            .frame(maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { drag in set(fraction: (drag.location.x - knobSize / 2) / travel) }
-            )
+        Slider(value: $value, in: range, step: step > 0 ? step : 1) {
+            Text(label.localized)
         }
-        .frame(height: knobSize + 2)
-        .opacity(isEnabled ? 1 : 0.4)
-        .accessibilityElement()
+        .labelsHidden()
+        .tint(tint)
         .accessibilityLabel(label.localized)
         .accessibilityValue(format(value))
-        .accessibilityAdjustableAction { direction in
-            switch direction {
-            case .increment: set(value: value + step)
-            case .decrement: set(value: value - step)
-            @unknown default: break
-            }
-        }
-    }
-
-    private func set(fraction: Double) {
-        set(value: range.lowerBound + min(max(fraction, 0), 1) * span)
-    }
-
-    private func set(value newValue: Double) {
-        var v = min(max(newValue, range.lowerBound), range.upperBound)
-        if step > 0 { v = (v / step).rounded() * step }
-        v = min(max(v, range.lowerBound), range.upperBound)
-        if v == 0 { v = 0 }  // no "-0.00" from rounding a small negative
-        if v != value { value = v }
     }
 }
 
@@ -350,6 +288,7 @@ struct VisualChoiceCard<Preview: View>: View {
 /// Marks a row the window's search can land on: the page scrolls to it by its title and it glows for a moment when it
 /// was the one picked.
 private struct SettingAnchor: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(SettingsNavigation.self) private var navigation: SettingsNavigation?
     let key: String?
 
@@ -362,7 +301,7 @@ private struct SettingAnchor: ViewModifier {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(Color.accentColor.opacity(isHighlighted ? 0.22 : 0))
                 )
-                .animation(.easeInOut(duration: 0.35), value: isHighlighted)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.35), value: isHighlighted)
                 .id(Self.id(for: key))
         } else {
             content
@@ -380,6 +319,7 @@ extension View {
 
 /// Scrolls a settings page to the row a search picked and lets the highlight fade after a moment.
 struct SettingScroller: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(SettingsNavigation.self) private var navigation: SettingsNavigation?
     let proxy: ScrollViewProxy
 
@@ -393,7 +333,7 @@ struct SettingScroller: ViewModifier {
         guard let key else { return }
         // A page that just opened lays its rows out first.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                 proxy.scrollTo(SettingAnchor.id(for: key), anchor: .center)
             }
         }

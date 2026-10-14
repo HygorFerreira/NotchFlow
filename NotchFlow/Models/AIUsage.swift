@@ -95,3 +95,88 @@ enum AIUsageParser {
 
     private static func rank(_ id: String) -> Int { id == "session" ? 0 : id == "weekly_all" ? 1 : 2 }
 }
+
+// Presentation preferences and prices never contain login credentials.
+enum AIWeeklyRingStyle: String, Codable, CaseIterable {
+    case off, inside, outside
+}
+
+struct AIUsagePreferences: Codable, Equatable {
+    var weeklyRing: AIWeeklyRingStyle = .inside
+    var weeklyPrimary = false
+    var showPercent = true
+    var remainingTime = true
+    var sessionAlerts = false
+    var weeklyAlerts = false
+    var resetAlerts = false
+    var alertSound = true
+    var monthlyPrice: Double = 0
+    var currency = "BRL"
+
+    /// An allocation of the subscription price, not an invoice or an API token charge.
+    func weeklyCost(for reading: AIUsageReading, at now: Date) -> Double? {
+        guard monthlyPrice.isFinite, monthlyPrice > 0, !reading.isStale(at: now),
+              let weekly = reading.weeklyWindow else { return nil }
+        return monthlyPrice / 4.35 * weekly.fraction
+    }
+}
+
+extension AIUsageReading {
+    var weeklyWindow: AIUsageWindow? {
+        windows.first { $0.title == "Weekly limit" || $0.id == "weekly" || $0.id == "weekly_all" }
+    }
+    var sessionWindow: AIUsageWindow? { windows.first { $0.id == "primary_window" || $0.id == "session" } }
+    func primaryWindow(weekly: Bool) -> AIUsageWindow? {
+        weekly ? weeklyWindow ?? windows.first : sessionWindow ?? windows.first
+    }
+}
+
+enum AIUsageAlertKind: Equatable {
+    case threshold(Int), reset
+}
+
+struct AIUsageAlert: Equatable {
+    let provider: AIProvider
+    let window: AIUsageWindow
+    let kind: AIUsageAlertKind
+    let sound: Bool
+}
+
+/// High-water marks survive refreshes and restarts. A small percentage fluctuation
+/// must not notify twice; only a rollover re-arms a window's thresholds.
+struct AIUsageAlertState: Codable {
+    var windows: [String: WindowState] = [:]
+    struct WindowState: Codable {
+        var resetsAt: Date?
+        var highestPercent: Double
+    }
+
+    mutating func consume(_ reading: AIUsageReading, provider: AIProvider,
+                          preferences: AIUsagePreferences, now: Date) -> [AIUsageAlert] {
+        guard !reading.isStale(at: now) else { return [] }
+        var alerts: [AIUsageAlert] = []
+        for window in reading.windows {
+            let previous = windows[window.id]
+            let rolledOver = previous?.resetsAt.map { old in
+                old <= now && (window.resetsAt.map { $0 > old } ?? false)
+            } ?? false
+            let baseline = rolledOver ? 0 : previous?.highestPercent ?? 0
+            let isWeekly = window.id == reading.weeklyWindow?.id
+            let isSession = window.id == reading.sessionWindow?.id
+            let enabled = isWeekly ? preferences.weeklyAlerts : isSession && preferences.sessionAlerts
+            if rolledOver, preferences.resetAlerts {
+                alerts.append(AIUsageAlert(provider: provider, window: window, kind: .reset, sound: preferences.alertSound))
+            }
+            if enabled {
+                // If the first observation is already exhausted, send only the 100% alert.
+                if window.usedPercent >= 100, baseline < 100 {
+                    alerts.append(AIUsageAlert(provider: provider, window: window, kind: .threshold(100), sound: preferences.alertSound))
+                } else if window.usedPercent >= 80, baseline < 80 {
+                    alerts.append(AIUsageAlert(provider: provider, window: window, kind: .threshold(80), sound: preferences.alertSound))
+                }
+            }
+            windows[window.id] = WindowState(resetsAt: window.resetsAt, highestPercent: max(baseline, window.usedPercent))
+        }
+        return alerts
+    }
+}

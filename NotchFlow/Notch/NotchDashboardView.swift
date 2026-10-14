@@ -55,28 +55,19 @@ struct NotchDashboardView: View {
     }
 
     private var tabBar: some View {
-        HStack(spacing: 4) {
+        Picker("Activity", selection: Binding(
+            get: { selectedTab },
+            set: { tab in
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { selectedTab = tab }
+            })) {
             ForEach(DashboardTab.allCases) { tab in
-                Button {
-                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { selectedTab = tab }
-                } label: {
-                    Label(tab.rawValue.localized, systemImage: tab.symbol)
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(selectedTab == tab ? Color.white : Theme.textSecondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: NotchViewModel.dashboardTabHeight)
-                        .background(
-                            selectedTab == tab ? Theme.accent.opacity(0.22) : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 8)
-                        )
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(FlowCompactButtonStyle(selected: selectedTab == tab))
-                .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
+                Label(tab.rawValue.localized, systemImage: tab.symbol).tag(tab)
             }
         }
-        .padding(3)
-        .background { FlowBackdrop(shape: RoundedRectangle(cornerRadius: 10), color: Theme.panel) }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .controlSize(.small)
+        .frame(height: NotchViewModel.dashboardTabHeight + 6)
     }
 
     private var activityDashboard: some View {
@@ -100,6 +91,7 @@ struct TodoPanel: View {
     @EnvironmentObject private var store: Store
     @EnvironmentObject private var focus: FocusTimer
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var draggingFrom: Int?
     @State private var dragOffset: CGFloat = 0
 
@@ -151,9 +143,9 @@ struct TodoPanel: View {
                         .offset(y: offsetForIndex(index))
                         .opacity(draggingFrom != nil && draggingFrom != index ? 0.45 : 1.0)
                         .zIndex(draggingFrom == index ? 1 : 0)
-                        .animation(.spring(response: 0.28, dampingFraction: 0.85),
+                        .animation(reduceMotion ? nil : .spring(response: 0.28, dampingFraction: 0.85),
                                    value: targetIndex())
-                        .animation(.easeOut(duration: 0.12), value: draggingFrom)
+                        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: draggingFrom)
                     }
                 }
             }
@@ -183,6 +175,7 @@ struct TodoPanel: View {
                 }
                 .buttonStyle(.plain)
                 .help("Open medication reminders")
+                .accessibilityLabel("Open medication reminders")
             }
         }
     }
@@ -263,6 +256,7 @@ private struct TodoRow: View {
     let onDragChanged: (CGFloat) -> Void
     let onDragEnd: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var vm: NotchViewModel
     @EnvironmentObject private var store: Store
     @EnvironmentObject private var focus: FocusTimer
@@ -281,6 +275,7 @@ private struct TodoRow: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(Text(task.isDone ? String(localized: "Mark as incomplete") : String(localized: "Mark as complete")))
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(task.title)
@@ -358,10 +353,10 @@ private struct TodoRow: View {
                     in: RoundedRectangle(cornerRadius: Theme.panelCorner))
         .overlay(RoundedRectangle(cornerRadius: Theme.panelCorner)
             .strokeBorder(isRunningThis ? Theme.accent.opacity(0.6) : Color.white.opacity(0.06)))
-        .scaleEffect(isDragging ? 1.03 : 1.0)
+        .scaleEffect(isDragging && !reduceMotion ? 1.03 : 1.0)
         .opacity(task.isDone ? 0.5 : 1.0)
-        .animation(.easeOut(duration: 0.12), value: isDragging)
-        .animation(.easeOut(duration: 0.12), value: task.isDone)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: isDragging)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: task.isDone)
     }
 
     /// Two-way binding into the store for the inline time picker.

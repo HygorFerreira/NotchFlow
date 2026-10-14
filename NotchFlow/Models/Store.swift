@@ -117,11 +117,28 @@ final class Store: ObservableObject {
         rescheduleTaskReminders()
     }
 
-    func delete(_ task: Task) {
-        // Drop any running timer for this task first, without recording time
-        // against a task that's about to disappear.
+    func delete(_ task: Task, undoManager: UndoManager? = nil) {
+        guard let index = tasks.firstIndex(where: { $0.id == task.id }) else { return }
+        // Capture the live value, since an editor can hold an older draft.
+        let deleted = tasks[index]
         onTaskDeactivated(task.id, false)
-        tasks.removeAll { $0.id == task.id }
+        tasks.remove(at: index)
+        undoManager?.registerUndo(withTarget: self) { [weak undoManager] store in
+            store.restoreDeletedTask(deleted, at: index, undoManager: undoManager)
+        }
+        undoManager?.setActionName(String(localized: "Delete task"))
+        save()
+        rescheduleTaskReminders()
+    }
+
+    private func restoreDeletedTask(_ task: Task, at index: Int, undoManager: UndoManager?) {
+        guard !tasks.contains(where: { $0.id == task.id }) else { return }
+        tasks.insert(task, at: min(index, tasks.count))
+        undoManager?.registerUndo(withTarget: self) { [weak undoManager] store in
+            store.delete(task, undoManager: undoManager)
+        }
+        undoManager?.setActionName(String(localized: "Delete task"))
+        // Restore data and reminders; a deleted timer must never restart itself.
         save()
         rescheduleTaskReminders()
     }
@@ -193,6 +210,16 @@ final class Store: ObservableObject {
             }
         }
         save()
+    }
+
+    /// Accessible alternative to dragging, resolved by identity rather than a stale row index.
+    func moveTask(_ task: Task, in list: [Task], by offset: Int) {
+        guard offset == -1 || offset == 1,
+              tasks.contains(where: { $0.id == task.id }),
+              let source = list.firstIndex(where: { $0.id == task.id }) else { return }
+        let target = source + offset
+        guard list.indices.contains(target), list[target].isDone == task.isDone else { return }
+        moveTasks(in: list, from: IndexSet(integer: source), to: target > source ? target + 1 : target)
     }
 
     // MARK: - Hydration

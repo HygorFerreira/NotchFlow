@@ -90,12 +90,14 @@ struct WaterDashboardView: View {
 }
 
 struct WaterWindowView: View {
+    @Environment(\.workspaceNavigation) private var workspace
     @EnvironmentObject private var store: Store
     @State private var draft = HydrationSettings()
     @State private var liters = false
     @State private var didSave = false
 
     @State private var showSettings = false
+    @State private var confirmDiscard = false
     @State private var glassInput = "250"
     @State private var bottleInput = "500"
 
@@ -124,25 +126,45 @@ struct WaterWindowView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     FlowPageHeading(title: "Water", subtitle: "Your container, your daily rhythm", symbol: "drop.fill", color: waterColor)
-                    WaterDashboardView(onCustomize: { showSettings.toggle() })
-                    DisclosureGroup(isExpanded: $showSettings) {
-                        settingsCard.padding(.top, 14)
-                    } label: {
+                    WaterDashboardView(onCustomize: { showSettings = true })
+                    Button { showSettings = true } label: {
                         Label("Your water settings", systemImage: "slider.horizontal.3")
-                            .font(.system(size: 13, weight: .semibold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding(18)
-                    .flowSurface()
+                    .buttonStyle(FlowButtonStyle())
                     weeklyChart(at: timeline.date)
                     history(at: timeline.date)
                 }
                 .padding(24)
             }
         }
-        .frame(minWidth: 620, minHeight: 640)
+        .frame(minWidth: workspace == nil ? 620 : 0, minHeight: workspace == nil ? 640 : 0)
         .background(Theme.windowBackground)
         .safeAreaInset(edge: .top, spacing: 0) { FlowWindowNavigation(current: .water) }
         .flowAppearance()
+        .sheet(isPresented: $showSettings) {
+            VStack(alignment: .leading, spacing: 0) {
+                FlowPageHeading(title: "Your water settings", subtitle: "Your container, your daily rhythm", symbol: "drop.fill", color: waterColor)
+                    .padding(24)
+                Divider()
+                ScrollView { settingsCard.padding(24) }
+                Divider()
+                settingsActions.padding(20)
+                StorePersistenceBanner()
+            }
+            .frame(width: 620, height: 560)
+            .background(Theme.windowBackground)
+            .flowAppearance()
+            .interactiveDismissDisabled(isDirty)
+            .onAppear { reloadDraft() }
+            .confirmationDialog("Save changes before closing?", isPresented: $confirmDiscard, titleVisibility: .visible) {
+                Button("Save settings", action: saveSettings).disabled(!validSettings)
+                Button("Discard changes", role: .destructive) { reloadDraft(); showSettings = false }
+                Button("Keep editing", role: .cancel) { }
+            } message: {
+                Text("Your unsaved changes will be lost if you discard them.")
+            }
+        }
         .onAppear { reloadDraft() }
         .onChange(of: draft) { _, _ in didSave = false }
         .onChange(of: glassInput) { _, _ in didSave = false }
@@ -162,6 +184,37 @@ struct WaterWindowView: View {
         }
     }
 
+    private func saveSettings() {
+        guard let glassCapacity, let bottleCapacity else { return }
+        var settings = store.hydrationSettings
+        settings.glassMilliliters = glassCapacity
+        settings.bottleMilliliters = bottleCapacity
+        settings.goalMilliliters = draft.goalMilliliters
+        settings.remindersEnabled = draft.remindersEnabled
+        settings.reminderIntervalMinutes = draft.reminderIntervalMinutes
+        store.updateHydrationSettings(settings)
+        didSave = store.persistenceError == nil
+        if didSave { showSettings = false }
+    }
+
+    private var settingsActions: some View {
+        HStack(spacing: 12) {
+            Text("Each entry uses the selected container's full capacity.")
+                .font(.caption).foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 12)
+            Button("Cancel") {
+                if isDirty { confirmDiscard = true } else { showSettings = false }
+            }
+            .keyboardShortcut(.cancelAction)
+            .buttonStyle(FlowButtonStyle())
+            Button("Save settings", action: saveSettings)
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(FlowButtonStyle(prominent: true))
+                .disabled(!validSettings || (!isDirty && store.persistenceError == nil))
+        }
+    }
+
     private var settingsCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -172,6 +225,8 @@ struct WaterWindowView: View {
                     Text("L").tag(true)
                 }
                 .pickerStyle(.segmented)
+                .labelsHidden()
+                .accessibilityLabel("Unit")
                 .frame(width: 120)
                 .disabled(!validSettings)
             }
@@ -203,27 +258,6 @@ struct WaterWindowView: View {
                 }
                 Text("Reminders appear while the app is running, from 8 am to 10 pm, until your daily goal is reached.")
                     .font(.caption).foregroundStyle(Theme.textSecondary)
-            }
-            HStack {
-                Text(didSave ? String(localized: "Settings saved") : String(localized: "Each entry uses the selected container's full capacity."))
-                    .font(.caption).foregroundStyle(didSave ? Theme.success : Theme.textSecondary)
-                Spacer()
-                Button("Save settings") {
-                    guard let glassCapacity, let bottleCapacity else { return }
-                    var settings = store.hydrationSettings
-                    settings.glassMilliliters = glassCapacity
-                    settings.bottleMilliliters = bottleCapacity
-                    settings.goalMilliliters = draft.goalMilliliters
-                    settings.remindersEnabled = draft.remindersEnabled
-                    settings.reminderIntervalMinutes = draft.reminderIntervalMinutes
-                    store.updateHydrationSettings(settings)
-                    didSave = store.persistenceError == nil
-                }
-                .buttonStyle(FlowButtonStyle(prominent: true))
-                .disabled(!validSettings || (!isDirty && store.persistenceError == nil))
-                if isDirty {
-                    Button("Cancel") { reloadDraft() }.buttonStyle(FlowButtonStyle())
-                }
             }
             if !validSettings {
                 Text("Enter a valid capacity between 50 ml and 3 L.").font(.caption).foregroundStyle(.orange)

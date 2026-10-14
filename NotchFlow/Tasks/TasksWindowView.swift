@@ -4,6 +4,7 @@ import EventKit
 /// The big window: month calendar on the left, the selected day's tasks on the
 /// right with a Day / Unscheduled toggle and an inline add-task form.
 struct TasksWindowView: View {
+    @ObservedObject var navigation = WorkspaceNavigation()
     @EnvironmentObject private var store: Store
     @EnvironmentObject private var focus: FocusTimer
     @StateObject private var calendar = CalendarAuthModel()
@@ -14,6 +15,7 @@ struct TasksWindowView: View {
     @State private var selectedDate = Date()
     @State private var tab: Tab = .day
     @State private var showAddForm = false
+    @State private var confirmDiscardNewTask = false
     @State private var showCalendar = false
     @State private var draftTitle = ""
     @State private var draftNotes = ""
@@ -55,13 +57,12 @@ struct TasksWindowView: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
+        NavigationSplitView {
             // ---- Left: calendar ----
-            VStack(spacing: 12) {
+            ScrollView {
+            VStack(spacing: 16) {
                 HStack {
-                    Label("NotchFlow", systemImage: "waveform.path")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.textPrimary)
+                    FlowBrand()
                     Spacer()
                     Button { AppDelegate.shared?.showSettingsWindow() } label: {
                         Image(systemName: "gearshape")
@@ -74,26 +75,44 @@ struct TasksWindowView: View {
                     .help("Settings")
                     .accessibilityLabel(Text("Settings"))
                 }
-                CalendarView(selectedDate: $selectedDate, busyDays: busyDays)
-                    .padding(12)
-                    .flowSurface()
                 Text("YOUR SPACE")
                     .font(.system(size: 9, weight: .semibold))
                     .tracking(1.3)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 8)
-                FlowNavigationRow(title: "Weekly summary", symbol: "chart.bar", color: .purple) {
-                    AppDelegate.shared?.showWeeklySummaryWindow()
+                List(selection: Binding<WorkspaceDestination?>(
+                    get: { navigation.destination },
+                    set: { if let destination = $0 { navigation.select(destination) } })) {
+                    ForEach(WorkspaceDestination.allCases) { destination in
+                        Label {
+                            Text(destination.rawValue.localized)
+                        } icon: {
+                            Image(systemName: destination.symbol)
+                                .foregroundStyle(navigation.destination == destination ? Theme.onAccent : Theme.accent)
+                        }
+                        .padding(.vertical, 4)
+                        .tag(destination)
+                        .contextMenu {
+                            if destination != .tasks {
+                                Button("Open in New Window") { AppDelegate.shared?.showStandaloneWindow(destination) }
+                            }
+                        }
+                    }
                 }
-                FlowNavigationRow(title: "Medications", symbol: "pills.fill", color: Theme.medication) {
-                    AppDelegate.shared?.showMedicationsWindow()
-                }
-                FlowNavigationRow(title: "Water", symbol: "drop.fill", color: .cyan) {
-                    AppDelegate.shared?.showWaterWindow()
-                }
+                .listStyle(.sidebar)
+                .tint(Theme.accent)
+                .scrollDisabled(true)
+                .scrollContentBackground(.hidden)
+                .frame(height: 210)
+                .padding(.horizontal, -10)
+                FlowFocusControls(focus: focus)
+                CalendarView(selectedDate: Binding(
+                    get: { selectedDate },
+                    set: { date in selectedDate = date; tab = .day; navigation.select(.tasks) }), busyDays: busyDays)
+                    .padding(14)
+                    .flowSurface()
                 Spacer()
-                Button("Today") { selectedDate = Date(); tab = .day }
+                Button("Today") { navigation.select(.tasks); selectedDate = Date(); tab = .day }
                     .keyboardShortcut("t")
                     .buttonStyle(.plain)
                     .font(.system(size: 12, weight: .medium))
@@ -104,19 +123,41 @@ struct TasksWindowView: View {
                     .contentShape(Rectangle())
             }
             .padding(20)
-            .frame(width: 290)
-            .background { FlowBackdrop(shape: Rectangle(), color: Theme.sidebar) }
-
-            Divider()
-
-            // ---- Right: the day's task list ----
-            todoPanel
-                .padding(24)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+            .scrollIndicators(.hidden)
+            .navigationSplitViewColumnWidth(min: 270, ideal: 290, max: 320)
+        } detail: {
+            ZStack {
+                ForEach(WorkspaceDestination.allCases) { destination in
+                    if navigation.visited.contains(destination) {
+                        workspaceContent(destination)
+                            .opacity(navigation.destination == destination ? 1 : 0)
+                            .disabled(navigation.destination != destination)
+                            .allowsHitTesting(navigation.destination == destination)
+                            .accessibilityHidden(navigation.destination != destination)
+                            .zIndex(navigation.destination == destination ? 1 : 0)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        AppDelegate.shared?.showStandaloneWindow(navigation.destination)
+                    } label: {
+                        Label("Open in New Window", systemImage: "macwindow.badge.plus")
+                    }
+                    .disabled(navigation.destination == .tasks)
+                    .help("Open in New Window")
+                }
+            }
         }
+        .navigationSplitViewStyle(.balanced)
         .frame(minWidth: 840, minHeight: 600)
         .background(Theme.windowBackground)
         .flowAppearance()
+        .environment(\.workspaceNavigation, navigation)
+        .environment(\.flowFocusTimer, focus)
         .sheet(isPresented: $showAddForm) { addForm }
         .sheet(item: $editingTask) { task in
             TaskDetailView(task: task)
@@ -127,21 +168,42 @@ struct TasksWindowView: View {
             consumePendingOpen()
             calendar.refresh(for: selectedDate)
         }
-        .onChange(of: store.pendingOpenTaskID) { _, _ in consumePendingOpen() }
+        .onChange(of: store.pendingOpenTaskID) { _, id in
+            if id != nil { navigation.select(.tasks); consumePendingOpen() }
+        }
         .onChange(of: selectedDate) { _, newDate in calendar.refresh(for: newDate) }
         .onChange(of: tab) { _, newTab in
             if newTab == .unscheduled { draftStartTime = nil; draftReminderMinutesBefore = nil }
         }
     }
 
+    @ViewBuilder private func workspaceContent(_ destination: WorkspaceDestination) -> some View {
+        switch destination {
+        case .tasks:
+            todoPanel
+                .padding(28)
+                .safeAreaPadding(.top, 32)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        case .medications:
+            MedicationsView().padding(.top, 32)
+        case .water:
+            WaterWindowView().padding(.top, 32)
+        case .summary:
+            WeeklySummaryView().padding(.top, 32)
+        case .ai:
+            AIUsageWindowView().padding(.top, 32)
+        }
+    }
+
     /// The task list: inner Day/Unscheduled toggle, the drag-to-reorder list,
     /// the calendar event feed, and the inline add form.
     @ViewBuilder private var todoPanel: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 18) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(tab == .day ? headerTitle : String(localized: "Unscheduled"))
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .font(.system(size: 28, weight: .bold))
+                        .tracking(-1.1)
                         .foregroundStyle(Theme.textPrimary)
                     if tab == .day {
                         Text(selectedDate.formatted(.dateTime.weekday(.wide).month(.wide).day()))
@@ -193,7 +255,9 @@ struct TasksWindowView: View {
                             onDragStart: { handleDragStart(index) },
                             onDragChanged: { handleDragChanged($0) },
                             onDragEnd: handleDragEnd,
-                            onOpen: { editingTask = task }
+                            onOpen: { editingTask = task },
+                            onMoveUp: reorderAction(for: task, by: -1),
+                            onMoveDown: reorderAction(for: task, by: 1)
                         )
                         .offset(y: offsetForIndex(index))
                         .opacity(draggingFrom != nil && draggingFrom != index ? 0.45 : 1.0)
@@ -224,21 +288,17 @@ struct TasksWindowView: View {
                         Image(systemName: "plus")
                             .font(.system(size: 11, weight: .semibold))
                         Text("Add a task")
-                            .font(.system(size: 13))
+                            .font(.system(size: 13, weight: .medium))
                         Spacer()
                         Text("⌘N")
                             .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundStyle(Theme.textSecondary.opacity(0.7))
+                            .foregroundStyle(Theme.onAccent.opacity(0.7))
                     }
-                    .foregroundStyle(Theme.textPrimary)
+                    .foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(Theme.accent.opacity(0.22), in: RoundedRectangle(cornerRadius: 10))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.accent.opacity(0.45)))
-                    .contentShape(Rectangle())
+                    .padding(.vertical, 6)
                 }
-                .buttonStyle(FlowCompactButtonStyle())
+                .buttonStyle(FlowButtonStyle(prominent: true))
                 .keyboardShortcut("n")
             }
         }
@@ -250,27 +310,27 @@ struct TasksWindowView: View {
 
     private var taskProgress: some View {
         let completed = listedTasks.filter(\.isDone).count
-        return HStack(spacing: 12) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 22))
-                .foregroundStyle(Theme.accent)
-                .frame(width: 42, height: 42)
-                .background(Theme.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-            VStack(alignment: .leading, spacing: 6) {
-                Text("\(completed) of \(listedTasks.count) completed")
-                    .font(.system(size: 12, weight: .semibold).monospacedDigit())
-                    .accessibilityLabel(Text("Completed tasks"))
-                    .accessibilityValue("\(completed) / \(listedTasks.count)")
-                FlowProgressBar(value: Double(completed) / Double(max(listedTasks.count, 1)))
+        return HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.accent)
+                    Text("Completed tasks").font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                    Spacer(minLength: 0)
+                }
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                    Text("\(completed)").font(.system(size: 23, weight: .semibold)).monospacedDigit()
+                    Text("/ \(listedTasks.count)").font(.system(size: 16)).foregroundStyle(Theme.textSecondary)
+                }
+                FlowProgressBar(value: Double(completed) / Double(max(listedTasks.count, 1)), height: 4)
             }
-            Spacer(minLength: 8)
-            Text("\(listedTasks.filter { !$0.isDone }.reduce(0) { $0 + $1.estimateMinutes }) min")
-                .font(.system(size: 12, weight: .medium).monospacedDigit())
-                .foregroundStyle(Theme.textSecondary)
-                .help("Estimated focus time")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .flowSurface()
+            .accessibilityElement(children: .combine)
+            FlowMetricCard(title: "Estimated focus time",
+                           value: "\(listedTasks.filter { !$0.isDone }.reduce(0) { $0 + $1.estimateMinutes }) min",
+                           symbol: "timer", color: Theme.warm)
         }
-        .padding(14)
-        .flowSurface()
     }
 
     private var emptyState: some View {
@@ -448,7 +508,9 @@ struct TasksWindowView: View {
                 Text(tab == .day ? headerTitle : String(localized: "Unscheduled"))
                     .font(.caption).foregroundStyle(Theme.textSecondary)
                 Spacer()
-                Button("Cancel") { resetDraft() }
+                Button("Cancel") {
+                    if hasDraftChanges { confirmDiscardNewTask = true } else { resetDraft() }
+                }
                     .keyboardShortcut(.cancelAction)
                     .buttonStyle(FlowButtonStyle())
                 Button("Add a task") { commitDraft() }
@@ -462,6 +524,20 @@ struct TasksWindowView: View {
         .background(Theme.windowBackground)
         .flowAppearance()
         .onAppear { titleFocused = true }
+        .interactiveDismissDisabled(hasDraftChanges)
+        .confirmationDialog("Save changes before closing?", isPresented: $confirmDiscardNewTask, titleVisibility: .visible) {
+            Button("Add a task") { commitDraft() }
+                .disabled(draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !draftRecurrence.isValid)
+            Button("Discard changes", role: .destructive) { resetDraft() }
+            Button("Keep editing", role: .cancel) { }
+        } message: {
+            Text("Your unsaved changes will be lost if you discard them.")
+        }
+    }
+
+    private var hasDraftChanges: Bool {
+        !draftTitle.isEmpty || !draftNotes.isEmpty || !draftProject.isEmpty || !draftTags.isEmpty
+            || draftRecurrence != TaskRecurrence() || draftStartTime != nil || draftReminderMinutesBefore != nil
     }
 
     private func counter(_ label: String, _ count: Int, _ limit: Int) -> some View {
@@ -488,6 +564,13 @@ struct TasksWindowView: View {
         draftProject = ""; draftTags = ""; draftRecurrence = TaskRecurrence()
         draftStartTime = nil; draftReminderMinutesBefore = nil
         withAnimation { showAddForm = false }
+    }
+
+    private func reorderAction(for task: Task, by offset: Int) -> (() -> Void)? {
+        let list = listedTasks
+        guard let index = list.firstIndex(where: { $0.id == task.id }),
+              list.indices.contains(index + offset), list[index + offset].isDone == task.isDone else { return nil }
+        return { store.moveTask(task, in: listedTasks, by: offset) }
     }
 
     // MARK: - Custom drag bookkeeping (mirrors the notch panel)

@@ -7,12 +7,26 @@ struct TaskDetailView: View {
     @EnvironmentObject private var focus: FocusTimer
     @Environment(\.dismiss) private var dismiss
 
+    @Environment(\.undoManager) private var undoManager
+    @State private var confirmDiscard = false
+    private let original: Task
     @State private var draft: Task
     @State private var tagsText: String
 
     init(task: Task) {
+        original = task
         _draft = State(initialValue: task)
         _tagsText = State(initialValue: task.tags.joined(separator: ", "))
+    }
+
+    private var hasChanges: Bool {
+        var edited = draft
+        edited.tags = Task.normalizedTags(tagsText)
+        return edited != original
+    }
+
+    private func requestClose() {
+        if hasChanges { confirmDiscard = true } else { dismiss() }
     }
 
     private var canSave: Bool {
@@ -30,10 +44,10 @@ struct TaskDetailView: View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
                 Text("Task")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                Button { dismiss() } label: {
+                Button { requestClose() } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Theme.textSecondary)
@@ -47,7 +61,7 @@ struct TaskDetailView: View {
 
             field("Title", count: draft.title.count, limit: Task.titleLimit) {
                 TextField("Task title", text: $draft.title)
-                    .textFieldStyle(.plain)
+                    .textFieldStyle(FlowTextFieldStyle())
                     .onChange(of: draft.title) { _, new in
                         if new.count > Task.titleLimit {
                             draft.title = String(new.prefix(Task.titleLimit))
@@ -57,7 +71,7 @@ struct TaskDetailView: View {
 
             field("Notes", count: draft.notes.count, limit: Task.notesLimit) {
                 TextField("Notes (optional)", text: $draft.notes, axis: .vertical)
-                    .textFieldStyle(.plain)
+                    .textFieldStyle(FlowTextFieldStyle())
                     .lineLimit(2...5)
                     .onChange(of: draft.notes) { _, new in
                         if new.count > Task.notesLimit {
@@ -108,12 +122,20 @@ struct TaskDetailView: View {
         .frame(maxHeight: 700)
         .background(Theme.windowBackground)
         .flowAppearance()
+        .interactiveDismissDisabled(hasChanges)
+        .confirmationDialog("Save changes before closing?", isPresented: $confirmDiscard, titleVisibility: .visible) {
+            Button("Save") { saveDraft(); dismiss() }.disabled(!canSave)
+            Button("Discard changes", role: .destructive) { dismiss() }
+            Button("Keep editing", role: .cancel) { }
+        } message: {
+            Text("Your unsaved changes will be lost if you discard them.")
+        }
     }
 
     private var actionBar: some View {
             HStack(spacing: 8) {
                 Button(role: .destructive) {
-                    store.delete(draft); dismiss()
+                    store.delete(draft, undoManager: undoManager); dismiss()
                 } label: {
                     Label("Delete", systemImage: "trash")
                         .font(.system(size: 13))

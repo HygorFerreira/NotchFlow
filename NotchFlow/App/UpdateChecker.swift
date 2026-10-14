@@ -35,6 +35,13 @@ final class UpdateChecker: ObservableObject {
     /// Don't hammer the API — re-check at most this often.
     private let minInterval: TimeInterval = 60 * 60 * 6
     private var lastCheck: Date?
+    private let session: URLSession
+    private let installedVersion: String?
+
+    init(session: URLSession = .shared, currentVersion: String? = nil) {
+        self.session = session
+        self.installedVersion = currentVersion
+    }
 
     /// `false` in the App Store build, where the store handles updates.
     static var isEnabled: Bool {
@@ -51,10 +58,11 @@ final class UpdateChecker: ObservableObject {
     @Published private(set) var lastChecked: Date?
     /// A failed request must not be presented as a successful version check.
     @Published private(set) var checkFailed = false
+    @Published private(set) var errorMessage: String?
 
     /// The running app version (`CFBundleShortVersionString`), e.g. "0.0.1".
     var currentVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+        installedVersion ?? Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
     }
 
     /// Fetch the latest release and publish it if it's newer than the running
@@ -72,11 +80,14 @@ final class UpdateChecker: ObservableObject {
         var request = URLRequest(url: url)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.setValue("NotchFlow", forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 20
+        request.cachePolicy = .reloadIgnoringLocalCacheData
 
         // Fully-qualified: the app defines its own `Task` model, which would
         // otherwise shadow Swift concurrency's `Task` here.
         isChecking = true
         checkFailed = false
+        errorMessage = nil
         _Concurrency.Task { [weak self] in
             guard let self else { return }
             defer {
@@ -84,15 +95,25 @@ final class UpdateChecker: ObservableObject {
                 self.lastChecked = Date()
             }
             do {
-                let (data, response) = try await URLSession.shared.data(for: request)
-                guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                let (data, response) = try await session.data(for: request)
+                guard let http = response as? HTTPURLResponse else { throw URLError(.badServerResponse) }
+                guard http.statusCode == 200 else {
                     self.checkFailed = true
+                    switch http.statusCode {
+                    case 404:
+                        self.errorMessage = String(localized: "No public release is available. Releases must be accessible without signing in.")
+                    case 403, 429:
+                        self.errorMessage = String(localized: "GitHub temporarily refused the check. Try again later.")
+                    default:
+                        self.errorMessage = String(localized: "Could not check for updates. Try again later.")
+                    }
                     return
                 }
                 let release = try JSONDecoder().decode(GitHubRelease.self, from: data)
-                self.apply(release)
+                try self.apply(release)
             } catch {
                 self.checkFailed = true
+                self.errorMessage = String(localized: "Could not check for updates. Try again later.")
             }
         }
     }
@@ -105,12 +126,17 @@ final class UpdateChecker: ObservableObject {
 
     // MARK: - Private
 
-    private func apply(_ release: GitHubRelease) {
+    private func apply(_ release: GitHubRelease) throws {
         // Skip drafts and prereleases — only stable, published releases count.
-        guard !release.draft, !release.prerelease else { return }
+        guard !release.draft, !release.prerelease else { throw URLError(.cannotParseResponse) }
         let latest = Self.normalized(release.tagName)
-        guard let pageURL = URL(string: release.htmlURL),
-              Self.isNewer(latest, than: Self.normalized(currentVersion)) else {
+        guard Self.components(latest) != nil, Self.components(Self.normalized(currentVersion)) != nil,
+              let pageURL = URL(string: release.htmlURL), pageURL.scheme == "https",
+              pageURL.host == "github.com", pageURL.user == nil, pageURL.password == nil,
+              pageURL.path.hasPrefix("/\(Self.releaseRepository)/releases/tag/") else {
+            throw URLError(.cannotParseResponse)
+        }
+        guard Self.isNewer(latest, than: Self.normalized(currentVersion)) else {
             availableUpdate = nil
             return
         }
@@ -124,11 +150,16 @@ final class UpdateChecker: ObservableObject {
         return s
     }
 
-    /// Numeric, component-wise semantic-version comparison. Non-numeric or
-    /// missing components are treated as 0, so "1.2" < "1.2.1".
+    /// Stable numeric versions; absent components are zero, so "1.2" < "1.2.1".
+    /// Malformed tags must never become a successful "up to date" result.
+    private static func components(_ value: String) -> [Int]? {
+        let parts = value.split(separator: ".", omittingEmptySubsequences: false)
+        guard !parts.isEmpty, parts.allSatisfy({ !$0.isEmpty && $0.allSatisfy({ $0.isASCII && $0.isNumber }) }) else { return nil }
+        let numbers = parts.compactMap { Int($0) }
+        return numbers.count == parts.count ? numbers : nil
+    }
     static func isNewer(_ lhs: String, than rhs: String) -> Bool {
-        let a = lhs.split(separator: ".").map { Int($0) ?? 0 }
-        let b = rhs.split(separator: ".").map { Int($0) ?? 0 }
+        guard let a = components(normalized(lhs)), let b = components(normalized(rhs)) else { return false }
         for i in 0..<max(a.count, b.count) {
             let l = i < a.count ? a[i] : 0
             let r = i < b.count ? b[i] : 0

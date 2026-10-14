@@ -2,33 +2,26 @@ import SwiftUI
 
 /// Shared adaptive palette; the physical notch keeps its dark appearance.
 enum Theme {
-    /// Follows the user's macOS accent color (System Settings › Appearance).
+    /// Semantic macOS colors follow accent, contrast, and appearance preferences.
     static let accent = Color(nsColor: .controlAccentColor)
-    static let danger = Color(red: 0.95, green: 0.23, blue: 0.23)    // pause red
-    static let medication = Color(red: 0.18, green: 0.78, blue: 0.72)
+    static let onAccent = Color.white
+    static let border = Color(nsColor: .separatorColor)
+    static let warm = Color.orange
+    static let danger = Color.red
+    static let medication = Color.teal
     static let pill = Color.black
-    static let panel = adaptive(light: "#FFFFFF", dark: "#172131")
-    static let panelHover = adaptive(light: "#EDF2F9", dark: "#223249")
+    static let panel = Color(nsColor: .controlBackgroundColor)
+    static let panelHover = Color(nsColor: .unemphasizedSelectedContentBackgroundColor)
     static let textPrimary = Color.primary
     static let textSecondary = Color(nsColor: .secondaryLabelColor)
     static let streakEmpty = Color(white: 0.14)
 
-    static let sidebar = adaptive(light: "#EEF2F8", dark: "#0D1420")
-
-    private static func adaptive(light: String, dark: String) -> Color {
-        let lightColor = NSColor(Color(hex: light))
-        let darkColor = NSColor(Color(hex: dark))
-        return Color(nsColor: NSColor(name: nil) { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? darkColor : lightColor
-        })
-    }
+    static let sidebar = Color(nsColor: .windowBackgroundColor)
 
     static let notchCorner: CGFloat = 22
-    static let panelCorner: CGFloat = 16
-    static let success = adaptive(light: "#16866A", dark: "#5DD6B2")
-    static let windowBackground = LinearGradient(
-        colors: [adaptive(light: "#F5F7FB", dark: "#101824"), adaptive(light: "#E9EEF6", dark: "#080C13")],
-        startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let panelCorner: CGFloat = 14
+    static let success = Color.green
+    static let windowBackground = Color(nsColor: .windowBackgroundColor)
 }
 
 /// A rounded-bottom "notch" shape: flush square top (meets the screen edge),
@@ -107,8 +100,8 @@ enum FlowAppearance {
 struct FlowBackdrop<S: Shape>: View {
     let shape: S
     var color: Color = Theme.panel
-    var allowsGlass = true
-    @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = false
+    var allowsGlass = false
+    @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = true
     @AppStorage(FlowAppearance.transparencyKey) private var transparency = 50.0
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -139,33 +132,28 @@ struct FlowBackdrop<S: Shape>: View {
 
 /// Shared surfaces preserve native light appearance in Settings and the dark notch palette.
 struct FlowSurface: ViewModifier {
-    @Environment(\.colorScheme) private var scheme
-
     func body(content: Content) -> some View {
         content
             .background {
                 FlowBackdrop(
                     shape: RoundedRectangle(cornerRadius: Theme.panelCorner, style: .continuous),
-                    color: scheme == .dark ? Theme.panel : Color(nsColor: .controlBackgroundColor))
+                    color: Theme.panel, allowsGlass: false)
             }
             .overlay {
                 RoundedRectangle(cornerRadius: Theme.panelCorner, style: .continuous)
-                    .strokeBorder(LinearGradient(
-                        colors: scheme == .dark
-                            ? [Color.white.opacity(0.12), Color.white.opacity(0.035)]
-                            : [Color.black.opacity(0.07), Color.black.opacity(0.04)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .strokeBorder(Theme.border.opacity(0.75), lineWidth: 1)
             }
+
     }
 }
 
 struct FlowAppearanceModifier: ViewModifier {
-    @AppStorage(FlowAppearance.themeKey) private var mode = FlowAppearance.Mode.dark.rawValue
+    @AppStorage(FlowAppearance.themeKey) private var mode = FlowAppearance.Mode.system.rawValue
     func body(content: Content) -> some View {
         #if DEBUG
-        content.preferredColorScheme(Snapshots.isRequested ? nil : (FlowAppearance.Mode(rawValue: mode) ?? .dark).scheme)
+        content.preferredColorScheme(Snapshots.isRequested ? nil : (FlowAppearance.Mode(rawValue: mode) ?? .system).scheme)
         #else
-        content.preferredColorScheme((FlowAppearance.Mode(rawValue: mode) ?? .dark).scheme)
+        content.preferredColorScheme((FlowAppearance.Mode(rawValue: mode) ?? .system).scheme)
         #endif
     }
 }
@@ -175,50 +163,27 @@ extension View {
     func flowSurface() -> some View { modifier(FlowSurface()) }
 }
 
-struct FlowButtonStyle: ButtonStyle {
+/// Let the active macOS SDK draw controls and provide keyboard and pointer feedback.
+struct FlowButtonStyle: PrimitiveButtonStyle {
     var prominent = false
+
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        FlowButtonBody(configuration: configuration, prominent: prominent)
-    }
-}
-
-private struct FlowButtonBody: View {
-    let configuration: ButtonStyleConfiguration
-    let prominent: Bool
-    @Environment(\.isEnabled) private var enabled
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var hovered = false
-
-    var body: some View {
-        configuration.label
-            .font(.system(size: 12, weight: .semibold))
-            .padding(.horizontal, 14)
-            .padding(.vertical, 9)
-            .foregroundStyle(configuration.role == .destructive ? Theme.danger : (prominent ? .white : .primary))
-            .background {
-                FlowBackdrop(shape: RoundedRectangle(cornerRadius: 10, style: .continuous),
-                             color: prominent ? Theme.accent : (hovered && enabled ? Theme.panelHover : Theme.panel))
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(hovered && enabled ? 0.18 : 0.07))
-            }
-            .opacity(enabled ? (configuration.isPressed ? 0.72 : 1) : 0.4)
-            .scaleEffect(configuration.isPressed && enabled && !reduceMotion ? 0.98 : 1)
-            .onHover { hovered = $0 }
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hovered)
+        if prominent {
+            Button(role: configuration.role, action: configuration.trigger) { configuration.label }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+        } else {
+            Button(role: configuration.role, action: configuration.trigger) { configuration.label }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+        }
     }
 }
 
 struct FlowTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
-        configuration
-            .textFieldStyle(.plain)
-            .font(.system(size: 13))
-            .padding(11)
-            .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 9))
-            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(Color.primary.opacity(0.12)))
+        configuration.textFieldStyle(.roundedBorder).controlSize(.large)
     }
 }
 
@@ -228,13 +193,10 @@ struct FlowProgressBar: View {
     var color: Color = Theme.accent
     private var fraction: Double { value.isFinite ? min(1, max(0, value)) : 0 }
     var body: some View {
-        GeometryReader { geometry in
-            Capsule().fill(color.opacity(0.14))
-                .overlay(alignment: .leading) {
-                    Capsule().fill(color.gradient).frame(width: geometry.size.width * fraction)
-                }
-        }
-        .frame(height: height)
+        ProgressView(value: fraction)
+            .progressViewStyle(.linear)
+            .tint(color)
+            .frame(height: height)
         .accessibilityElement()
         .accessibilityLabel("Progress")
         .accessibilityValue(fraction.formatted(.percent.precision(.fractionLength(0))))
@@ -242,6 +204,7 @@ struct FlowProgressBar: View {
 }
 
 struct FlowNavigationRow: View {
+    var selected = false
     let title: LocalizedStringKey
     let symbol: String
     var color: Color = Theme.accent
@@ -251,16 +214,17 @@ struct FlowNavigationRow: View {
             HStack(spacing: 10) {
                 Image(systemName: symbol)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(color)
+                    .foregroundStyle(selected ? Theme.onAccent : color)
                     .frame(width: 30, height: 30)
-                    .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
-                Text(title).font(.system(size: 12, weight: .medium))
+                    .background((selected ? Theme.onAccent : color).opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+                Text(title).font(.system(size: 12, weight: selected ? .semibold : .medium))
+                    .foregroundStyle(selected ? Theme.onAccent : Theme.textPrimary)
                 Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold)).foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
         }
-        .buttonStyle(FlowButtonStyle())
+        .buttonStyle(FlowButtonStyle(prominent: selected))
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
@@ -278,7 +242,7 @@ struct FlowPageHeading: View {
                 .frame(width: 44, height: 44)
                 .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 13))
             VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.system(size: 24, weight: .bold, design: .rounded))
+                Text(title).font(.system(size: 24, weight: .bold))
                 Text(subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
             }
         }
@@ -287,28 +251,13 @@ struct FlowPageHeading: View {
 
 /// The same destinations stay within reach from every standalone overview window.
 struct FlowWindowNavigation: View {
-    enum Destination: String, CaseIterable, Identifiable {
-        case tasks = "Tasks", medications = "Medications", water = "Water", summary = "Weekly summary"
-        var id: Self { self }
-        var symbol: String {
-            switch self {
-            case .tasks: return "checklist"
-            case .medications: return "pills.fill"
-            case .water: return "drop.fill"
-            case .summary: return "chart.bar"
-            }
-        }
-        @MainActor func open() {
-            switch self {
-            case .tasks: AppDelegate.shared?.showTasksWindow()
-            case .medications: AppDelegate.shared?.showMedicationsWindow()
-            case .water: AppDelegate.shared?.showWaterWindow()
-            case .summary: AppDelegate.shared?.showWeeklySummaryWindow()
-            }
-        }
-    }
+    typealias Destination = WorkspaceDestination
     let current: Destination
+    @Environment(\.flowFocusTimer) private var focus
+    @Environment(\.workspaceNavigation) private var workspace
     var body: some View {
+        if workspace == nil {
+        VStack(spacing: 0) {
         HStack(spacing: 6) {
             ForEach(Destination.allCases) { destination in
                 Button { destination.open() } label: {
@@ -332,11 +281,17 @@ struct FlowWindowNavigation: View {
             .accessibilityLabel("Settings")
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 8)
+        .padding(.vertical, 12)
         .background {
-            FlowBackdrop(shape: Rectangle(), color: Theme.sidebar)
+            FlowBackdrop(shape: Rectangle(), color: Theme.sidebar, allowsGlass: true)
         }
         .overlay(alignment: .bottom) { Rectangle().fill(Color.primary.opacity(0.08)).frame(height: 1) }
+        if let focus {
+            FlowFocusControls(focus: focus)
+                .padding(.horizontal, 14)
+        }
+        }
+        }
     }
 }
 
@@ -381,5 +336,111 @@ struct FlowFocusBadge: View {
         .padding(.horizontal, 6).padding(.vertical, 3)
         .background(Theme.accent.opacity(0.12), in: Capsule())
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// Shared brand signature for the app's navigation surfaces.
+struct FlowBrand: View {
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "waveform.path")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+            Text("NotchFlow")
+                .font(.system(size: 19, weight: .bold))
+                .tracking(-0.6)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+struct FlowMetricCard: View {
+    let title: LocalizedStringKey
+    let value: String
+    let symbol: String
+    var color: Color = Theme.accent
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: symbol)
+                    .foregroundStyle(color)
+                    .font(.system(size: 14, weight: .semibold))
+                Spacer(minLength: 0)
+                Text(title).font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.textSecondary)
+            }
+            Text(value).font(.system(size: 23, weight: .semibold)).monospacedDigit().tracking(-0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .flowSurface()
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct FlowFocusTimerKey: EnvironmentKey {
+    static var defaultValue: FocusTimer? { nil }
+}
+
+extension EnvironmentValues {
+    var flowFocusTimer: FocusTimer? {
+        get { self[FlowFocusTimerKey.self] }
+        set { self[FlowFocusTimerKey.self] = newValue }
+    }
+}
+
+/// Every overview exposes the same running session without starting another timer.
+struct FlowFocusControls: View {
+    @ObservedObject var focus: FocusTimer
+
+    var body: some View {
+        if focus.isActive {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Label(focus.state == .paused ? "Paused" : "In focus",
+                          systemImage: focus.state == .paused ? "pause.circle" : "timer")
+                        .foregroundStyle(Theme.accent)
+                    Spacer(minLength: 4)
+                    Text(focus.timeLabel).monospacedDigit()
+                        .accessibilityLabel("Time remaining")
+                        .accessibilityValue(focus.timeLabel)
+                }
+                .font(.system(size: 12, weight: .semibold))
+                HStack(spacing: 8) {
+                    Text(focus.activeTask?.title ?? String(localized: "Focus time"))
+                        .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                    Spacer(minLength: 0)
+                    Button { focus.togglePause() } label: {
+                        Image(systemName: focus.state == .paused ? "play.fill" : "pause.fill")
+                    }
+                    .accessibilityLabel(Text(focus.state == .paused ? "Resume" : "Pause"))
+                    .help(focus.state == .paused ? String(localized: "Resume") : String(localized: "Pause"))
+                    Button { focus.stop() } label: { Image(systemName: "stop.fill") }
+                        .accessibilityLabel("Stop focus")
+                        .help("Stop focus")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+            .padding(12)
+            .flowSurface()
+            .padding(.vertical, 6)
+        }
+    }
+}
+
+@MainActor
+extension WorkspaceDestination {
+    func open() { AppDelegate.shared?.showWorkspace(self) }
+}
+
+private struct WorkspaceNavigationKey: EnvironmentKey {
+    static var defaultValue: WorkspaceNavigation? { nil }
+}
+
+extension EnvironmentValues {
+    var workspaceNavigation: WorkspaceNavigation? {
+        get { self[WorkspaceNavigationKey.self] }
+        set { self[WorkspaceNavigationKey.self] = newValue }
     }
 }

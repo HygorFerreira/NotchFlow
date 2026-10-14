@@ -11,10 +11,13 @@ struct TaskRow: View {
     let onDragChanged: (CGFloat) -> Void
     let onDragEnd: () -> Void
     var onOpen: () -> Void = {}
+    var onMoveUp: (() -> Void)?
+    var onMoveDown: (() -> Void)?
 
     @EnvironmentObject private var store: Store
     @EnvironmentObject private var focus: FocusTimer
 
+    @Environment(\.undoManager) private var undoManager
     @State private var isHovered = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -87,7 +90,7 @@ struct TaskRow: View {
             }
             .disabled(task.isDone)
             .help(isRunningThis ? (focus.state == .running ? String(localized: "Pause") : String(localized: "Resume")) : String(localized: "Start focus"))
-            iconButton("trash", bg: .clear, fg: Theme.textSecondary) { store.delete(task) }
+            iconButton("trash", bg: .clear, fg: Theme.textSecondary) { store.delete(task, undoManager: undoManager) }
                 .help("Delete task")
 
             // Drag handle — six dots in a 2×3 grid. Only this corner drags;
@@ -105,7 +108,7 @@ struct TaskRow: View {
                         .onEnded { _ in onDragEnd() }
                 )
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 14)
         // Fixed height so the reorder stride math (rowHeight + gap) is exact,
         // regardless of whether a row shows a notes line.
         .frame(height: 60)
@@ -125,6 +128,18 @@ struct TaskRow: View {
             }
         }
         .shadow(color: .black.opacity(isDragging ? 0.28 : 0), radius: 12, y: 6)
+        .contextMenu {
+            Button("Open task details", action: onOpen)
+            Divider()
+            Button("Move up") { onMoveUp?() }.disabled(onMoveUp == nil)
+            Button("Move down") { onMoveDown?() }.disabled(onMoveDown == nil)
+            Divider()
+            Button("Delete task", role: .destructive) { store.delete(task, undoManager: undoManager) }
+        }
+        .accessibilityActions {
+            if let onMoveUp { Button("Move up", action: onMoveUp) }
+            if let onMoveDown { Button("Move down", action: onMoveDown) }
+        }
         .onHover { isHovered = $0 }
         .scaleEffect(isDragging && !reduceMotion ? 1.02 : 1.0)
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: isDragging)
@@ -145,7 +160,7 @@ struct TaskRow: View {
         )
     }
 
-    private func iconButton(_ icon: String, bg: Color, fg: Color = .white,
+    private func iconButton(_ icon: String, bg: Color, fg: Color = Theme.onAccent,
                             _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
@@ -153,7 +168,7 @@ struct TaskRow: View {
                 .foregroundStyle(fg)
                 .frame(width: 26, height: 26)
                 .contentShape(Rectangle())   // hit area = full 26×26, not just the circle
-                .background(bg, in: Circle())
+                .background(bg, in: RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(FlowCompactButtonStyle())
         .accessibilityLabel(Text(icon == "trash" ? String(localized: "Delete task") : icon == "pause.fill" ? String(localized: "Pause") : isRunningThis ? String(localized: "Resume") : String(localized: "Start focus")))
