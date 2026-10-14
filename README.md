@@ -10,6 +10,19 @@ Feito com **SwiftUI e AppKit**, para **macOS 14 ou superior**, com interface em 
 
 ![Painel do NotchFlow](docs/images/1-dashboard.png)
 
+## Atualizações recentes
+
+Atualizado em **10 de outubro de 2026**. Versão configurada no projeto: **1.0.0**, build **1**. As novidades abaixo estão no código em desenvolvimento; não indicam uma nova versão publicada.
+
+- **Consumo de IA:** acompanhamento dos limites das assinaturas do Codex e Claude Code, com login existente, horários de renovação e atualização automática a cada dois minutos. O painel identifica leituras antigas, sessões expiradas e falhas de conexão.
+- **Lembretes no notch:** avisos de água e medicamentos em uma pílula com ações rápidas **Bebi** e **Tomei**, além de intervalo de hidratação configurável.
+- **Aparência:** Liquid Glass opcional, transparência ajustável, melhorias no calendário e no resumo semanal, com respeito às preferências de acessibilidade do macOS.
+- **Foco e tarefas:** pausas preservam frações de segundo; editar uma tarefa mantém o foco já registrado e sua ordenação. Sessões em andamento são registradas ao encerrar normalmente o app.
+- **Estabilidade:** validação de títulos, notas e durações, correção da atualização de credenciais do Claude no Chaves e verificação da permissão de leitura do calendário.
+- **Qualidade:** testes de regressão do timer e integração contínua para compilações Debug, Release e App Store, além de traduções em português dos lembretes de medicamentos.
+
+O [histórico de alterações](CHANGELOG.md) reúne os detalhes e os marcos anteriores.
+
 ## Recursos
 
 | Área | O que você pode fazer |
@@ -57,7 +70,7 @@ Você precisa do Xcode completo. Este projeto usa grupos sincronizados de arquiv
 
 1. Abra `NotchFlow.xcodeproj` no Xcode.
 2. Selecione o esquema **NotchFlow** e o destino **My Mac**.
-3. Configure sua equipe em **Signing & Capabilities**, se necessário.
+3. Em **Signing & Capabilities**, selecione sua equipe e ajuste o Bundle Identifier conforme sua conta; o projeto pode conter a configuração de assinatura do desenvolvedor.
 4. Execute com `⌘R`.
 
 Também é possível compilar e abrir pelo terminal, a partir da pasta do projeto:
@@ -109,6 +122,17 @@ Os registros ficam localmente em `Application Support/NotchFlow/data.json`, no d
 Desinstalar apenas o aplicativo não garante a exclusão dos dados. Veja a [política de privacidade](PRIVACY.md) e as instruções de backup no [guia de uso](docs/USO.md).
 
 ## Desenvolvimento e distribuição
+
+Para validar as regras de persistência, produtividade, consumo de IA e timer, execute na raiz do repositório:
+
+```bash
+bash scripts/test-store.sh
+bash scripts/test-productivity.sh
+bash scripts/test-ai-usage.sh
+bash scripts/test-focus.sh
+```
+
+Os scripts compilam executáveis Swift independentes. O fluxo de integração contínua em [build.yml](.github/workflows/build.yml) executa essas quatro suítes e compila as configurações Debug, Release e a variante `APPSTORE`.
 
 - [Guia de desenvolvimento](docs/DESENVOLVIMENTO.md): arquitetura, compilação, testes, imagens e distribuição.
 - [Como contribuir](CONTRIBUTING.md): organização das alterações e validação.

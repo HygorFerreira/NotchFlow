@@ -625,6 +625,36 @@
         }
       }
     },
+    "Allow access" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir acesso"
+          }
+        }
+      }
+    },
+    "Allow access…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir acesso…"
+          }
+        }
+      }
+    },
+    "Allow NotchFlow to read the Codex login in this folder. Your account stays signed in through Codex." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita que o NotchFlow leia o login do Codex nesta pasta. Sua conta permanece conectada pelo Codex."
+          }
+        }
+      }
+    },
     "Animated rainbow with a soft glow instead of your accent color" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -955,6 +985,9 @@
         }
       }
     },
+    "claude auth login" : {
+
+    },
     "Clear filters" : {
       "localizations" : {
         "pt-BR" : {
@@ -1016,6 +1049,19 @@
           }
         }
       }
+    },
+    "Codex is not installed. Install it or sign in with Codex CLI." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Codex não está instalado. Instale o aplicativo ou entre pelo terminal."
+          }
+        }
+      }
+    },
+    "codex login" : {
+
     },
     "Completed" : {
       "localizations" : {
@@ -1099,6 +1145,7 @@
       }
     },
     "Connect Keychain" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -1109,6 +1156,7 @@
       }
     },
     "Connect the login you already use in Codex or Claude Code. Percentages refer to your subscription limits." : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -1155,6 +1203,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Telas conectadas"
+          }
+        }
+      }
+    },
+    "Connection options" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de conexão"
           }
         }
       }
@@ -1363,6 +1421,7 @@
       }
     },
     "Disconnect" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -1408,6 +1467,9 @@
           }
         }
       }
+    },
+    "Done" : {
+
     },
     "Dose (optional, e.g. 10 mg)" : {
       "localizations" : {
@@ -1492,6 +1554,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar medicamento"
+          }
+        }
+      }
+    },
+    "Enable a service to follow the account already signed in on your Mac. Sign in and switch accounts in the coding tool itself." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ative um serviço para acompanhar a conta já conectada no seu Mac. Entre e troque de conta na própria ferramenta de programação."
           }
         }
       }
@@ -1651,6 +1723,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foco hoje"
+          }
+        }
+      }
+    },
+    "Folder access is needed to read the Codex session. Use Allow access to try again." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "É necessário permitir o acesso à pasta para ler a sessão do Codex. Use Permitir acesso para tentar novamente."
           }
         }
       }
@@ -2203,11 +2285,22 @@
       }
     },
     "No subscription login found. Sign in with the coding tool first." : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nenhum login de assinatura encontrado. Entre primeiro na ferramenta de programação."
+          }
+        }
+      }
+    },
+    "No subscription login found. Use Sign in to connect through the coding tool." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum login de assinatura encontrado. Use Entrar para conectar pela ferramenta de programação."
           }
         }
       }
@@ -2691,6 +2784,7 @@
       }
     },
     "Reconnect Keychain" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -2914,6 +3008,16 @@
         }
       }
     },
+    "Run this command in your terminal and finish signing in through the coding tool. Return here when you are done." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Execute este comando no terminal e conclua o login pela ferramenta de programação. Volte aqui quando terminar."
+          }
+        }
+      }
+    },
     "Run your focus without leaving what you are doing" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3132,6 +3236,7 @@
       }
     },
     "Sign in to Claude Code, then connect Keychain. If your installation uses .credentials.json, choose ~/.claude instead." : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -3142,11 +3247,32 @@
       }
     },
     "Sign in to Codex, then choose ~/.codex. A ChatGPT subscription login in auth.json is required; API keys do not expose these limits." : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entre no Codex e escolha ~/.codex. É necessário um login da assinatura ChatGPT em auth.json; chaves de API não disponibilizam esses limites."
+          }
+        }
+      }
+    },
+    "Sign in with CLI…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrar pelo terminal…"
+          }
+        }
+      }
+    },
+    "Sign in…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrar…"
           }
         }
       }
@@ -3274,6 +3400,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Parar foco"
+          }
+        }
+      }
+    },
+    "Switch account…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trocar conta…"
+          }
+        }
+      }
+    },
+    "Switch accounts in the coding tool; NotchFlow follows the login. Turning this off does not sign you out." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Troque de conta na ferramenta de programação; o NotchFlow acompanha o login. Desativar não encerra sua sessão."
           }
         }
       }
@@ -3671,6 +3817,26 @@
         }
       }
     },
+    "Turn off to stop monitoring. You stay signed in to the coding tool." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desative para parar o acompanhamento. Sua conta continua conectada na ferramenta de programação."
+          }
+        }
+      }
+    },
+    "Turn on to monitor the existing login. If you are not signed in yet, use Sign in first." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ative para acompanhar o login existente. Se ainda não estiver conectado, use Entrar primeiro."
+          }
+        }
+      }
+    },
     "Unassigned focus" : {
       "localizations" : {
         "pt-BR" : {
@@ -3768,6 +3934,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O consumo é atualizado a cada 2 minutos enquanto o NotchFlow está aberto. Os serviços usam endpoints internos que podem mudar. As credenciais são apenas lidas e nunca copiadas para os dados do NotchFlow."
+          }
+        }
+      }
+    },
+    "Use a different folder only for a custom profile. macOS may require folder or Keychain permission to read an existing login." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use outra pasta apenas para um perfil personalizado. O macOS pode exigir permissão da pasta ou das Chaves para ler um login existente."
           }
         }
       }
@@ -4142,166 +4318,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suas configurações de água"
-          }
-        }
-      }
-    },
-    "Enable a service to follow the account already signed in on your Mac. Sign in and switch accounts in the coding tool itself." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ative um serviço para acompanhar a conta já conectada no seu Mac. Entre e troque de conta na própria ferramenta de programação."
-          }
-        }
-      }
-    },
-    "Run this command in your terminal and finish signing in through the coding tool. Return here when you are done." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Execute este comando no terminal e conclua o login pela ferramenta de programação. Volte aqui quando terminar."
-          }
-        }
-      }
-    },
-    "Turn off to stop monitoring. You stay signed in to the coding tool." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Desative para parar o acompanhamento. Sua conta continua conectada na ferramenta de programação."
-          }
-        }
-      }
-    },
-    "Switch account…" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trocar conta…"
-          }
-        }
-      }
-    },
-    "Sign in…" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entrar…"
-          }
-        }
-      }
-    },
-    "Sign in with CLI…" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entrar pelo terminal…"
-          }
-        }
-      }
-    },
-    "Allow access…" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permitir acesso…"
-          }
-        }
-      }
-    },
-    "Allow access" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permitir acesso"
-          }
-        }
-      }
-    },
-    "Connection options" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opções de conexão"
-          }
-        }
-      }
-    },
-    "Switch accounts in the coding tool; NotchFlow follows the login. Turning this off does not sign you out." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Troque de conta na ferramenta de programação; o NotchFlow acompanha o login. Desativar não encerra sua sessão."
-          }
-        }
-      }
-    },
-    "Turn on to monitor the existing login. If you are not signed in yet, use Sign in first." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ative para acompanhar o login existente. Se ainda não estiver conectado, use Entrar primeiro."
-          }
-        }
-      }
-    },
-    "Use a different folder only for a custom profile. macOS may require folder or Keychain permission to read an existing login." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use outra pasta apenas para um perfil personalizado. O macOS pode exigir permissão da pasta ou das Chaves para ler um login existente."
-          }
-        }
-      }
-    },
-    "Codex is not installed. Install it or sign in with Codex CLI." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O Codex não está instalado. Instale o aplicativo ou entre pelo terminal."
-          }
-        }
-      }
-    },
-    "Allow NotchFlow to read the Codex login in this folder. Your account stays signed in through Codex." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permita que o NotchFlow leia o login do Codex nesta pasta. Sua conta permanece conectada pelo Codex."
-          }
-        }
-      }
-    },
-    "Folder access is needed to read the Codex session. Use Allow access to try again." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "É necessário permitir o acesso à pasta para ler a sessão do Codex. Use Permitir acesso para tentar novamente."
-          }
-        }
-      }
-    },
-    "No subscription login found. Use Sign in to connect through the coding tool." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nenhum login de assinatura encontrado. Use Entrar para conectar pela ferramenta de programação."
           }
         }
       }
