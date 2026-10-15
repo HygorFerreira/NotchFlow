@@ -1,122 +1,97 @@
 #!/usr/bin/env swift
-//
-// Draws the NotchFlow app icon and writes every size macOS asks for: a night-blue squircle with the black notch
-// hanging from its top edge, the blue focus line running around it, and the month's activity grid below.
-//
-// Run from the repo root:
-//     swift scripts/generate-icon.swift
-//
-// Output: NotchFlow/Assets.xcassets/AppIcon.appiconset
-//
+// Generates the NotchFlow macOS icon from editable SwiftUI shapes.
+// Run from the repository root: swift scripts/generate-icon.swift
 
 import AppKit
 import SwiftUI
 
-private let blue = Color(red: 0.23, green: 0.51, blue: 0.96)
-private let lightBlue = Color(red: 0.45, green: 0.70, blue: 1.0)
-
-/// Open-top frame hugging the notch's sides and bottom, like the app's progress tray.
-private struct Tray: Shape {
-    var corner: CGFloat
-
+/// A continuous N suggests the movement between planning and focused work.
+private struct FlowMark: Shape {
     func path(in rect: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - corner))
-        p.addQuadCurve(to: CGPoint(x: rect.minX + corner, y: rect.maxY), control: CGPoint(x: rect.minX, y: rect.maxY))
-        p.addLine(to: CGPoint(x: rect.maxX - corner, y: rect.maxY))
-        p.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY - corner), control: CGPoint(x: rect.maxX, y: rect.maxY))
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-        return p
-    }
-}
-
-private struct Notch: Shape {
-    var corner: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - corner))
-        p.addQuadCurve(to: CGPoint(x: rect.maxX - corner, y: rect.maxY), control: CGPoint(x: rect.maxX, y: rect.maxY))
-        p.addLine(to: CGPoint(x: rect.minX + corner, y: rect.maxY))
-        p.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.maxY - corner), control: CGPoint(x: rect.minX, y: rect.maxY))
-        p.closeSubpath()
-        return p
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + 30))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX + 54, y: rect.minY + 12),
+            control: CGPoint(x: rect.minX, y: rect.minY - 24))
+        path.addLine(to: CGPoint(x: rect.maxX - 54, y: rect.maxY - 12))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.maxX, y: rect.maxY - 30),
+            control: CGPoint(x: rect.maxX, y: rect.maxY + 24))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        return path
     }
 }
 
 private struct Icon: View {
-    /// Activity levels for the grid, 0 (empty) to 4 (busiest), four weeks of five days.
-    private let levels: [[Int]] = [
-        [1, 3, 0, 2, 4],
-        [2, 4, 3, 1, 3],
-        [0, 2, 4, 3, 4],
-        [3, 4, 2, 4, 1],
-    ]
+    private let outline = RoundedRectangle(cornerRadius: 185, style: .continuous)
+    private let blue = Color(red: 0.20, green: 0.48, blue: 1.0)
+    private let cyan = Color(red: 0.47, green: 0.87, blue: 1.0)
 
     var body: some View {
-        // macOS icons sit on a 1024 canvas with an 824 body, leaving room for the shadow.
         ZStack {
-            ZStack(alignment: .top) {
-                RoundedRectangle(cornerRadius: 185, style: .continuous)
-                    .fill(LinearGradient(
-                        colors: [Color(red: 0.10, green: 0.13, blue: 0.24), Color(red: 0.03, green: 0.04, blue: 0.09)],
-                        startPoint: .top, endPoint: .bottom))
+            ZStack {
+                outline.fill(LinearGradient(
+                    colors: [Color(red: 0.16, green: 0.18, blue: 0.22),
+                             Color(red: 0.055, green: 0.065, blue: 0.085)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing))
 
-                // The notch, hanging from the top edge, with the focus line around it three quarters full.
-                ZStack(alignment: .top) {
-                    Notch(corner: 64)
-                        .fill(Color.black)
-                        .frame(width: 430, height: 168)
-                    Tray(corner: 44)
-                        .stroke(blue.opacity(0.28), style: StrokeStyle(lineWidth: 22, lineCap: .round))
-                        .frame(width: 370, height: 128)
-                        .offset(y: 8)
-                    Tray(corner: 44)
-                        .trim(from: 0, to: 0.72)
-                        .stroke(
-                            LinearGradient(colors: [lightBlue, blue], startPoint: .leading, endPoint: .trailing),
-                            style: StrokeStyle(lineWidth: 22, lineCap: .round))
-                        .frame(width: 370, height: 128)
-                        .offset(y: 8)
-                        .shadow(color: blue.opacity(0.9), radius: 18)
-                }
+                // A quiet pool of blue behind the monogram adds depth.
+                Ellipse()
+                    .fill(blue.opacity(0.20))
+                    .frame(width: 560, height: 420)
+                    .blur(radius: 90)
+                    .offset(y: 150)
 
-                // The activity grid.
-                VStack(spacing: 22) {
-                    ForEach(0..<levels.count, id: \.self) { row in
-                        HStack(spacing: 22) {
-                            ForEach(0..<levels[row].count, id: \.self) { col in
-                                let level = levels[row][col]
-                                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                    .fill(level == 0 ? Color.white.opacity(0.08) : blue.opacity(0.25 + Double(level) * 0.1875))
-                                    .frame(width: 84, height: 84)
-                            }
-                        }
+                // The inset silhouette echoes the Mac's physical notch.
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 0, bottomLeadingRadius: 42,
+                    bottomTrailingRadius: 42, topTrailingRadius: 0)
+                    .fill(Color(red: 0.025, green: 0.03, blue: 0.04))
+                    .frame(width: 292, height: 94)
+                    .overlay(alignment: .bottom) {
+                        Capsule()
+                            .fill(Color.white.opacity(0.12))
+                            .frame(width: 94, height: 5)
+                            .padding(.bottom, 17)
                     }
-                }
-                .padding(.top, 262)
+                    .frame(maxHeight: .infinity, alignment: .top)
+
+                FlowMark()
+                    .stroke(blue.opacity(0.30), style: StrokeStyle(lineWidth: 96, lineCap: .round, lineJoin: .round))
+                    .frame(width: 348, height: 320)
+                    .blur(radius: 25)
+                    .offset(y: 45)
+
+                FlowMark()
+                    .stroke(
+                        LinearGradient(colors: [cyan, Color(red: 0.32, green: 0.67, blue: 1), blue],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing),
+                        style: StrokeStyle(lineWidth: 88, lineCap: .round, lineJoin: .round))
+                    .frame(width: 348, height: 320)
+                    .shadow(color: .black.opacity(0.32), radius: 12, y: 14)
+                    .offset(y: 35)
             }
             .frame(width: 824, height: 824)
-            .clipShape(RoundedRectangle(cornerRadius: 185, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 185, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.10), lineWidth: 3))
-            .shadow(color: .black.opacity(0.35), radius: 20, y: 10)
+            .clipShape(outline)
+            .overlay(outline.strokeBorder(
+                LinearGradient(colors: [.white.opacity(0.24), .white.opacity(0.035), .white.opacity(0.09)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 3))
+            .shadow(color: .black.opacity(0.32), radius: 20, y: 12)
         }
         .frame(width: 1024, height: 1024)
     }
 }
 
 @MainActor
-private func render(size: Int, to url: URL) {
-    let renderer = ImageRenderer(content: Icon().frame(width: 1024, height: 1024))
+private func render(size: Int, to url: URL) throws {
+    let renderer = ImageRenderer(content: Icon())
     renderer.scale = CGFloat(size) / 1024
-    guard let image = renderer.cgImage else { fatalError("render failed") }
-    let rep = NSBitmapImageRep(cgImage: image)
-    try! rep.representation(using: .png, properties: [:])!.write(to: url)
+    guard let image = renderer.cgImage,
+          let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else {
+        fatalError("Unable to render the icon at \(size) pixels")
+    }
+    try data.write(to: url)
 }
 
 let folder = URL(fileURLWithPath: "NotchFlow/Assets.xcassets/AppIcon.appiconset")
@@ -125,9 +100,9 @@ let files: [(String, Int)] = [
     ("icon_128.png", 128), ("icon_128@2x.png", 256), ("icon_256.png", 256),
     ("icon_256@2x.png", 512), ("icon_512.png", 512), ("icon_512@2x.png", 1024),
 ]
-MainActor.assumeIsolated {
+try MainActor.assumeIsolated {
     for (name, size) in files {
-        render(size: size, to: folder.appendingPathComponent(name))
+        try render(size: size, to: folder.appendingPathComponent(name))
     }
 }
 print("Wrote \(files.count) icons to \(folder.path)")

@@ -14,7 +14,7 @@ Feito com **SwiftUI e AppKit**, para **macOS 14 ou superior**, com interface em 
 
 ## Atualizações recentes
 
-Atualizado em **10 de outubro de 2026**. Versão configurada no projeto: **1.0.0**, build **1**. As novidades abaixo estão no código em desenvolvimento; não indicam uma nova versão publicada.
+Atualizado em **15 de outubro de 2026**. Versão configurada no projeto: **1.1.0**, build **2**, preparada para teste privado por DMG. As novidades abaixo estão no código em desenvolvimento; não indicam uma nova versão publicada.
 
 - **Anéis, alertas e custos de IA:** Codex e Claude com anéis de sessão e semana (interno, externo ou desativado), seleção do limite principal, porcentagens e tempo até a renovação. Alertas opcionais em 80% e 100%, aviso de renovação e som configurável por serviço. Estimativa do valor consumido da assinatura com preço mensal informado por você, em BRL, USD ou EUR.
 - **Consumo de IA:** acompanhamento dos limites das assinaturas do Codex e Claude Code, com login existente, horários de renovação e atualização automática a cada dois minutos. O painel identifica leituras antigas, sessões expiradas e falhas de conexão.
