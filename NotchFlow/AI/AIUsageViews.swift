@@ -179,12 +179,14 @@ struct AIUsageWindowView: View {
                 .font(.caption).foregroundStyle(.secondary)
             DisclosureGroup("Rings and renewal") {
                 VStack(alignment: .leading, spacing: 12) {
-                    Picker("Weekly ring", selection: preference(provider, \.weeklyRing)) {
-                        Text("Off").tag(AIWeeklyRingStyle.off)
-                        Text("Inside").tag(AIWeeklyRingStyle.inside)
-                        Text("Outside").tag(AIWeeklyRingStyle.outside)
-                    }
-                    .pickerStyle(.segmented)
+                    FlowSegmentedControl(title: "Weekly ring", selection: preference(provider, \.weeklyRing),
+                                         values: [AIWeeklyRingStyle.off, .inside, .outside], label: {
+                        switch $0 {
+                        case .off: return "Off"
+                        case .inside: return "Inside"
+                        case .outside: return "Outside"
+                        }
+                    })
                     Toggle("Weekly limit in main ring", isOn: preference(provider, \.weeklyPrimary))
                     Toggle("Show percentage", isOn: preference(provider, \.showPercent))
                     Toggle("Show time until renewal", isOn: preference(provider, \.remainingTime))
@@ -274,7 +276,7 @@ private struct AIUsageRing: View {
     let stale: Bool
     let size: CGFloat
     var showPercent = true
-    var lineWidth: CGFloat = 4
+    var lineWidth: CGFloat = 3
     private var color: Color {
         guard let percent = window?.usedPercent else { return .secondary }
         return percent >= 100 ? .red : percent >= 80 ? .orange : Theme.accent
@@ -287,7 +289,7 @@ private struct AIUsageRing: View {
                 .rotationEffect(.degrees(-90))
             if showPercent {
                 Text(window.map { "\($0.usedPercent.formatted(.number.precision(.fractionLength(0))))%" } ?? "—")
-                    .font(.system(size: size > 50 ? 14 : 12, weight: .semibold, design: .rounded))
+                    .font(.system(size: size > 50 ? 14 : 12, weight: .semibold))
                     .monospacedDigit()
             }
         }

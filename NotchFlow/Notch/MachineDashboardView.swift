@@ -8,8 +8,8 @@ struct MachineDashboardView: View {
     @State private var memoryHistory: [Double?] = []
     @State private var didSample = false
     private let totalMemory = ProcessInfo.processInfo.physicalMemory
-    private let cpuColor = Color(red: 0.40, green: 0.66, blue: 1)
-    private let memoryColor = Color(red: 0.64, green: 0.53, blue: 1)
+    private let cpuColor = Theme.accent
+    private let memoryColor = Theme.textSecondary
 
     private var memoryUsage: Double? {
         usedMemory.map { min(1, Double($0) / Double(max(totalMemory, 1))) }
@@ -93,7 +93,7 @@ struct MachineDashboardView: View {
                 ZStack {
                     Circle().stroke(color.opacity(0.14), lineWidth: 4)
                     Circle().trim(from: 0, to: value ?? 0)
-                        .stroke(color.gradient, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                     Image(systemName: symbol)
                         .font(.system(size: 16, weight: .medium))
@@ -103,7 +103,7 @@ struct MachineDashboardView: View {
                 .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(value.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? "—")
-                        .font(.system(size: 25, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: 24, weight: .semibold).monospacedDigit())
                     Text(detail)
                         .font(.system(size: 9))
                         .foregroundStyle(Theme.textSecondary)
@@ -123,13 +123,7 @@ struct MachineDashboardView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: 124)
-        .background {
-            RoundedRectangle(cornerRadius: Theme.panelCorner)
-                .fill(LinearGradient(colors: [color.opacity(0.12), Theme.panel], startPoint: .topLeading, endPoint: .bottomTrailing))
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.panelCorner).stroke(color.opacity(0.18), lineWidth: 1)
-        }
+        .flowSurface()
         .animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: value)
         .accessibilityElement(children: .combine)
     }

@@ -88,6 +88,10 @@ Uma compilação Debug oferece o modo de snapshots, com dados de demonstração 
 
 Para inglês, use `'(en)'`. O programa imprime o diretório de saída e encerra após renderizar. Copie as imagens antes da próxima execução, pois a pasta temporária de snapshots é recriada.
 
+Para revisar o sistema visual completo com dados fictícios, acrescente `-snapshotVisualReview 1` ao comando. Esse modo gera as telas principais, todas as páginas de ajustes, detalhe de tarefa e captura rápida nas aparências clara e escura, além das cinco abas do notch e do timer compacto. As imagens são prévias reais de SwiftUI; confira também foco de teclado, popovers e redimensionamento no app.
+
+Para conferir apenas as cinco abas do notch e o timer compacto, use `-snapshotNotchOnly 1` junto de `-snapshot 1`. Essas capturas incluem um fundo azul para distinguir a área da câmera dos cantos transparentes do painel.
+
 Para compor imagens de apresentação, coloque as capturas em `appstore/screenshots/raw/pt-BR/` e `appstore/screenshots/raw/en/`, respectivamente, e execute:
 
 ```bash

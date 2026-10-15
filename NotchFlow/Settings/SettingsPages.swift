@@ -79,10 +79,10 @@ private struct PresetChip: View {
             Text("\(minutes)")
                 .font(.system(size: 12, weight: .medium))
                 .monospacedDigit()
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
+                .foregroundStyle(Theme.textPrimary)
                 .frame(minWidth: 34, minHeight: 24)
                 .background(
-                    Capsule().fill(isSelected ? Color.accentColor : Color.primary.opacity(0.08))
+                    Capsule().fill(isSelected ? Theme.selection : Theme.control)
                 )
                 .contentShape(Capsule())
         }
@@ -94,7 +94,7 @@ private struct PresetChip: View {
 
 struct NotchSettingsPage: View {
     @AppStorage(FlowAppearance.themeKey) private var themeMode = FlowAppearance.Mode.system.rawValue
-    @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = true
+    @AppStorage(FlowAppearance.liquidGlassKey) private var liquidGlass = false
     @AppStorage(FlowAppearance.transparencyKey) private var glassTransparency = 50.0
     @EnvironmentObject private var store: Store
 
@@ -248,7 +248,7 @@ private struct NotchPreview: View {
             .shadow(color: .pink.opacity(0.8), radius: 3)
         } else {
             ZStack {
-                shape.stroke(Theme.accent.opacity(0.5), style: style)
+                shape.stroke(Color.white.opacity(0.10), style: style)
                 shape.trim(from: 0, to: progress).stroke(Theme.accent, style: style)
             }
         }
@@ -306,7 +306,7 @@ struct DisplaySettingsPage: View {
                         if screen == active {
                             Label("Notch here", systemImage: "checkmark.circle.fill")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accent)
                         }
                     }
                 }
@@ -509,8 +509,7 @@ struct MedicationsSettingsPage: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(SettingsPageID.medications.color)
+                .buttonStyle(FlowButtonStyle(prominent: true))
                 .settingAnchor("Add medication")
             }
         }
@@ -543,8 +542,7 @@ struct MedicationsSettingsPage: View {
                 } label: {
                     Label("Taken", systemImage: "checkmark")
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.green)
+                .buttonStyle(FlowButtonStyle())
                 .disabled(!medication.isEnabled)
 
                 Toggle(

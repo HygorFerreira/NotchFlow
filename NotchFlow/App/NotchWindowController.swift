@@ -45,6 +45,10 @@ final class NotchWindowController {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.reposition(animated: true) }
             .store(in: &cancellables)
+        viewModel.$dashboardTab
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.reposition(animated: true) }
+            .store(in: &cancellables)
         viewModel.$reminderAlert
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in

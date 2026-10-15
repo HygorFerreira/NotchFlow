@@ -29,6 +29,7 @@ struct Task: Identifiable, Codable, Hashable {
     var completedAt: Date?
     /// Only the hour/minute are used, combined with scheduledDate locally.
     var startTime: Date?
+    var endTime: Date?
     var reminderMinutesBefore: Int?
 
     var scheduledStart: Date? {
@@ -36,6 +37,30 @@ struct Task: Identifiable, Codable, Hashable {
         let components = Calendar.current.dateComponents([.hour, .minute], from: startTime)
         return Calendar.current.date(bySettingHour: components.hour ?? 0,
                                      minute: components.minute ?? 0, second: 0, of: scheduledDate)
+    }
+
+    var scheduledEnd: Date? {
+        guard let scheduledDate, startTime != nil, let endTime else { return nil }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: endTime)
+        return Calendar.current.date(bySettingHour: components.hour ?? 0,
+                                     minute: components.minute ?? 0, second: 0, of: scheduledDate)
+    }
+
+    /// Compare clock minutes, independent of the dates carried by the pickers.
+    static func isValidTimeRange(start: Date?, end: Date?) -> Bool {
+        guard let end else { return true }
+        guard let start else { return false }
+        let calendar = Calendar.current
+        let startMinute = calendar.component(.hour, from: start) * 60 + calendar.component(.minute, from: start)
+        let endMinute = calendar.component(.hour, from: end) * 60 + calendar.component(.minute, from: end)
+        return endMinute > startMinute
+    }
+
+    var scheduleLabel: String? {
+        guard let start = scheduledStart else { return nil }
+        let startLabel = start.formatted(date: .omitted, time: .shortened)
+        guard let end = scheduledEnd else { return startLabel }
+        return "\(startLabel) – \(end.formatted(date: .omitted, time: .shortened))"
     }
 
     func reminderDate(after now: Date = Date()) -> Date? {
@@ -62,6 +87,7 @@ struct Task: Identifiable, Codable, Hashable {
          tags: [String] = [],
          recurrence: TaskRecurrence = TaskRecurrence(),
          startTime: Date? = nil,
+         endTime: Date? = nil,
          reminderMinutesBefore: Int? = nil) {
         self.id = UUID()
         self.title = title
@@ -77,6 +103,7 @@ struct Task: Identifiable, Codable, Hashable {
         self.recurrence = recurrence
         self.completedAt = isDone ? Date() : nil
         self.startTime = startTime
+        self.endTime = endTime
         self.reminderMinutesBefore = reminderMinutesBefore
     }
 
@@ -84,7 +111,7 @@ struct Task: Identifiable, Codable, Hashable {
         case id, title, notes, scheduledDate, estimateMinutes, isDone
         case createdAt, focusedSeconds, sortOrder
         case project, tags, recurrence, recurrenceParentID, completedAt
-        case startTime, reminderMinutesBefore
+        case startTime, endTime, reminderMinutesBefore
     }
 
     init(from decoder: Decoder) throws {
@@ -107,6 +134,7 @@ struct Task: Identifiable, Codable, Hashable {
         recurrenceParentID = try c.decodeIfPresent(UUID.self, forKey: .recurrenceParentID)
         completedAt = try c.decodeIfPresent(Date.self, forKey: .completedAt)
         startTime = try c.decodeIfPresent(Date.self, forKey: .startTime)
+        endTime = try c.decodeIfPresent(Date.self, forKey: .endTime)
         reminderMinutesBefore = try c.decodeIfPresent(Int.self, forKey: .reminderMinutesBefore)
     }
 

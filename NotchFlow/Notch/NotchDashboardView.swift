@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// Expanded hover panel: To-Do list on the left, streak heatmap on the right.
+/// Compact navigation above the dashboard, with task and activity columns.
 struct NotchDashboardView: View {
     @EnvironmentObject private var vm: NotchViewModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showFilters = false
     private var selectedTab: DashboardTab {
         get { DashboardTab(rawValue: vm.dashboardTab) ?? .activity }
         nonmutating set { vm.dashboardTab = newValue.rawValue }
@@ -32,6 +33,22 @@ struct NotchDashboardView: View {
     var body: some View {
         VStack(spacing: NotchViewModel.dashboardTabSpacing) {
             tabBar
+                .frame(width: 370)
+                .frame(maxWidth: .infinity)
+                .overlay(alignment: .trailing) {
+                    Button { showFilters.toggle() } label: {
+                        Image(systemName: "line.3.horizontal.decrease")
+                            .font(.system(size: 11))
+                            .foregroundStyle(NotchPalette.secondary)
+                            .frame(width: 26, height: 30)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Projects")
+                    .popover(isPresented: $showFilters) {
+                        TaskFiltersView(compact: true).padding(16)
+                            .environmentObject(vm.store)
+                    }
+                }
 
             Group {
                 switch selectedTab {
@@ -48,26 +65,40 @@ struct NotchDashboardView: View {
                 }
             }
         }
-        .padding(.horizontal, 18)
+        .padding(.horizontal, 20)
         // Clear the physical notch: content starts below the notch height.
         .padding(.top, vm.notchHeight + NotchViewModel.dashboardTopGap)
         .padding(.bottom, NotchViewModel.dashboardBottomPadding)
+        .onChange(of: showFilters) { _, shown in
+            shown ? vm.beginHold() : vm.endHold()
+        }
     }
 
     private var tabBar: some View {
-        Picker("Activity", selection: Binding(
-            get: { selectedTab },
-            set: { tab in
-                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) { selectedTab = tab }
-            })) {
+        HStack(spacing: 4) {
             ForEach(DashboardTab.allCases) { tab in
-                Label(tab.rawValue.localized, systemImage: tab.symbol).tag(tab)
+                Button {
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) {
+                        selectedTab = tab
+                    }
+                } label: {
+                    Text(tab.rawValue.localized)
+                        .font(.system(size: 11, weight: selectedTab == tab ? .semibold : .medium))
+                        .foregroundStyle(selectedTab == tab ? Color(hex: "#24262C") : NotchPalette.secondary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: NotchViewModel.dashboardTabHeight)
+                        .background(selectedTab == tab ? Color(hex: "#E8EBF3") : .clear,
+                                    in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(FlowCompactButtonStyle())
+                .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
         }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .controlSize(.small)
-        .frame(height: NotchViewModel.dashboardTabHeight + 6)
+        .padding(3)
+        .background(NotchPalette.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Activity")
     }
 
     private var activityDashboard: some View {
@@ -79,8 +110,8 @@ struct NotchDashboardView: View {
                 .fill(Color.white.opacity(0.07))
                 .frame(width: 1)
 
-            StreakHeatmap()
-                .frame(width: 204, alignment: .topLeading)
+            FocusActivityHeatmap()
+                .frame(width: 244, height: NotchViewModel.todoListHeight + NotchViewModel.columnSpacing + NotchViewModel.addRowHeight, alignment: .topLeading)
         }
     }
 }
@@ -105,20 +136,6 @@ struct TodoPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: NotchViewModel.columnSpacing) {
-            HStack {
-                TaskFiltersView(compact: true)
-                Spacer()
-                Button { vm.openTasksWindow() } label: {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Theme.textSecondary)
-                        .frame(width: 22, height: 22)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-            .frame(height: NotchViewModel.headerHeight)
-
             // Exactly two rows tall; scrolls when there are more tasks.
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: rowGap) {
@@ -151,13 +168,16 @@ struct TodoPanel: View {
             }
             .frame(height: NotchViewModel.todoListHeight)
 
-            HStack(spacing: 12) {
+            HStack(spacing: 6) {
                 Button { vm.openTasksWindow() } label: {
                     Label("Add a task", systemImage: "plus")
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .frame(height: NotchViewModel.addRowHeight)
+                        .padding(.horizontal, 14)
+                        .background(NotchPalette.card, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(NotchPalette.border))
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -167,10 +187,14 @@ struct TodoPanel: View {
                         Image(systemName: "pills.fill")
                         Text(nextMedicationLabel)
                             .lineLimit(1)
+                        Image(systemName: "chevron.right").font(.system(size: 8))
                     }
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Theme.medication)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(NotchPalette.text)
                     .frame(height: NotchViewModel.addRowHeight)
+                    .padding(.horizontal, 12)
+                    .background(NotchPalette.card, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(NotchPalette.border))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -260,6 +284,7 @@ private struct TodoRow: View {
     @EnvironmentObject private var vm: NotchViewModel
     @EnvironmentObject private var store: Store
     @EnvironmentObject private var focus: FocusTimer
+    @State private var hovered = false
 
     private var isRunningThis: Bool {
         focus.isActive && focus.activeTask?.id == task.id
@@ -279,25 +304,20 @@ private struct TodoRow: View {
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(task.title)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(task.isDone ? Theme.textSecondary : Theme.textPrimary)
                     .strikethrough(task.isDone)
                     .lineLimit(1)
                 if isRunningThis { FlowFocusBadge() }
-                if !isRunningThis, let start = task.scheduledStart {
+                if !isRunningThis, let schedule = task.scheduleLabel {
                     HStack(spacing: 3) {
-                        Text(start.formatted(date: .omitted, time: .shortened))
+                        Text(schedule)
                         if task.reminderMinutesBefore != nil { Image(systemName: "bell") }
                     }
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textSecondary)
                 }
-                if !isRunningThis && !task.notes.isEmpty {
-                    Text(task.notes)
-                        .font(.system(size: 10))
-                        .foregroundStyle(Theme.textSecondary)
-                        .lineLimit(1)
-                }
+
             }
             .contentShape(Rectangle())
             .onTapGesture {
@@ -313,6 +333,7 @@ private struct TodoRow: View {
                 minutes: estimateBinding,
                 range: FocusSettings.focusRange,
                 presets: [10, 15, 25, 30, 45, 60],
+                compact: true,
                 onPopoverChange: { shown in shown ? vm.beginHold() : vm.endHold() }
             )
 
@@ -322,9 +343,9 @@ private struct TodoRow: View {
                 Image(systemName: isRunningThis && focus.state == .running ? "pause.fill" : "play.fill")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(.white)
-                    .frame(width: 22, height: 22)
+                    .frame(width: 30, height: 30)
                     .contentShape(Rectangle())
-                    .background(isRunningThis && focus.state == .running ? Theme.danger : Theme.accent,
+                    .background(isRunningThis || (index == 0 && !focus.isActive) ? NotchPalette.accent : Color(hex: "#40444D"),
                                 in: Circle())
             }
             .buttonStyle(.plain)
@@ -338,6 +359,9 @@ private struct TodoRow: View {
             // .global space: the row is moved by `.offset(y:)` mid-drag, so a
             // .local space would feed the translation back into itself.
             DragHandle()
+                .scaleEffect(0.7)
+                .frame(width: 8)
+                .opacity(hovered || isDragging ? 0.8 : 0)
                 .gesture(
                     DragGesture(minimumDistance: 3, coordinateSpace: .global)
                         .onChanged { value in
@@ -347,12 +371,14 @@ private struct TodoRow: View {
                         .onEnded { _ in onDragEnd() }
                 )
         }
-        .padding(.horizontal, 8)
+        .padding(.leading, 16)
+        .padding(.trailing, 6)
         .frame(height: NotchViewModel.todoRowHeight)
-        .background(isDragging ? Theme.panelHover : Theme.panel,
-                    in: RoundedRectangle(cornerRadius: Theme.panelCorner))
-        .overlay(RoundedRectangle(cornerRadius: Theme.panelCorner)
-            .strokeBorder(isRunningThis ? Theme.accent.opacity(0.6) : Color.white.opacity(0.06)))
+        .background(isDragging || hovered ? NotchPalette.cardHover : NotchPalette.card,
+                    in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous)
+            .strokeBorder(isRunningThis ? Theme.accent.opacity(0.35) : NotchPalette.border))
+        .onHover { hovered = $0 }
         .scaleEffect(isDragging && !reduceMotion ? 1.03 : 1.0)
         .opacity(task.isDone ? 0.5 : 1.0)
         .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: isDragging)

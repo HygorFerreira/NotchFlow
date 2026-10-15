@@ -160,13 +160,36 @@ struct ProductivityTests {
         precondition(scheduleReload.startTime == clock && scheduleReload.reminderMinutesBefore == 0)
         precondition(decoded.startTime == nil && decoded.reminderMinutesBefore == nil)
 
+        // Execution intervals persist independently of focus estimates.
+        let endClock = Calendar.current.date(bySettingHour: 15, minute: 30, second: 0, of: Date())!
+        planned.endTime = endClock
+        precondition(Task.isValidTimeRange(start: clock, end: endClock))
+        precondition(!Task.isValidTimeRange(start: clock, end: clock))
+        precondition(!Task.isValidTimeRange(start: endClock, end: clock))
+        precondition(!Task.isValidTimeRange(start: nil, end: endClock))
+        precondition(Task.isValidTimeRange(start: clock, end: nil))
+        let differentDayEnd = Calendar.current.date(byAdding: .day, value: -1, to: endClock)!
+        precondition(Task.isValidTimeRange(start: clock, end: differentDayEnd))
+        precondition(planned.scheduledEnd == Calendar.current.date(bySettingHour: 15, minute: 30, second: 0, of: scheduleDay))
+        let intervalReload = try JSONDecoder().decode(Task.self, from: JSONEncoder().encode(planned))
+        precondition(intervalReload.endTime == endClock && intervalReload.estimateMinutes == planned.estimateMinutes)
+        precondition(decoded.endTime == nil)
+        planned.scheduledDate = nil
+        precondition(planned.scheduledEnd == nil && planned.scheduleLabel == nil)
+
         // Store mutations keep the notification scheduler informed, including recurrence.
         var scheduledSnapshots: [[Task]] = []
         let reminderStore = Store(fileURL: root.appendingPathComponent("reminders.json"),
                                   taskReminderScheduler: { scheduledSnapshots.append($0) })
         reminderStore.add(title: "Alert", date: scheduleDay, recurrence: daily,
-                          startTime: clock, reminderMinutesBefore: 10)
+                          startTime: clock, endTime: endClock, reminderMinutesBefore: 10)
         precondition(scheduledSnapshots.count == 1 && scheduledSnapshots.last?.first?.reminderDate() != nil)
+        reminderStore.add(title: "Invalid interval", startTime: endClock, endTime: clock)
+        precondition(reminderStore.tasks.count == 1)
+        var invalidTaskInterval = reminderStore.tasks[0]
+        invalidTaskInterval.endTime = clock
+        reminderStore.update(invalidTaskInterval)
+        precondition(reminderStore.tasks[0].endTime == endClock)
         var changed = reminderStore.tasks[0]
         changed.reminderMinutesBefore = 30
         reminderStore.update(changed)
@@ -174,6 +197,9 @@ struct ProductivityTests {
         reminderStore.toggleDone(reminderStore.tasks[0])
         precondition(scheduledSnapshots.last?.first?.reminderDate() == nil)
         precondition(reminderStore.tasks[1].startTime == clock && reminderStore.tasks[1].reminderMinutesBefore == 30)
+        precondition(reminderStore.tasks[1].endTime == endClock)
+        let intervalStoreReload = Store(fileURL: root.appendingPathComponent("reminders.json"), taskReminderScheduler: { _ in })
+        precondition(intervalStoreReload.tasks.allSatisfy { $0.endTime == endClock })
         reminderStore.delete(reminderStore.tasks[1])
         precondition(scheduledSnapshots.last?.count == 1)
 

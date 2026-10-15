@@ -72,9 +72,9 @@ final class Store: ObservableObject {
     /// setting; pass an explicit value to override per task.
     func add(title: String, notes: String = "", estimate: Int? = nil, date: Date? = Date(),
              project: String = "", tags: [String] = [], recurrence: TaskRecurrence = TaskRecurrence(),
-             startTime: Date? = nil, reminderMinutesBefore: Int? = nil) {
+             startTime: Date? = nil, endTime: Date? = nil, reminderMinutesBefore: Int? = nil) {
         let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !title.isEmpty, recurrence.isValid else { return }
+        guard !title.isEmpty, recurrence.isValid, Task.isValidTimeRange(start: startTime, end: endTime) else { return }
         let est = estimate ?? settings.focusMinutes
         let nextOrder = (tasks.map(\.sortOrder).max() ?? 0) + 1024
         tasks.append(Task(title: String(title.prefix(Task.titleLimit)), notes: String(notes.prefix(Task.notesLimit)),
@@ -82,14 +82,14 @@ final class Store: ObservableObject {
                           estimateMinutes: min(180, max(1, est)), sortOrder: nextOrder,
                           project: project.trimmingCharacters(in: .whitespacesAndNewlines),
                           tags: Task.normalizedTags(tags.joined(separator: ",")), recurrence: recurrence,
-                          startTime: startTime, reminderMinutesBefore: reminderMinutesBefore))
+                          startTime: startTime, endTime: endTime, reminderMinutesBefore: reminderMinutesBefore))
         save()
         rescheduleTaskReminders()
     }
 
     func update(_ task: Task) {
         guard let idx = tasks.firstIndex(where: { $0.id == task.id }) else { return }
-        guard !task.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, task.recurrence.isValid else { return }
+        guard !task.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, task.recurrence.isValid, Task.isValidTimeRange(start: task.startTime, end: task.endTime) else { return }
         let wasDone = tasks[idx].isDone
         var updated = task
         updated.title = String(task.title.trimmingCharacters(in: .whitespacesAndNewlines).prefix(Task.titleLimit))
@@ -173,7 +173,7 @@ final class Store: ObservableObject {
                         estimateMinutes: task.estimateMinutes,
                         sortOrder: (tasks.map(\.sortOrder).max() ?? 0) + 1024,
                         project: task.project, tags: task.tags, recurrence: task.recurrence,
-                        startTime: task.startTime, reminderMinutesBefore: task.reminderMinutesBefore)
+                        startTime: task.startTime, endTime: task.endTime, reminderMinutesBefore: task.reminderMinutesBefore)
         next.recurrenceParentID = task.id
         tasks.append(next)
     }

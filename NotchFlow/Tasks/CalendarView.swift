@@ -4,7 +4,7 @@ import SwiftUI
 /// Layout notes:
 /// - Three-letter weekday labels in the user's language, so no two days read
 ///   the same (two letters collide in Portuguese: Qua/Qui, Seg/Sex).
-/// - Today gets an accent outline; the selected day gets a filled tile.
+/// - Today gets an accent outline; the selected day gets a neutral filled tile.
 ///   Accent dots mark days with unfinished tasks, with a matching legend.
 /// - The grid uses indexed IDs (not `Date?.self`) so the leading empty
 ///   cells don't collide and get deduped by SwiftUI's diff.
@@ -82,7 +82,7 @@ struct CalendarView: View {
             VStack(spacing: 2) {
                 Text("\(cal.component(.day, from: day))")
                     .font(.system(size: 12, weight: isSelected || isToday ? .bold : .regular).monospacedDigit())
-                    .foregroundStyle(isSelected ? Theme.onAccent : Theme.textPrimary)
+                    .foregroundStyle(Theme.textPrimary)
                 // Planned days retain their marker inside the selected tile.
                 Circle()
                     .fill(dotColor(isToday: isToday, isBusy: busyDays.contains(cal.startOfDay(for: day)),
@@ -92,9 +92,9 @@ struct CalendarView: View {
             .frame(maxWidth: .infinity, minHeight: cellHeight)
             .background(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(isSelected ? Theme.accent : isToday ? Theme.accent.opacity(0.12) : .clear)
+                    .fill(isSelected ? Theme.selection : .clear)
                     .overlay(RoundedRectangle(cornerRadius: 9)
-                        .strokeBorder(isToday && !isSelected ? Theme.accent.opacity(0.65) : .clear))
+                        .strokeBorder(isToday ? Theme.accent.opacity(0.65) : .clear))
                     .frame(width: 30, height: 30)
             )
             .contentShape(Rectangle())
@@ -107,7 +107,6 @@ struct CalendarView: View {
     }
 
     private func dotColor(isToday: Bool, isBusy: Bool, isSelected: Bool) -> Color {
-        if isSelected { return isBusy ? Theme.onAccent.opacity(0.8) : .clear }
         return isBusy ? Theme.accent : .clear
     }
 

@@ -7,6 +7,7 @@ struct FocusTimePicker: View {
     @Binding var minutes: Int
     let range: ClosedRange<Int>
     let presets: [Int]
+    var compact = false
     /// Fired when the popover opens (`true`) or closes (`false`). The notch uses
     /// this to hold itself open while the popover — a separate child window — is
     /// showing, so it doesn't collapse when the cursor moves into it.
@@ -18,6 +19,12 @@ struct FocusTimePicker: View {
             popoverShown.toggle()
         } label: {
             HStack(spacing: 5) {
+                if compact {
+                    Text("\(minutes) min")
+                        .font(.system(size: 11))
+                        .foregroundStyle(NotchPalette.secondary)
+                        .monospacedDigit()
+                } else {
                 Image(systemName: "clock")
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textSecondary)
@@ -28,9 +35,10 @@ struct FocusTimePicker: View {
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.system(size: 8, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
+                }
             }
             .padding(.horizontal, 8).padding(.vertical, 5)
-            .background { FlowBackdrop(shape: Capsule(), color: Theme.panelHover, allowsGlass: true) }
+            .background(compact ? .clear : Theme.control, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -47,7 +55,7 @@ struct FocusTimePicker: View {
                 Spacer()
                 VStack(spacing: -2) {
                     Text("\(minutes)")
-                        .font(.system(size: 30, weight: .semibold, design: .rounded))
+                        .font(.system(size: 30, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .monospacedDigit()
                     Text("min")
@@ -69,9 +77,9 @@ struct FocusTimePicker: View {
                             .lineLimit(1)
                             .fixedSize()
                             .padding(.horizontal, 10).padding(.vertical, 4)
-                            .background(preset == minutes ? Theme.accent : Theme.panel,
+                            .background(preset == minutes ? Theme.selection : Theme.panel,
                                         in: RoundedRectangle(cornerRadius: 6))
-                            .foregroundStyle(preset == minutes ? .white : Theme.textSecondary)
+                            .foregroundStyle(preset == minutes ? Theme.textPrimary : Theme.textSecondary)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)

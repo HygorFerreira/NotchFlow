@@ -49,6 +49,7 @@ struct QuickCaptureView: View {
     @State private var date = Date()
     @State private var unscheduled = false
     @State private var startTime: Date?
+    @State private var endTime: Date?
     @State private var reminderMinutesBefore: Int?
     @State private var didAdd = false
     @FocusState private var titleFocused: Bool
@@ -74,9 +75,9 @@ struct QuickCaptureView: View {
                 TaskScheduleView(date: Binding(
                     get: { unscheduled ? nil : date },
                     set: { value in if let value { date = value; unscheduled = false } }),
-                    startTime: $startTime, reminderMinutesBefore: $reminderMinutesBefore)
+                    startTime: $startTime, endTime: $endTime, reminderMinutesBefore: $reminderMinutesBefore)
                 .onChange(of: unscheduled) { _, value in
-                    if value { startTime = nil; reminderMinutesBefore = nil }
+                    if value { startTime = nil; endTime = nil; reminderMinutesBefore = nil }
                 }
                 TaskOptionsView(project: $project, tagsText: $tags, recurrence: $recurrence)
                     .onChange(of: recurrence.frequency) { _, value in
@@ -92,7 +93,7 @@ struct QuickCaptureView: View {
                     Button("Add", action: addTask)
                         .keyboardShortcut(.defaultAction)
                         .buttonStyle(FlowButtonStyle(prominent: true))
-                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !recurrence.isValid)
+                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !recurrence.isValid || !Task.isValidTimeRange(start: startTime, end: endTime))
                 }
             }
         }
@@ -108,10 +109,10 @@ struct QuickCaptureView: View {
     }
 
     private func addTask() {
-        guard !didAdd, !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, recurrence.isValid else { return }
+        guard !didAdd, !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, recurrence.isValid, Task.isValidTimeRange(start: startTime, end: endTime) else { return }
         store.add(title: title, date: unscheduled ? nil : date, project: project,
                   tags: Task.normalizedTags(tags), recurrence: recurrence,
-                  startTime: startTime, reminderMinutesBefore: reminderMinutesBefore)
+                  startTime: startTime, endTime: endTime, reminderMinutesBefore: reminderMinutesBefore)
         store.selectedProject = nil
         store.selectedTag = nil
         didAdd = true

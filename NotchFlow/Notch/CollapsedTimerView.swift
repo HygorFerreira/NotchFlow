@@ -34,11 +34,13 @@ struct CollapsedTimerView: View {
                 HStack(spacing: 0) {
                     // left ear: countdown, pushed toward the notch
                     HStack(spacing: 6) {
-                        Image(systemName: focus.state == .running ? "waveform.path" : "pause.fill")
+                        if focus.state == .paused {
+                        Image(systemName: "pause.fill")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(focus.state == .running ? Theme.accent : Theme.textSecondary)
+                        }
                         Text(focus.timeLabel)
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .font(.system(size: 13, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                             .monospacedDigit()
                     }
@@ -49,11 +51,14 @@ struct CollapsedTimerView: View {
                     Color.clear.frame(width: vm.notchWidth)
 
                     // right ear: active task title
-                    HStack(spacing: 6) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(focus.activeTask?.title ?? "")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(Theme.textSecondary)
                             .lineLimit(1)
+                        if vm.store.settings.showTimeline && !vm.store.settings.rainbowTimeline {
+                            FlowProgressBar(value: focus.progress, height: 3, color: NotchPalette.accent)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 14)

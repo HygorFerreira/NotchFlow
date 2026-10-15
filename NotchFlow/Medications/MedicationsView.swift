@@ -129,7 +129,7 @@ struct MedicationsView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
-        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 10))
+        .flowSurface()
     }
 
     private var emptyState: some View {
@@ -148,8 +148,7 @@ struct MedicationsView: View {
             Button("Add medication") {
                 showingAddForm = true
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
+            .buttonStyle(FlowButtonStyle(prominent: true))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
@@ -205,8 +204,7 @@ private struct MedicationRow: View {
                 Label("Taken", systemImage: "checkmark")
                     .font(.system(size: 11, weight: .semibold))
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.success)
+            .buttonStyle(FlowButtonStyle())
             .disabled(!medication.isEnabled)
 
             Toggle("", isOn: Binding(

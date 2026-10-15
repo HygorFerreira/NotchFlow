@@ -91,10 +91,10 @@ struct HealthDashboardView: View {
             } label: {
                 Label("Taken", systemImage: "checkmark")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.textPrimary)
                     .padding(.horizontal, 9)
                     .frame(height: 24)
-                    .background(Color.green, in: Capsule())
+                    .background(Theme.control, in: Capsule())
                     .contentShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -102,7 +102,7 @@ struct HealthDashboardView: View {
         }
         .padding(.horizontal, 8)
         .frame(height: NotchViewModel.todoRowHeight)
-        .background(Theme.panel, in: RoundedRectangle(cornerRadius: Theme.panelCorner))
+        .flowSurface()
         .opacity(medication.isEnabled ? 1 : 0.55)
     }
 
@@ -121,7 +121,7 @@ struct HealthDashboardView: View {
             }
             .padding(.horizontal, 10)
             .frame(height: NotchViewModel.todoRowHeight)
-            .background(Theme.panel, in: RoundedRectangle(cornerRadius: Theme.panelCorner))
+            .flowSurface()
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

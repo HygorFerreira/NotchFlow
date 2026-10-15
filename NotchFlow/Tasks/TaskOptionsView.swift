@@ -44,7 +44,8 @@ struct TaskOptionsView: View {
                             Text(Calendar.current.shortStandaloneWeekdaySymbols[day - 1])
                                 .font(.system(size: 11, weight: .medium))
                                 .frame(maxWidth: .infinity, minHeight: 26)
-                                .background(recurrence.weekdays.contains(day) ? Color.accentColor : Color.gray.opacity(0.2),
+                                .foregroundStyle(recurrence.weekdays.contains(day) ? Theme.textPrimary : Theme.textSecondary)
+                                .background(recurrence.weekdays.contains(day) ? Theme.selection : Theme.control,
                                             in: RoundedRectangle(cornerRadius: 5))
                         }
                         .buttonStyle(.plain)

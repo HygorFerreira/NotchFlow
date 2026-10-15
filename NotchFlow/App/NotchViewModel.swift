@@ -64,7 +64,7 @@ final class NotchViewModel: ObservableObject {
     var notchHeight: CGFloat { currentMetrics.notchHeight }
 
     /// Width of each "ear" flanking the notch in the collapsed active pill.
-    let activeEarWidth: CGFloat = 158
+    let activeEarWidth: CGFloat = 110
 
     /// Extra width added on EACH side in minimal mode so the tray's vertical
     /// side segments clear the physical notch edges and stay visible (a pill of
@@ -79,7 +79,7 @@ final class NotchViewModel: ObservableObject {
         // overhang further so the line hugs the notch's bottom edge.
         let baseHeight: CGFloat
         if focus.isActive && store.settings.showTimeline {
-            baseHeight = store.settings.minimalMode ? notchHeight + 8 : notchHeight + 14
+            baseHeight = notchHeight + 8
         } else {
             baseHeight = notchHeight
         }
@@ -88,7 +88,7 @@ final class NotchViewModel: ObservableObject {
 
     /// Fixed height: always exactly two visible to-do rows (the list scrolls if
     /// there are more) alongside the weekday activity grid.
-    static let todoRowHeight: CGFloat = 52
+    static let todoRowHeight: CGFloat = 62
     static let visibleTodoRows = 2
     static let todoRowGap: CGFloat = 8
     /// Fixed heights of the dashboard's pieces. The views pin themselves to
@@ -97,12 +97,12 @@ final class NotchViewModel: ObservableObject {
     /// bottom edge (with the accent line) was cut off.
     static let headerHeight: CGFloat = 22
     static let columnSpacing: CGFloat = 8
-    static let addRowHeight: CGFloat = 28
+    static let addRowHeight: CGFloat = 42
     static let heatmapHeaderSpacing: CGFloat = 10
-    static let dashboardTopGap: CGFloat = 4
-    static let dashboardTabHeight: CGFloat = 24
-    static let dashboardTabSpacing: CGFloat = 8
-    static let dashboardBottomPadding: CGFloat = 18
+    static let dashboardTopGap: CGFloat = 22
+    static let dashboardTabHeight: CGFloat = 30
+    static let dashboardTabSpacing: CGFloat = 14
+    static let dashboardBottomPadding: CGFloat = 20
 
     static var todoListHeight: CGFloat {
         let rows = CGFloat(visibleTodoRows)
@@ -110,13 +110,15 @@ final class NotchViewModel: ObservableObject {
     }
 
     var expandedHeight: CGFloat {
-        let todoColumn = Self.headerHeight + Self.columnSpacing + Self.todoListHeight
-            + Self.columnSpacing + Self.addRowHeight
+        let todoColumn = Self.todoListHeight + Self.columnSpacing + Self.addRowHeight
         // Header + only the week-rows the current month needs through today.
         let heatmapColumn = Self.headerHeight + Self.heatmapHeaderSpacing
             + StreakHeatmap.gridHeight(rows: StreakHeatmap.weekRows(for: Date()))
-        return notchHeight + Self.dashboardTopGap + Self.dashboardTabHeight
-            + Self.dashboardTabSpacing + max(todoColumn, heatmapColumn)
+        let contentHeight = dashboardTab == "Health"
+            ? max(todoColumn + Self.headerHeight + Self.columnSpacing, heatmapColumn)
+            : max(todoColumn, 178)
+        return notchHeight + Self.dashboardTopGap + Self.dashboardTabHeight + 6
+            + Self.dashboardTabSpacing + contentHeight
             + Self.dashboardBottomPadding
     }
 
@@ -134,7 +136,7 @@ final class NotchViewModel: ObservableObject {
         }
         return baseWidth
     }
-    var expandedWidth: CGFloat { 620 }
+    var expandedWidth: CGFloat { 700 }
 
     var targetSize: CGSize {
         CGSize(width: max(expanded ? expandedWidth : collapsedWidth, reminderAlert == nil ? 0 : 400),

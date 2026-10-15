@@ -27,6 +27,20 @@ enum Snapshots {
         let store = demoStore()
         let focus = FocusTimer(store: store)
 
+        if UserDefaults.standard.bool(forKey: "snapshotNotchOnly") {
+            store.medications.append(Medication(name: "Vitamina D", dosage: "1000 UI",
+                                                reminderTimes: [Date().addingTimeInterval(3600)]))
+            renderNotchReview(store: store, focus: focus, to: out)
+            print("SNAPSHOTS \(out.path)")
+            exit(0)
+        }
+
+        if UserDefaults.standard.bool(forKey: "snapshotVisualReview") {
+            renderVisualReview(store: store, focus: focus, to: out)
+            print("SNAPSHOTS \(out.path)")
+            exit(0)
+        }
+
         let aiMonitor = AIUsageMonitor.demo()
         for scheme in [ColorScheme.dark, .light] {
             render(AIUsageWindowView(monitor: aiMonitor), size: CGSize(width: 700, height: 740), scheme: scheme,
@@ -203,6 +217,65 @@ enum Snapshots {
         settings.orderFront(nil)
         tasks.makeKeyAndOrderFront(nil)
         NSApp.activate()
+    }
+
+    /// A focused, repeatable review of the shared design in both appearances.
+    private static func renderVisualReview(store: Store, focus: FocusTimer, to out: URL) {
+        store.medications.append(Medication(name: isPortuguese ? "Vitamina D" : "Vitamin D",
+                                            dosage: "1000 UI", reminderTimes: [Date().addingTimeInterval(3600)]))
+        store.recordWater()
+        let monitor = AIUsageMonitor.demo()
+        for scheme in [ColorScheme.dark, .light] {
+            let suffix = scheme == .dark ? "dark" : "light"
+            render(TasksWindowView().environmentObject(store).environmentObject(focus),
+                   size: CGSize(width: 1020, height: 740), scheme: scheme,
+                   to: out.appendingPathComponent("tasks-\(suffix).png"))
+            render(WaterWindowView().environmentObject(store),
+                   size: CGSize(width: 720, height: 940), scheme: scheme,
+                   to: out.appendingPathComponent("water-\(suffix).png"))
+            render(MedicationsView().environmentObject(store),
+                   size: CGSize(width: 740, height: 560), scheme: scheme,
+                   to: out.appendingPathComponent("medications-\(suffix).png"))
+            render(WeeklySummaryView().environmentObject(store),
+                   size: CGSize(width: 740, height: 1050), scheme: scheme,
+                   to: out.appendingPathComponent("summary-\(suffix).png"))
+            render(AIUsageWindowView(monitor: monitor),
+                   size: CGSize(width: 740, height: 940), scheme: scheme,
+                   to: out.appendingPathComponent("ai-\(suffix).png"))
+            for page in SettingsPageID.allCases {
+                let navigation = SettingsNavigation()
+                navigation.page = page
+                render(SettingsWindowView().environmentObject(store).environment(navigation),
+                       size: CGSize(width: 820, height: 820), scheme: scheme,
+                       to: out.appendingPathComponent("settings-\(page.rawValue)-\(suffix).png"))
+            }
+            if let task = store.tasks.first {
+                render(TaskDetailView(task: task).environmentObject(store).environmentObject(focus),
+                       size: CGSize(width: 500, height: 740), scheme: scheme,
+                       to: out.appendingPathComponent("task-detail-\(suffix).png"))
+            }
+            render(QuickCaptureView(onClose: {}).environmentObject(store),
+                   size: CGSize(width: 460, height: 420), scheme: scheme,
+                   to: out.appendingPathComponent("quick-capture-\(suffix).png"))
+        }
+        renderNotchReview(store: store, focus: focus, to: out)
+    }
+
+    private static func renderNotchReview(store: Store, focus: FocusTimer, to out: URL) {
+        let vm = NotchViewModel(store: store, focus: focus, metrics: .primary)
+        vm.expanded = true
+        for tab in ["Activity", "Health", "Machine", "Water", "AI"] {
+            vm.dashboardTab = tab
+            render(notch(vm).background(Color(hex: "#708DB6")), size: vm.targetSize, scheme: .dark,
+                   to: out.appendingPathComponent("notch-\(tab.lowercased()).png"))
+        }
+        if let task = store.tasks.first {
+            focus.start(task: task)
+            focus.debugAdvance(seconds: Double(task.estimateMinutes * 60) * 0.38)
+            vm.expanded = false
+            render(notch(vm).background(Color(hex: "#708DB6")), size: vm.targetSize, scheme: .dark,
+                   to: out.appendingPathComponent("notch-focus.png"))
+        }
     }
 
     private static func notch(_ vm: NotchViewModel) -> some View {

@@ -31,6 +31,7 @@ struct TaskDetailView: View {
 
     private var canSave: Bool {
         !draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && draft.recurrence.isValid
+            && Task.isValidTimeRange(start: draft.startTime, end: draft.endTime)
     }
 
     private func saveDraft() {
@@ -44,7 +45,7 @@ struct TaskDetailView: View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
                 Text("Task")
-                    .font(.system(size: 24, weight: .bold))
+                    .font(Theme.pageTitle)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Button { requestClose() } label: {
@@ -101,7 +102,7 @@ struct TaskDetailView: View {
                 }
             }
 
-            TaskScheduleView(date: $draft.scheduledDate, startTime: $draft.startTime,
+            TaskScheduleView(date: $draft.scheduledDate, startTime: $draft.startTime, endTime: $draft.endTime,
                              reminderMinutesBefore: $draft.reminderMinutesBefore)
             TaskOptionsView(project: $draft.project, tagsText: $tagsText, recurrence: $draft.recurrence)
 

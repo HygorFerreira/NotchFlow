@@ -56,8 +56,8 @@ struct TaskRow: View {
                 if !task.organizationLabel.isEmpty || task.recurrence.frequency != .none || task.scheduledStart != nil {
                     HStack(spacing: 4) {
                         if task.recurrence.frequency != .none { Image(systemName: "repeat") }
-                        if let start = task.scheduledStart {
-                            Text(start.formatted(date: .omitted, time: .shortened))
+                        if let schedule = task.scheduleLabel {
+                            Text(schedule)
                             if task.reminderMinutesBefore != nil { Image(systemName: "bell") }
                         }
                         Text(task.organizationLabel)
@@ -85,7 +85,8 @@ struct TaskRow: View {
             )
 
             iconButton(isRunningThis && focus.state == .running ? "pause.fill" : "play.fill",
-                       bg: isRunningThis && focus.state == .running ? Theme.danger : Theme.accent) {
+                       bg: isRunningThis ? Theme.accent.opacity(0.14) : Theme.control,
+                       fg: isRunningThis ? Theme.accent : Theme.textPrimary) {
                 if isRunningThis { focus.togglePause() } else { focus.start(task: task) }
             }
             .disabled(task.isDone)
@@ -116,11 +117,11 @@ struct TaskRow: View {
             FlowBackdrop(shape: RoundedRectangle(cornerRadius: 12, style: .continuous),
                          color: isDragging || isHovered ? Theme.panelHover : Theme.panel)
             if isRunningThis {
-                RoundedRectangle(cornerRadius: 12).fill(Theme.accent.opacity(0.08))
+                RoundedRectangle(cornerRadius: 12).fill(Theme.accent.opacity(0.035))
             }
         }
         .overlay(RoundedRectangle(cornerRadius: 12)
-            .stroke(isRunningThis ? Theme.accent.opacity(0.65) : Color.primary.opacity(isHovered ? 0.12 : 0.06), lineWidth: 1))
+            .stroke(isRunningThis ? Theme.accent.opacity(0.35) : Color.primary.opacity(isHovered ? 0.12 : 0.07), lineWidth: 1))
         .overlay(alignment: .bottom) {
             if isRunningThis {
                 FlowProgressBar(value: focus.progress, height: 3)

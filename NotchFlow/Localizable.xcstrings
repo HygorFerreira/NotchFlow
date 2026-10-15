@@ -1635,6 +1635,26 @@
         }
       }
     },
+    "End time" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horário de término"
+          }
+        }
+      }
+    },
+    "End time must be after start time on the same day." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O término deve ser após o início, no mesmo dia."
+          }
+        }
+      }
+    },
     "Enter a valid capacity between 50 ml and 3 L." : {
       "localizations" : {
         "pt-BR" : {
@@ -1925,6 +1945,7 @@
       }
     },
     "Inside" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -1943,9 +1964,6 @@
           }
         }
       }
-    },
-    "L" : {
-
     },
     "Language" : {
       "extractionState" : "stale",
@@ -2653,6 +2671,7 @@
       }
     },
     "Off" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -2798,6 +2817,7 @@
       }
     },
     "Outside" : {
+      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
@@ -3403,6 +3423,16 @@
         }
       }
     },
+    "Set end time" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Definir horário de término"
+          }
+        }
+      }
+    },
     "Set start time" : {
       "localizations" : {
         "pt-BR" : {
@@ -3843,7 +3873,6 @@
       }
     },
     "Tasks" : {
-      "extractionState" : "stale",
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {

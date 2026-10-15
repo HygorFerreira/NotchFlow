@@ -2,7 +2,12 @@
 
 Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvimento** descreve mudanças presentes no código que ainda não possuem uma nova versão publicada. A versão configurada no projeto é **1.0.0**, build **1**.
 
-## Em desenvolvimento - atualizado em 2026-10-10
+## Em desenvolvimento - atualizado em 2026-10-15
+
+- Notch recomposto a partir da referência minimalista: painel grafite abaixo da câmera, abas centralizadas com seleção clara, tarefas sem notas e controles extras visíveis apenas ao passar o mouse, ações em cartões e grade dos últimos sete dias com intervalos reais de foco. Timer compacto com progresso abaixo do título; filtros continuam disponíveis em um popover.
+- Visual minimalista aplicado ao workspace, ajustes, tarefas, calendário, água, medicamentos, IA e resumo semanal: superfícies grafite e cinza adaptadas aos temas claro e escuro, seleções neutras, botões foscos e azul pontual para ações e progresso. Liquid Glass passa a ser desativado por padrão para preferências ainda não configuradas.
+- Modo de revisão visual com dados fictícios (`-snapshot 1 -snapshotVisualReview 1`) para conferir as principais telas, formulários e abas do notch nas duas aparências.
+- Notch com contorno neutro discreto, abas compactas e cartões de tarefas mais leves; a linha colorida aparece durante o foco quando a timeline está ativada. Mais espaço entre navegação e conteúdo, com animações da timeline respeitando Reduzir Movimento.
 
 - Revisão de estabilidade: edição de tarefas preserva foco já registrado e ordenação; títulos, notas e durações são validados no Store.
 - Timer preserva frações de segundo nas pausas, conclui ao pausar após o prazo e limita durações extremas sem overflow.

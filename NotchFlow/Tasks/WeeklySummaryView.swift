@@ -17,7 +17,7 @@ struct WeeklySummaryView: View {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Label("Weekly summary", systemImage: "chart.bar.xaxis").font(.system(size: 26, weight: .bold, design: .rounded))
+                        FlowPageHeading(title: "Weekly summary", subtitle: "Focus by day", symbol: "chart.bar.xaxis")
                         Text(summary.interval.start.formatted(date: .abbreviated, time: .omitted)
                              + " - " + summary.days.last!.date.formatted(date: .abbreviated, time: .omitted))
                             .foregroundStyle(.secondary)
@@ -136,12 +136,12 @@ struct WeeklySummaryView: View {
         return ZStack {
             Circle().stroke(Theme.accent.opacity(0.12), lineWidth: 8)
             Circle().trim(from: 0, to: min(1, max(0, fraction)))
-                .stroke(Theme.accent.gradient, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .stroke(Theme.accent, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             VStack(spacing: 3) {
                 Image(systemName: fraction >= 1 ? "checkmark" : "target").foregroundStyle(Theme.accent)
                 Text(fraction.formatted(.percent.precision(.fractionLength(0))))
-                    .font(.system(size: 18, weight: .bold, design: .rounded)).monospacedDigit()
+                    .font(.system(size: 18, weight: .semibold)).monospacedDigit()
             }
         }
         .frame(width: 92, height: 92)

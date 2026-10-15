@@ -4,6 +4,7 @@ import AppKit
 struct TaskScheduleView: View {
     @Binding var date: Date?
     @Binding var startTime: Date?
+    @Binding var endTime: Date?
     @Binding var reminderMinutesBefore: Int?
     @ObservedObject private var notifications = NotificationService.shared
     @State private var permissionDenied = false
@@ -24,6 +25,7 @@ struct TaskScheduleView: View {
                             reminderMinutesBefore = 0
                         } else {
                             startTime = nil
+                            endTime = nil
                             reminderMinutesBefore = nil
                         }
                     }))
@@ -35,6 +37,25 @@ struct TaskScheduleView: View {
                 }
             }
             if startTime != nil {
+                HStack {
+                    Toggle("Set end time", isOn: Binding(
+                        get: { endTime != nil },
+                        set: { enabled in
+                            endTime = enabled
+                                ? Calendar.current.date(byAdding: .hour, value: 1, to: startTime ?? Date())
+                                : nil
+                        }))
+                    if endTime != nil {
+                        DatePicker("End time", selection: Binding(
+                            get: { endTime ?? Date() }, set: { endTime = $0 }),
+                            displayedComponents: .hourAndMinute)
+                            .labelsHidden()
+                    }
+                }
+                if !Task.isValidTimeRange(start: startTime, end: endTime) {
+                    Text("End time must be after start time on the same day.")
+                        .font(.caption).foregroundStyle(.orange)
+                }
                 Picker("Alert", selection: $reminderMinutesBefore) {
                     Text("No alert").tag(nil as Int?)
                     Text("At start time").tag(0 as Int?)

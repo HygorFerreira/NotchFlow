@@ -1,7 +1,7 @@
 import SwiftUI
 import Charts
 
-private let waterColor = Color(red: 0.30, green: 0.76, blue: 0.96)
+private let waterColor = Theme.accent
 
 private func waterVolume(_ milliliters: Int) -> String {
     if milliliters < 1000 { return "\(milliliters) ml" }
@@ -20,11 +20,11 @@ struct WaterDashboardView: View {
                 ZStack {
                     Circle().stroke(waterColor.opacity(0.13), lineWidth: 7)
                     Circle().trim(from: 0, to: min(1, Double(total) / Double(settings.goalMilliliters)))
-                        .stroke(waterColor.gradient, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                        .stroke(waterColor, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                     VStack(spacing: 4) {
                         Image(systemName: "drop.fill").foregroundStyle(waterColor)
-                        Text(waterVolume(total)).font(.system(size: 22, weight: .bold, design: .rounded))
+                        Text(waterVolume(total)).font(.system(size: 22, weight: .semibold))
                         Text("Today").font(.system(size: 10)).foregroundStyle(Theme.textSecondary)
                     }
                 }
@@ -49,13 +49,8 @@ struct WaterDashboardView: View {
                          ? String(localized: "Daily goal reached")
                          : String(localized: "Daily goal: \(waterVolume(settings.goalMilliliters))"))
                         .font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
-                    Picker("Container", selection: containerBinding) {
-                        ForEach(HydrationSettings.Container.allCases) { container in
-                            Text(container.title.localized).tag(container)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
+                    FlowSegmentedControl(title: "Container", selection: containerBinding,
+                                         values: HydrationSettings.Container.allCases, label: { $0.title })
                     HStack {
                         Button { store.recordWater() } label: {
                             Label("+ \(waterVolume(settings.servingMilliliters))", systemImage: settings.container.symbol)
@@ -220,13 +215,8 @@ struct WaterWindowView: View {
             HStack {
                 Text("Container capacity").font(.subheadline.weight(.medium))
                 Spacer()
-                Picker("Unit", selection: $liters) {
-                    Text("ml").tag(false)
-                    Text("L").tag(true)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .accessibilityLabel("Unit")
+                FlowSegmentedControl(title: "Unit", selection: $liters,
+                                     values: [false, true], label: { $0 ? "L" : "ml" })
                 .frame(width: 120)
                 .disabled(!validSettings)
             }
@@ -274,7 +264,7 @@ struct WaterWindowView: View {
             Text("Water in the last 7 days").font(.headline)
             Chart(days, id: \.self) { day in
                 BarMark(x: .value("Day", day, unit: .day), y: .value("ml", store.waterTotal(on: day)))
-                    .foregroundStyle(waterColor.gradient)
+                    .foregroundStyle(waterColor)
                     .cornerRadius(4)
                     .accessibilityLabel(day.formatted(.dateTime.weekday(.wide)))
                     .accessibilityValue(waterVolume(store.waterTotal(on: day)))

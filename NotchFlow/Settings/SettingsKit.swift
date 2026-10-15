@@ -6,14 +6,14 @@ import SwiftUI
 enum SettingsPalette {
     /// Backdrop of the notch previews: a dusk wallpaper, so the black pill reads the way it does on a real desktop.
     static let previewBackdrop = LinearGradient(
-        colors: [Color(hex: "#1E3A8A"), Color(hex: "#4C1D95"), Color(hex: "#0F172A")],
+        colors: [Color(hex: "#526B8B"), Color(hex: "#344861"), Color(hex: "#273444")],
         startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let selection = Theme.accent
+    static let selection = Theme.textPrimary
     static let card = Color.primary.opacity(0.05)
     static let cardStroke = Color.primary.opacity(0.07)
 }
 
-/// Colored rounded-square symbol, like System Settings.
+/// Neutral symbols give settings the same quiet hierarchy as the workspace.
 struct SettingsIcon: View {
     let symbol: String
     let color: Color
@@ -21,12 +21,12 @@ struct SettingsIcon: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
-            .fill(LinearGradient(colors: [color.opacity(0.95), color.opacity(0.75)], startPoint: .top, endPoint: .bottom))
+            .fill(Theme.control)
             .frame(width: size, height: size)
             .overlay(
                 Image(systemName: symbol)
                     .font(.system(size: size * 0.5, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.textSecondary)
             )
     }
 }
@@ -59,7 +59,8 @@ struct SettingsSectionTitle: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title.localized)
-                .font(.system(size: 23, weight: .bold))
+                .font(Theme.pageTitle)
+                .tracking(-0.6)
             if let subtitle {
                 Text(subtitle.localized)
                     .font(.system(size: 12))
@@ -218,7 +219,7 @@ struct SettingsSliderRow: View {
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
-            ThickSlider(value: $value, range: range, step: step, tint: color, label: title, format: format)
+            ThickSlider(value: $value, range: range, step: step, tint: Theme.accent, label: title, format: format)
                 .padding(.leading, 52)
                 .padding(.trailing, 14)
                 .padding(.bottom, 10)
@@ -231,7 +232,7 @@ struct ThickSlider: View {
     @Binding var value: Double
     let range: ClosedRange<Double>
     var step: Double = 1
-    var tint: Color = .accentColor
+    var tint: Color = Theme.accent
     var label: String = ""
     var format: (Double) -> String = { String(format: "%.1f", $0) }
 
@@ -267,8 +268,8 @@ struct VisualChoiceCard<Preview: View>: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .strokeBorder(
-                            isSelected ? SettingsPalette.selection : Color.white.opacity(isHovered ? 0.25 : 0.08),
-                            lineWidth: isSelected ? 3 : 1)
+                            isSelected ? Theme.accent : Color.white.opacity(isHovered ? 0.25 : 0.08),
+                            lineWidth: isSelected ? 1.5 : 1)
                 )
                 Text(title.localized)
                     .font(.system(size: 12, weight: isSelected ? .bold : .regular))
@@ -299,7 +300,7 @@ private struct SettingAnchor: ViewModifier {
             content
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.accentColor.opacity(isHighlighted ? 0.22 : 0))
+                        .fill(Theme.accent.opacity(isHighlighted ? 0.14 : 0))
                 )
                 .animation(reduceMotion ? nil : .easeInOut(duration: 0.35), value: isHighlighted)
                 .id(Self.id(for: key))

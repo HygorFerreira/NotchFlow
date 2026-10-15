@@ -6,6 +6,8 @@ Repositório privado: [HygorFerreira/NotchFlow](https://github.com/HygorFerreira
 
 O NotchFlow reúne timer de foco, planejamento, lembretes de medicamentos, acompanhamento de água e uso da máquina em um aplicativo nativo para macOS. Passe o mouse sobre o notch para abrir o painel e acessar sua rotina sem ocupar uma janela permanentemente.
 
+O painel minimalista do notch usa abas centralizadas, cartões grafite e uma grade dos últimos sete dias com intervalos de foco de 40 minutos. A duração das tarefas continua editável ao clicar no tempo; os filtros de projetos e etiquetas ficam no botão no canto superior direito. O modo compacto mostra o progresso abaixo do nome da tarefa.
+
 Feito com **SwiftUI e AppKit**, para **macOS 14 ou superior**, com interface em português do Brasil e inglês. Em telas sem notch, o painel aparece como uma pequena pílula no topo.
 
 ![Painel do NotchFlow](docs/images/1-dashboard.png)
@@ -44,6 +46,8 @@ Os lembretes de medicamentos aparecem em uma pílula abaixo do notch, com a aç�
 As janelas compartilham navegação, campos e botões consistentes. Em **Ajustes → Notch → Aparência**, escolha Claro, Escuro ou Sistema. A tarefa em foco exibe o tempo restante e uma barra de progresso; o calendário distingue hoje, o dia selecionado e os dias planejados. O resumo semanal destaca as métricas e o avanço da meta. Os formulários mantêm suas ações visíveis durante a rolagem, e o painel do notch lembra a última aba escolhida durante a sessão.
 
 Em **Ajustes → Notch**, ative **Liquid Glass** e ajuste a transparência das superfícies. O efeito usa vidro nativo no macOS 26 ou superior e material translúcido nas versões anteriores. A opção **Reduzir Transparência** do macOS tem prioridade; as animações de arraste das tarefas também respeitam **Reduzir Movimento**.
+
+O visual minimalista usa superfícies grafite e cinza, seleções neutras, bordas sutis e azul pontual para ações e progresso. Tarefas, calendário, água, medicamentos, IA e ajustes seguem os mesmos componentes nos temas claro e escuro. Liquid Glass é opcional e começa desativado quando a preferência ainda não foi configurada. Confira as [prévias reais do novo visual em JPEG](output/visual-review/README.md).
 
 ## Imagens do aplicativo
 

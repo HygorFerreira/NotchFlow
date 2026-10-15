@@ -196,22 +196,21 @@ private struct SettingsSidebar: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            List(selection: Binding<SettingsPageID?>(
-                get: { navigation.page },
-                set: { if let page = $0 { navigation.page = page } })) {
+            List {
                 if query.trimmingCharacters(in: .whitespaces).isEmpty {
                     ForEach(Array(SettingsPageID.sections.enumerated()), id: \.offset) { index, section in
-                        Section(index == 0 ? String(localized: "DAILY ROUTINE") : String(localized: "APPLICATION")) {
+                        Section {
                             ForEach(section) { page in
-                                Label {
-                                    Text(page.title.localized)
-                                        .foregroundStyle(navigation.page == page ? Color.white : Color.primary)
-                                } icon: {
-                                    SettingsIcon(symbol: page.symbol, color: page.color, size: 24)
+                                SidebarRow(page: page, isSelected: navigation.page == page) {
+                                    navigation.page = page
                                 }
-                                .padding(.vertical, 3)
-                                .tag(page)
+                                .listRowInsets(EdgeInsets(top: 2, leading: 6, bottom: 2, trailing: 6))
+                                .listRowBackground(Color.clear)
                             }
+                        } header: {
+                            Text(index == 0 ? String(localized: "DAILY ROUTINE") : String(localized: "APPLICATION"))
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(Theme.textSecondary)
                         }
                     }
                 } else {
@@ -219,10 +218,12 @@ private struct SettingsSidebar: View {
                 }
             }
             .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
             .tint(Theme.accent)
             .searchable(text: $query, placement: .sidebar)
             footer
         }
+        .background(Theme.sidebar)
         .navigationTitle("NotchFlow")
     }
 
@@ -232,7 +233,7 @@ private struct SettingsSidebar: View {
         if found.isEmpty {
             Text("No Results")
                 .font(.system(size: 13))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.top, 24)
         }
@@ -265,9 +266,9 @@ private struct SettingsSidebar: View {
     private var footer: some View {
         HStack(spacing: 6) {
             Image(systemName: "lock.shield.fill")
-                .foregroundStyle(SettingsPalette.selection)
+                .foregroundStyle(Theme.textSecondary)
             Text("Your tasks never leave your Mac.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.textSecondary)
         }
         .font(.system(size: 11))
         .padding(.horizontal, 18)
@@ -288,18 +289,18 @@ private struct SidebarRow: View {
                 SettingsIcon(symbol: page.symbol, color: page.color, size: 24)
                 Text(page.title.localized)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(Theme.textPrimary)
                 Spacer()
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 9)
             .background(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
+                    .fill(isSelected ? Theme.selection : Color.clear)
             )
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(FlowCompactButtonStyle())
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// The panel's root. Paints the black pill (square top, rounded bottom) in
-/// SwiftUI so it stays opaque, then draws the content and the accent tray on
-/// top. Swaps between the collapsed timer pill and the expanded dashboard.
+/// A black camera footprint connects to the rounded graphite dashboard below.
+/// The compact state keeps the camera gap clear and shows an inline timeline.
 struct RootNotchView: View {
     @EnvironmentObject private var vm: NotchViewModel
     @EnvironmentObject private var focus: FocusTimer
@@ -27,14 +26,29 @@ struct RootNotchView: View {
                 // pill, so it never needs clipping — and running it through the clip
                 // is exactly what shaved its rounded bottom corners flat.
                 ZStack(alignment: .top) {
-                    FlowBackdrop(shape: NotchShape(bottomRadius: pillCorner), color: .black,
-                                 allowsGlass: vm.expanded)
+                    if vm.expanded {
+                        Color.black.frame(width: vm.notchWidth, height: vm.notchHeight)
+                        FlowBackdrop(shape: RoundedRectangle(cornerRadius: 16, style: .continuous),
+                                     color: NotchPalette.background, allowsGlass: true)
+                            .padding(.top, vm.notchHeight)
+                    } else {
+                        NotchShape(bottomRadius: pillCorner).fill(.black)
+                    }
                     content
                         .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.notchContentHeight, alignment: .top)
                 }
                 .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.notchContentHeight)
                 .clipShape(NotchShape(bottomRadius: pillCorner))
+                .overlay {
+                    if vm.expanded {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(NotchPalette.border, lineWidth: 1)
+                            .padding(.top, vm.notchHeight)
+                            .allowsHitTesting(false)
+                    }
+                }
                 trayOverlay
+                    .padding(.top, vm.expanded ? vm.notchHeight : 0)
                     .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.notchContentHeight)
                 if let reminder = vm.reminderAlert {
                     RoutineReminderPill(reminder: reminder, serving: store.hydrationSettings.servingMilliliters,
@@ -63,16 +77,12 @@ struct RootNotchView: View {
         }
     }
 
-    /// The accent tray — identical treatment whether collapsed or expanded:
-    /// a faint full track (visible on BOTH sides + bottom) plus a bright fill
-    /// that grows with progress. Same line width in both states. Hidden only
-    /// for the bare idle notch.
-    private var trayLineWidth: CGFloat { 2.5 }
+    /// Color signals an active session; idle surfaces keep a quiet neutral edge.
+    private var trayLineWidth: CGFloat { vm.expanded ? 1.5 : 2 }
 
     @ViewBuilder private var trayOverlay: some View {
-        // Collapsed pill only draws the tray when the timeline is enabled; the
-        // expanded dashboard always keeps its accent border.
-        if vm.expanded || (focus.isActive && store.settings.showTimeline) {
+        if focus.isActive && store.settings.showTimeline
+            && (store.settings.minimalMode || store.settings.rainbowTimeline) {
             // Collapsed: hug tightly (small insets, low corner) so the short
             // side segments still read. Expanded: roomier inset.
             //
@@ -85,7 +95,7 @@ struct RootNotchView: View {
                                        topInset: vm.expanded ? 7 : 5,
                                        corner: corner)
             let style = StrokeStyle(lineWidth: trayLineWidth, lineCap: .round)
-            if store.settings.rainbowTimeline {
+            if store.settings.rainbowTimeline && !reduceMotion {
                 // Animated RGB: the whole hue spectrum is laid out ALONG the
                 // line at once (a moving multicolor gradient), not one shifting
                 // solid color. `TimelineView(.animation)` re-derives the phase
@@ -99,7 +109,7 @@ struct RootNotchView: View {
                 }
             } else {
                 trayBody(shape: shape, style: style,
-                         track: Theme.accent.opacity(0.5),
+                         track: Color.white.opacity(0.10),
                          fill: Theme.accent, glow: nil)
             }
         }
@@ -117,7 +127,7 @@ struct RootNotchView: View {
             // a full second so it flows continuously instead of ticking.
             shape.trim(from: 0, to: focus.isActive ? focus.progress : 0)
                 .stroke(fill, style: style)
-                .animation(.linear(duration: 1.0), value: focus.progress)
+                .animation(reduceMotion ? nil : .linear(duration: 1.0), value: focus.progress)
         }
         .shadow(color: glow ?? .clear, radius: glow == nil ? 0 : 6)
     }
@@ -150,8 +160,7 @@ private struct RoutineReminderPill: View {
     let dismiss: () -> Void
 
     private var color: Color {
-        if case .water = reminder { return Color(red: 0.30, green: 0.76, blue: 0.96) }
-        return Theme.medication
+        Theme.accent
     }
     private var symbol: String { reminder == .water ? "drop.fill" : "pills.fill" }
     private var title: String {
@@ -195,7 +204,6 @@ private struct RoutineReminderPill: View {
         .padding(.horizontal, 10)
         .frame(width: 380, height: 48)
         .background(.black, in: Capsule())
-        .overlay { Capsule().stroke(color.opacity(0.45), lineWidth: 1) }
-        .shadow(color: color.opacity(0.15), radius: 5, y: 2)
+        .overlay { Capsule().stroke(Color.white.opacity(0.14), lineWidth: 1) }
     }
 }

@@ -23,6 +23,7 @@ struct TasksWindowView: View {
     @State private var draftTags = ""
     @State private var draftRecurrence = TaskRecurrence()
     @State private var draftStartTime: Date?
+    @State private var draftEndTime: Date?
     @State private var draftReminderMinutesBefore: Int?
     @State private var editingTask: Task?
 
@@ -80,18 +81,12 @@ struct TasksWindowView: View {
                     .tracking(1.3)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                List(selection: Binding<WorkspaceDestination?>(
-                    get: { navigation.destination },
-                    set: { if let destination = $0 { navigation.select(destination) } })) {
+                VStack(spacing: 4) {
                     ForEach(WorkspaceDestination.allCases) { destination in
-                        Label {
-                            Text(destination.rawValue.localized)
-                        } icon: {
-                            Image(systemName: destination.symbol)
-                                .foregroundStyle(navigation.destination == destination ? Theme.onAccent : Theme.accent)
+                        FlowNavigationRow(selected: navigation.destination == destination,
+                                          title: LocalizedStringKey(destination.rawValue), symbol: destination.symbol) {
+                            navigation.select(destination)
                         }
-                        .padding(.vertical, 4)
-                        .tag(destination)
                         .contextMenu {
                             if destination != .tasks {
                                 Button("Open in New Window") { AppDelegate.shared?.showStandaloneWindow(destination) }
@@ -99,12 +94,6 @@ struct TasksWindowView: View {
                         }
                     }
                 }
-                .listStyle(.sidebar)
-                .tint(Theme.accent)
-                .scrollDisabled(true)
-                .scrollContentBackground(.hidden)
-                .frame(height: 210)
-                .padding(.horizontal, -10)
                 FlowFocusControls(focus: focus)
                 CalendarView(selectedDate: Binding(
                     get: { selectedDate },
@@ -125,6 +114,7 @@ struct TasksWindowView: View {
             .padding(20)
             }
             .scrollIndicators(.hidden)
+            .background(Theme.sidebar)
             .navigationSplitViewColumnWidth(min: 270, ideal: 290, max: 320)
         } detail: {
             ZStack {
@@ -173,7 +163,7 @@ struct TasksWindowView: View {
         }
         .onChange(of: selectedDate) { _, newDate in calendar.refresh(for: newDate) }
         .onChange(of: tab) { _, newTab in
-            if newTab == .unscheduled { draftStartTime = nil; draftReminderMinutesBefore = nil }
+            if newTab == .unscheduled { draftStartTime = nil; draftEndTime = nil; draftReminderMinutesBefore = nil }
         }
     }
 
@@ -202,8 +192,8 @@ struct TasksWindowView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(tab == .day ? headerTitle : String(localized: "Unscheduled"))
-                        .font(.system(size: 28, weight: .bold))
-                        .tracking(-1.1)
+                        .font(Theme.pageTitle)
+                        .tracking(-0.6)
                         .foregroundStyle(Theme.textPrimary)
                     if tab == .day {
                         Text(selectedDate.formatted(.dateTime.weekday(.wide).month(.wide).day()))
@@ -212,12 +202,9 @@ struct TasksWindowView: View {
                     }
                 }
                 Spacer()
-                Picker("", selection: $tab) {
-                    ForEach(Tab.allCases, id: \.self) { Text($0.rawValue.localized).tag($0) }
-                }
-                .pickerStyle(.segmented)
+                FlowSegmentedControl(title: "Tasks", selection: $tab,
+                                     values: Tab.allCases, label: { $0.rawValue })
                 .frame(width: 200)
-                .labelsHidden()
             }
 
             taskProgress
@@ -490,11 +477,24 @@ struct TasksWindowView: View {
                         .lineLimit(3...5)
                         .textFieldStyle(FlowTextFieldStyle())
                         .onChange(of: draftNotes) { _, value in draftNotes = String(value.prefix(Task.notesLimit)) }
+                    HStack {
+                        Toggle("Unscheduled", isOn: Binding(
+                            get: { tab == .unscheduled },
+                            set: { tab = $0 ? .unscheduled : .day }))
+                            .disabled(draftRecurrence.frequency != .none)
+                        if tab == .day {
+                            DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
+                            Button("Today") { selectedDate = Date() }
+                        }
+                    }
                     TaskScheduleView(date: Binding(
                         get: { tab == .day ? selectedDate : nil },
                         set: { value in if let value { selectedDate = value; tab = .day } }),
-                        startTime: $draftStartTime, reminderMinutesBefore: $draftReminderMinutesBefore)
+                        startTime: $draftStartTime, endTime: $draftEndTime, reminderMinutesBefore: $draftReminderMinutesBefore)
                     TaskOptionsView(project: $draftProject, tagsText: $draftTags, recurrence: $draftRecurrence)
+                        .onChange(of: draftRecurrence.frequency) { _, frequency in
+                            if frequency != .none { tab = .day }
+                        }
                     HStack {
                         counter("Title", draftTitle.count, Task.titleLimit)
                         Spacer()
@@ -516,7 +516,7 @@ struct TasksWindowView: View {
                 Button("Add a task") { commitDraft() }
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(FlowButtonStyle(prominent: true))
-                    .disabled(draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !draftRecurrence.isValid)
+                    .disabled(draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !draftRecurrence.isValid || !Task.isValidTimeRange(start: draftStartTime, end: draftEndTime))
             }
             .padding(20)
         }
@@ -527,7 +527,7 @@ struct TasksWindowView: View {
         .interactiveDismissDisabled(hasDraftChanges)
         .confirmationDialog("Save changes before closing?", isPresented: $confirmDiscardNewTask, titleVisibility: .visible) {
             Button("Add a task") { commitDraft() }
-                .disabled(draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !draftRecurrence.isValid)
+                .disabled(draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !draftRecurrence.isValid || !Task.isValidTimeRange(start: draftStartTime, end: draftEndTime))
             Button("Discard changes", role: .destructive) { resetDraft() }
             Button("Keep editing", role: .cancel) { }
         } message: {
@@ -537,7 +537,7 @@ struct TasksWindowView: View {
 
     private var hasDraftChanges: Bool {
         !draftTitle.isEmpty || !draftNotes.isEmpty || !draftProject.isEmpty || !draftTags.isEmpty
-            || draftRecurrence != TaskRecurrence() || draftStartTime != nil || draftReminderMinutesBefore != nil
+            || draftRecurrence != TaskRecurrence() || draftStartTime != nil || draftEndTime != nil || draftReminderMinutesBefore != nil
     }
 
     private func counter(_ label: String, _ count: Int, _ limit: Int) -> some View {
@@ -547,11 +547,11 @@ struct TasksWindowView: View {
     }
 
     private func commitDraft() {
-        guard !draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, draftRecurrence.isValid else { return }
+        guard !draftTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, draftRecurrence.isValid, Task.isValidTimeRange(start: draftStartTime, end: draftEndTime) else { return }
         store.add(title: draftTitle, notes: draftNotes,
                   date: tab == .day ? selectedDate : nil,
                   project: draftProject, tags: Task.normalizedTags(draftTags), recurrence: draftRecurrence,
-                  startTime: draftStartTime, reminderMinutesBefore: draftReminderMinutesBefore)
+                  startTime: draftStartTime, endTime: draftEndTime, reminderMinutesBefore: draftReminderMinutesBefore)
         // A newly created task should be visible even when filters were active.
         store.selectedProject = nil
         store.selectedTag = nil
@@ -562,7 +562,7 @@ struct TasksWindowView: View {
     private func resetDraft() {
         draftTitle = ""; draftNotes = ""
         draftProject = ""; draftTags = ""; draftRecurrence = TaskRecurrence()
-        draftStartTime = nil; draftReminderMinutesBefore = nil
+        draftStartTime = nil; draftEndTime = nil; draftReminderMinutesBefore = nil
         withAnimation { showAddForm = false }
     }
 
