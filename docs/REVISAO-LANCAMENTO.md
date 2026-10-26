@@ -38,7 +38,7 @@ As conexões de IA foram testadas com credenciais fictícias e rede simulada. Re
 
 1. Validar assinatura, entitlements, instalação e execução do pacote no canal escolhido; notarizar a distribuição direta ou exportar para a App Store.
 2. Configurar URLs públicas de suporte e privacidade nos materiais da loja.
-3. Disponibilizar releases públicas para a distribuição direta. O verificador aponta para `HygorFerreira/NotchFlow`, descrito no README como privado; não recebe autenticação para consultar releases privadas.
+3. Publicar uma release estável para a distribuição direta, com tag numérica e DMG validado. Atualização em 26/10/2026: `HygorFerreira/NotchFlow` já é público, mas a lista pública de releases está vazia e `/releases/latest` retorna 404. O verificador já aponta para esse endereço e funciona sem autenticação quando houver uma release estável.
 4. Conferir os fluxos de permissões e as conexões opcionais de IA com contas reais no pacote assinado, incluindo renovação de sessão.
 5. Revisar capturas finais, número de build e dados no App Store Connect antes do envio.
 

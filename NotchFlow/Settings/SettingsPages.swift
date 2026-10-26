@@ -33,6 +33,7 @@ struct FocusSettingsPage: View {
                     }
                 }
             }
+            RoutineBreakSettings()
             SettingsGroup(title: "Today's progress") {
                 SettingsRow(symbol: "clock.fill", color: Color(hex: "#0EA5E9"), title: "Focused today") {
                     StatText(Self.duration(store.focusedSecondsToday))
@@ -112,6 +113,7 @@ struct NotchSettingsPage: View {
                     .labelsHidden().frame(width: 150)
                 }
             }
+            DashboardModuleSettings()
             HStack(spacing: 14) {
                 VisualChoiceCard(title: "Standard", isSelected: !store.settings.minimalMode) {
                     store.settings.minimalMode = false
@@ -602,6 +604,12 @@ struct GeneralSettingsPage: View {
     var body: some View {
         SettingsPage {
             SettingsSectionTitle(title: "General")
+            SettingsGroup {
+                SettingsRow(symbol: "hand.wave", color: Theme.accent, title: "Getting started",
+                            subtitle: "Find the notch, create your first task and learn the shortcuts") {
+                    Button("Open guide") { AppDelegate.shared?.showWelcomeWindow() }
+                }
+            }
             SettingsGroup(footer: launchAtLogin.error) {
                 SettingsToggleRow(
                     symbol: "power", color: Color(hex: "#22C55E"), title: "Open at login",

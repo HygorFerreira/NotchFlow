@@ -1,9 +1,11 @@
 import SwiftUI
 import Combine
+import EventKit
 
 enum NotchReminder: Equatable {
     case medication(Medication)
     case water
+    case routineBreak(RoutineBreak)
 }
 
 /// Drives the notch panel's collapsed ⇄ expanded state and hands the window
@@ -11,6 +13,8 @@ enum NotchReminder: Equatable {
 @MainActor
 final class NotchViewModel: ObservableObject {
     @Published var dashboardTab = "Activity"
+    @Published private(set) var upcomingEvent: UpcomingEvent?
+    @Published private(set) var calendarAuthorized = false
     @Published var expanded = false
     @Published private(set) var reminderAlert: NotchReminder?
 
@@ -36,7 +40,19 @@ final class NotchViewModel: ObservableObject {
         self.store = store
         self.focus = focus
         self.metrics = metrics
+        refreshCalendar(at: Date())
         startMedicationReminderMonitor()
+        NotificationCenter.default.publisher(for: .EKEventStoreChanged)
+            .merge(with: NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.refreshCalendar(at: Date()) }
+            .store(in: &routineCancellables)
+        store.$settings.receive(on: RunLoop.main).sink { [weak self] settings in
+            guard let self else { return }
+            let modules = DashboardModule.normalized(settings.dashboardModules)
+            if !modules.contains(self.dashboardTab) { self.dashboardTab = modules[0] }
+            self.checkReminders(at: Date())
+        }.store(in: &routineCancellables)
     }
 
     // MARK: Layout targets (points)
@@ -117,7 +133,8 @@ final class NotchViewModel: ObservableObject {
         let contentHeight = dashboardTab == "Health"
             ? max(todoColumn + Self.headerHeight + Self.columnSpacing, heatmapColumn)
             : max(todoColumn, 178)
-        return notchHeight + Self.dashboardTopGap + Self.dashboardTabHeight + 6
+        let extra: CGFloat = dashboardTab == "Activity" ? 48 : dashboardTab == "Health" ? 72 : dashboardTab == "Machine" ? 36 : 0
+        return extra + notchHeight + Self.dashboardTopGap + Self.dashboardTabHeight + 6
             + Self.dashboardTabSpacing + contentHeight
             + Self.dashboardBottomPadding
     }
@@ -155,6 +172,7 @@ final class NotchViewModel: ObservableObject {
     }
 
     private func checkReminders(at date: Date) {
+        if date.timeIntervalSince(lastCalendarRefresh) >= 30 { refreshCalendar(at: date) }
         let calendar = Calendar.current
         let day = calendar.startOfDay(for: date)
         if reminderDay != day {
@@ -185,6 +203,17 @@ final class NotchViewModel: ObservableObject {
             reminderQueue.append(.water)
             waterReminderBaseline = date
         }
+        for kind in RoutineBreak.allCases {
+            var schedule = breakSchedules[kind] ?? BreakSchedule()
+            let enabled = kind == .eyes ? store.settings.eyeBreaksEnabled : store.settings.postureBreaksEnabled
+            let minutes = kind == .eyes ? store.settings.eyeBreakMinutes : store.settings.postureBreakMinutes
+            schedule.update(enabled: enabled, minutes: minutes, now: date)
+            if schedule.isDue(at: date), reminderAlert != .routineBreak(kind), !reminderQueue.contains(.routineBreak(kind)) {
+                reminderQueue.append(.routineBreak(kind))
+                schedule.deferUntil(date)
+            }
+            breakSchedules[kind] = schedule
+        }
         presentNextReminder()
     }
 
@@ -192,6 +221,8 @@ final class NotchViewModel: ObservableObject {
         switch reminder {
         case .medication(let medication):
             return store.medications.contains { $0.id == medication.id && $0.isEnabled && $0 == medication }
+        case .routineBreak(let kind):
+            return kind == .eyes ? store.settings.eyeBreaksEnabled : store.settings.postureBreaksEnabled
         case .water:
             return store.hydrationSettings.remindersEnabled
                 && store.waterTotal(on: date) < store.hydrationSettings.goalMilliliters
@@ -212,11 +243,17 @@ final class NotchViewModel: ObservableObject {
         medicationAlertDismissTask?.cancel()
         medicationAlertDismissTask = nil
         if reminderAlert == .water { waterReminderBaseline = Date() }
+        if case .routineBreak(let kind) = reminderAlert { breakSchedules[kind]?.deferUntil(Date()) }
         withAnimation(.easeOut(duration: 0.2)) { reminderAlert = nil }
         presentNextReminder()
     }
 
     #if DEBUG
+    func debugSetUpcomingEvent(_ event: UpcomingEvent?) {
+        upcomingEvent = event
+        calendarAuthorized = true
+    }
+
     func debugShowReminder(_ reminder: NotchReminder) {
         medicationTimerCancellable?.cancel()
         reminderAlert = reminder
@@ -228,8 +265,37 @@ final class NotchViewModel: ObservableObject {
         switch reminderAlert {
         case .medication(let medication): store.recordMedicationTaken(medication)
         case .water: store.recordWater()
+        case .routineBreak: break
         }
         dismissReminder()
+    }
+
+    func snoozeBreak() {
+        guard case .routineBreak(let kind) = reminderAlert else { return }
+        dismissReminder()
+        breakSchedules[kind]?.deferUntil(Date(), minutes: 5)
+    }
+
+    private var lastCalendarRefresh = Date.distantPast
+    private var routineCancellables = Set<AnyCancellable>()
+    private var breakSchedules: [RoutineBreak: BreakSchedule] = [:]
+
+    private func refreshCalendar(at now: Date) {
+        #if DEBUG
+        guard !Snapshots.isRequested else { return }
+        #endif
+        lastCalendarRefresh = now
+        calendarAuthorized = CalendarService.shared.authState() == .authorized
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now) ?? now
+        let events = CalendarService.shared.events(on: now) + CalendarService.shared.events(on: tomorrow)
+        upcomingEvent = events.filter { event in
+            !event.isAllDay && event.endDate > now && event.status != .canceled
+                && !(event.attendees ?? []).contains(where: { $0.isCurrentUser && $0.participantStatus == .declined })
+        }.sorted { $0.startDate < $1.startDate }.first.map { event in
+            UpcomingEvent(title: event.title ?? String(localized: "Calendar event"), start: event.startDate,
+                          end: event.endDate, meetingURL: UpcomingEvent.meetingLink(in:
+                            [event.url?.absoluteString, event.location, event.notes].compactMap { $0 }.joined(separator: "\n")))
+        }
     }
 
     // MARK: Hover handling

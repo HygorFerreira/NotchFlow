@@ -5,29 +5,15 @@ struct NotchDashboardView: View {
     @EnvironmentObject private var vm: NotchViewModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showFilters = false
+    @State private var showMachineOptions = false
     private var selectedTab: DashboardTab {
-        get { DashboardTab(rawValue: vm.dashboardTab) ?? .activity }
+        get { visibleTabs.first(where: { $0.rawValue == vm.dashboardTab }) ?? visibleTabs[0] }
         nonmutating set { vm.dashboardTab = newValue.rawValue }
     }
 
-    private enum DashboardTab: String, CaseIterable, Identifiable {
-        case activity = "Activity"
-        case health = "Health"
-        case machine = "Machine"
-        case water = "Water"
-        case ai = "AI"
-
-        var id: Self { self }
-
-        var symbol: String {
-            switch self {
-            case .activity: return "checklist"
-            case .health: return "heart.fill"
-            case .machine: return "desktopcomputer"
-            case .water: return "drop.fill"
-            case .ai: return "sparkles"
-            }
-        }
+    private typealias DashboardTab = DashboardModule
+    private var visibleTabs: [DashboardModule] {
+        DashboardModule.normalized(vm.store.settings.dashboardModules).compactMap(DashboardModule.init(rawValue:))
     }
 
     var body: some View {
@@ -36,14 +22,18 @@ struct NotchDashboardView: View {
                 .frame(width: 370)
                 .frame(maxWidth: .infinity)
                 .overlay(alignment: .trailing) {
-                    Button { showFilters.toggle() } label: {
-                        Image(systemName: "line.3.horizontal.decrease")
+                    Button(action: headerAction) {
+                        Image(systemName: selectedTab == .activity ? "line.3.horizontal.decrease" : "slider.horizontal.3")
                             .font(.system(size: 11))
                             .foregroundStyle(NotchPalette.secondary)
                             .frame(width: 26, height: 30)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Projects")
+                    .help(headerActionTitle)
+                    .accessibilityLabel(Text(headerActionTitle))
+                    .popover(isPresented: $showMachineOptions) {
+                        KeepAwakeControl().padding(16).frame(width: 330)
+                    }
                     .popover(isPresented: $showFilters) {
                         TaskFiltersView(compact: true).padding(16)
                             .environmentObject(vm.store)
@@ -57,7 +47,7 @@ struct NotchDashboardView: View {
                 case .health:
                     HealthDashboardView()
                 case .machine:
-                    MachineDashboardView()
+                    MachineDashboardView(onPopoverChange: { shown in shown ? vm.beginHold() : vm.endHold() })
                 case .water:
                     WaterDashboardView()
                 case .ai:
@@ -69,14 +59,37 @@ struct NotchDashboardView: View {
         // Clear the physical notch: content starts below the notch height.
         .padding(.top, vm.notchHeight + NotchViewModel.dashboardTopGap)
         .padding(.bottom, NotchViewModel.dashboardBottomPadding)
+        .onChange(of: showMachineOptions) { _, shown in
+            shown ? vm.beginHold() : vm.endHold()
+        }
         .onChange(of: showFilters) { _, shown in
             shown ? vm.beginHold() : vm.endHold()
         }
     }
 
+    private var headerActionTitle: String {
+        switch selectedTab {
+        case .activity: return String(localized: "Projects")
+        case .ai: return String(localized: "Connect AI services")
+        case .health: return String(localized: "Health settings")
+        case .water: return String(localized: "Water settings")
+        case .machine: return String(localized: "Machine settings")
+        }
+    }
+
+    private func headerAction() {
+        switch selectedTab {
+        case .activity: showFilters.toggle()
+        case .ai: AppDelegate.shared?.showAIUsageWindow()
+        case .water: AppDelegate.shared?.showWaterWindow()
+        case .health: AppDelegate.shared?.showSettingsWindow(.focus)
+        case .machine: showMachineOptions.toggle()
+        }
+    }
+
     private var tabBar: some View {
         HStack(spacing: 4) {
-            ForEach(DashboardTab.allCases) { tab in
+            ForEach(visibleTabs) { tab in
                 Button {
                     withAnimation(reduceMotion ? nil : .easeOut(duration: 0.15)) {
                         selectedTab = tab
@@ -102,16 +115,19 @@ struct NotchDashboardView: View {
     }
 
     private var activityDashboard: some View {
-        HStack(alignment: .top, spacing: 16) {
-            TodoPanel()
-                .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 8) {
+            UpcomingEventRow()
+            HStack(alignment: .top, spacing: 16) {
+                TodoPanel()
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            Rectangle()
-                .fill(Color.white.opacity(0.07))
-                .frame(width: 1)
+                Rectangle()
+                    .fill(Color.white.opacity(0.07))
+                    .frame(width: 1)
 
-            FocusActivityHeatmap()
-                .frame(width: 244, height: NotchViewModel.todoListHeight + NotchViewModel.columnSpacing + NotchViewModel.addRowHeight, alignment: .topLeading)
+                FocusActivityHeatmap()
+                    .frame(width: 244, height: NotchViewModel.todoListHeight + NotchViewModel.columnSpacing + NotchViewModel.addRowHeight, alignment: .topLeading)
+            }
         }
     }
 }

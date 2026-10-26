@@ -52,7 +52,7 @@ struct RootNotchView: View {
                     .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.notchContentHeight)
                 if let reminder = vm.reminderAlert {
                     RoutineReminderPill(reminder: reminder, serving: store.hydrationSettings.servingMilliliters,
-                                        confirm: vm.confirmReminder, dismiss: vm.dismissReminder)
+                                        confirm: vm.confirmReminder, dismiss: vm.dismissReminder, snooze: vm.snoozeBreak)
                         .padding(.top, vm.notchContentHeight + 10)
                         .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
                 }
@@ -158,20 +158,36 @@ private struct RoutineReminderPill: View {
     let serving: Int
     let confirm: () -> Void
     let dismiss: () -> Void
+    let snooze: () -> Void
 
     private var color: Color {
         Theme.accent
     }
-    private var symbol: String { reminder == .water ? "drop.fill" : "pills.fill" }
+    private var symbol: String {
+        if case .routineBreak(let kind) = reminder { return kind.symbol }
+        return reminder == .water ? "drop.fill" : "pills.fill"
+    }
     private var title: String {
-        reminder == .water ? String(localized: "Time to drink water") : String(localized: "Medication reminder")
+        if case .routineBreak(let kind) = reminder { return kind.title.localized }
+        return reminder == .water ? String(localized: "Time to drink water") : String(localized: "Medication reminder")
     }
     private var detail: String {
         switch reminder {
+        case .routineBreak(let kind): return kind.detail.localized
         case .water: return String(localized: "\(serving) ml · Stay hydrated")
         case .medication(let medication):
             return medication.dosage.isEmpty ? medication.name : "\(medication.name) · \(medication.dosage)"
         }
+    }
+
+    private var isBreak: Bool {
+        if case .routineBreak = reminder { return true }
+        return false
+    }
+
+    private var confirmTitle: String {
+        if case .routineBreak = reminder { return String(localized: "Done") }
+        return reminder == .water ? String(localized: "Drank water") : String(localized: "Taken")
     }
 
     var body: some View {
@@ -184,11 +200,16 @@ private struct RoutineReminderPill: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).font(.system(size: 10, weight: .medium)).foregroundStyle(color)
                 Text(detail).font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary).lineLimit(1).help(detail)
+                    .foregroundStyle(Theme.textPrimary).lineLimit(isBreak ? 2 : 1).help(detail)
             }
             Spacer(minLength: 0)
+            if case .routineBreak = reminder {
+                Button("5 min", action: snooze)
+                    .font(.system(size: 10)).buttonStyle(.plain)
+                    .accessibilityLabel("Snooze for 5 minutes")
+            }
             Button(action: confirm) {
-                Text(reminder == .water ? String(localized: "Drank water") : String(localized: "Taken"))
+                Text(confirmTitle)
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(.black).padding(.horizontal, 10)
                     .frame(height: 28).background(color, in: Capsule())

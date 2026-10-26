@@ -53,13 +53,13 @@ enum SettingsPageID: String, CaseIterable, Identifiable {
     /// a result can scroll to its row.
     var searchableSettings: [String] {
         switch self {
-        case .focus: return ["Focus length", "Today's progress"]
-        case .notch: return ["Appearance", "Standard", "Minimal", "Liquid Glass", "Transparency", "Progress timeline", "RGB timeline"]
+        case .focus: return ["Focus length", "Today's progress", "Healthy breaks", "Eye breaks", "Posture breaks"]
+        case .notch: return ["Notch modules", "Appearance", "Standard", "Minimal", "Liquid Glass", "Transparency", "Progress timeline", "RGB timeline"]
         case .display: return ["Show the notch on", "Connected displays"]
         case .alerts: return ["Notification", "Sound", "Notifications are off"]
         case .calendar: return ["Calendar access"]
         case .medications: return ["Add medication", "Daily reminders", "Reminder times"]
-        case .general: return ["Open at login", "Language", "Your data", "Restore defaults"]
+        case .general: return ["Getting started", "Open at login", "Language", "Your data", "Restore defaults"]
         case .shortcuts: return ["Start or stop focus", "Quick capture", "From any app", "Tasks window", "Menu bar"]
         case .about: return ["Updates", "Privacy"]
         }

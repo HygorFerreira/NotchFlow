@@ -2,7 +2,10 @@
 
 Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvimento** descreve mudanças presentes no código que ainda não possuem uma nova versão publicada. A versão configurada no projeto é **1.1.0**, build **2**, preparada para teste privado por DMG.
 
-## Em desenvolvimento - atualizado em 2026-10-15
+## Em desenvolvimento - atualizado em 2026-10-26
+
+- Guia opcional de primeiros passos exibido uma vez, com orientações sobre o notch, criação da primeira tarefa e atalhos; pode ser reaberto pelo menu ou em Ajustes → Geral. Disponível em português e inglês.
+- Documentação de distribuição atualizada para o repositório público; consulta anônima confirmou a ausência de releases publicadas em 26/10/2026.
 
 - Identificação atualizada de 1.0.0 (1) para 1.1.0 (2) para distinguir o pacote de teste com os novos recursos e visual. O empacotamento força as arquiteturas Apple Silicon e Intel.
 - Notch recomposto a partir da referência minimalista: painel grafite abaixo da câmera, abas centralizadas com seleção clara, tarefas sem notas e controles extras visíveis apenas ao passar o mouse, ações em cartões e grade dos últimos sete dias com intervalos reais de foco. Timer compacto com progresso abaixo do título; filtros continuam disponíveis em um popover.

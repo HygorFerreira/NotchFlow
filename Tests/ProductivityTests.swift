@@ -49,6 +49,45 @@ struct ProductivityTests {
             from: Data("{\"focusMinutes\":9223372036854775807}".utf8))
         precondition(extremeSettings.focusMinutes == 180)
 
+        precondition(legacySettings.dashboardModules == DashboardModule.allCases.map(\.rawValue))
+        precondition(!legacySettings.eyeBreaksEnabled && !legacySettings.postureBreaksEnabled)
+        let moduleSettings = try JSONDecoder().decode(FocusSettings.self, from: Data(
+            "{\"dashboardModules\":[\"AI\",\"unknown\",\"AI\",\"Water\"],\"eyeBreakMinutes\":-10,\"postureBreakMinutes\":999}".utf8))
+        precondition(moduleSettings.dashboardModules == ["AI", "Water"])
+        precondition(moduleSettings.eyeBreakMinutes == 15 && moduleSettings.postureBreakMinutes == 180)
+        precondition(DashboardModule.normalized([]) == ["Activity"])
+        precondition(DashboardModule.normalized(["removed"]) == ["Activity"])
+        let moduleRoundTrip = try JSONDecoder().decode(FocusSettings.self, from: JSONEncoder().encode(moduleSettings))
+        precondition(moduleRoundTrip == moduleSettings)
+        print("PASS: legacy settings, module order/deduplication/fallback and break bounds persist")
+
+        let baseline = date(26)
+        var schedule = BreakSchedule()
+        schedule.update(enabled: false, minutes: 20, now: baseline)
+        precondition(schedule.deadline == nil)
+        schedule.update(enabled: true, minutes: 20, now: baseline)
+        precondition(!schedule.isDue(at: baseline.addingTimeInterval(1199)))
+        precondition(schedule.isDue(at: baseline.addingTimeInterval(1200)))
+        schedule.deferUntil(baseline.addingTimeInterval(1200), minutes: 5)
+        precondition(!schedule.isDue(at: baseline.addingTimeInterval(1499)))
+        precondition(schedule.isDue(at: baseline.addingTimeInterval(1500)))
+        let wake = baseline.addingTimeInterval(86400)
+        precondition(schedule.isDue(at: wake))
+        schedule.deferUntil(wake)
+        precondition(schedule.deadline == wake.addingTimeInterval(1200))
+        schedule.update(enabled: true, minutes: 30, now: wake)
+        precondition(schedule.deadline == wake.addingTimeInterval(1800))
+        schedule.update(enabled: false, minutes: 30, now: wake)
+        precondition(schedule.deadline == nil)
+        print("PASS: break intervals, snooze, sleep/wake, configuration changes and disabling")
+
+        precondition(UpcomingEvent.meetingLink(in: "Call: https://meet.google.com/abc-defg-hij")?.host == "meet.google.com")
+        precondition(UpcomingEvent.meetingLink(in: "https://acme.zoom.us/j/123")?.host == "acme.zoom.us")
+        for unsafe in ["https://zoom.us.evil.example/j/1", "http://meet.google.com/a", "https://evil.example/zoom.us", "https://user@zoom.us/j/1", "file:///tmp/meeting"] {
+            precondition(UpcomingEvent.meetingLink(in: unsafe) == nil)
+        }
+        print("PASS: meeting links accept known HTTPS hosts and reject lookalikes/unsafe schemes")
+
         // A detail draft must not overwrite focus earned after it was opened.
         let editStore = makeStore(fileURL: root.appendingPathComponent("edits.json"))
         editStore.add(title: "Original")

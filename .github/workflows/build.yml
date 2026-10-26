@@ -49,6 +49,10 @@ jobs:
         if: matrix.variant == 'Debug'
         run: bash scripts/test-focus.sh
 
+      - name: Test keep awake
+        if: matrix.variant == 'Debug'
+        run: bash scripts/test-keep-awake.sh
+
       - name: Build
         run: |
           set -o pipefail

@@ -37,6 +37,7 @@ struct NotchFlowApp: App {
             Divider()
             Button("Settings…") { appDelegate.showSettingsWindow() }
                 .keyboardShortcut(",")
+            Button("Getting started…") { appDelegate.showWelcomeWindow() }
             if UpdateChecker.isEnabled {
                 Button(updateChecker.isChecking ? "Checking…" : "Check for Updates…") {
                     appDelegate.showSettingsWindow(.about)
@@ -88,6 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settingsController: SettingsWindowController?
     private var summaryController: WeeklySummaryWindowController?
     private var quickCaptureController: QuickCaptureWindowController?
+    private var welcomeController: WelcomeWindowController?
     private var viewModel: NotchViewModel?
     private let hotkey = GlobalHotkey()
     private let quickCaptureHotkey = GlobalHotkey(id: 2)
@@ -184,10 +186,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 vm?.displayPreference = preference
             }
         notchController = NotchWindowController(viewModel: vm)
+        if !UserDefaults.standard.bool(forKey: WelcomeWindowController.dismissedKey) {
+            showWelcomeWindow()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         // Preserve an in-flight block when quitting normally or logging out.
+        KeepAwakeController.shared.stop()
         focus.stop(record: true)
     }
 
@@ -216,6 +222,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showQuickCapture() {
         if quickCaptureController == nil { quickCaptureController = QuickCaptureWindowController(store: store) }
         quickCaptureController?.show()
+    }
+
+    func showWelcomeWindow() {
+        if welcomeController == nil {
+            let controller = WelcomeWindowController()
+            controller.onClose = { [weak self] in
+                self?.welcomeController = nil
+                self?.userWindowDidClose()
+            }
+            controller.onCreateTask = { [weak self] in
+                self?.showTasksWindow()
+                self?.showQuickCapture()
+            }
+            controller.onShortcuts = { [weak self] in self?.showSettingsWindow(.shortcuts) }
+            welcomeController = controller
+            bumpUserWindowCount()
+        }
+        welcomeController?.show()
     }
 
     private func showStandaloneSummaryWindow() {

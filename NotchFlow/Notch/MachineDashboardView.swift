@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MachineDashboardView: View {
+    var onPopoverChange: (Bool) -> Void = { _ in }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var cpuUsage: Double?
     @State private var usedMemory: UInt64?
@@ -38,6 +39,7 @@ struct MachineDashboardView: View {
                 metric(title: "Memory", symbol: "memorychip", value: memoryUsage, history: memoryHistory,
                        color: memoryColor, detail: memoryDetail)
             }
+            KeepAwakeControl(onPopoverChange: onPopoverChange).frame(height: 28)
             HStack(spacing: 5) {
                 Image(systemName: "info.circle")
                 Text("Last 60 seconds · updates every 2s")

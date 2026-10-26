@@ -2,7 +2,7 @@
 
 **Foco, tarefas e rotina no notch do seu Mac.** Desenvolvido por **Hygor Ferreira**.
 
-Repositório privado: [HygorFerreira/NotchFlow](https://github.com/HygorFerreira/NotchFlow). O acesso ao código no GitHub exige permissão no repositório.
+Repositório público: [HygorFerreira/NotchFlow](https://github.com/HygorFerreira/NotchFlow).
 
 O NotchFlow reúne timer de foco, planejamento, lembretes de medicamentos, acompanhamento de água e uso da máquina em um aplicativo nativo para macOS. Passe o mouse sobre o notch para abrir o painel e acessar sua rotina sem ocupar uma janela permanentemente.
 
@@ -96,6 +96,8 @@ A janela principal reúne **Tarefas, Medicamentos, Água, Resumo semanal e Consu
 
 ## Primeiros passos
 
+Ao abrir o app pela primeira vez, o guia **Primeiros passos** mostra onde encontrar o notch, como criar a primeira tarefa e os atalhos principais. **Criar minha primeira tarefa** abre a captura rápida junto da janela de tarefas. Você pode dispensar o guia e reabri-lo pelo menu da ampulheta ou em **Ajustes → Geral → Primeiros passos**.
+
 1. Abra **Tarefas**, escolha uma data e cadastre sua primeira atividade.
 2. Ajuste a duração e use o botão de início para começar o foco.
 3. Abra **Água**, escolha seu recipiente e personalize a capacidade e a meta.
@@ -151,7 +153,7 @@ Os scripts compilam executáveis Swift independentes. O fluxo de integração co
 - [Histórico de alterações](CHANGELOG.md): melhorias atuais e marcos anteriores.
 - [Textos para a App Store](appstore/LISTING.md): rascunho em português e inglês.
 
-O código está versionado no repositório privado do GitHub. Um canal público de downloads, URLs de suporte e publicação na App Store ainda precisam ser configurados. Na distribuição direta, o app consulta as releases de `HygorFerreira/NotchFlow` ao iniciar; a verificação manual fica no menu **Buscar atualizações…** ou em **Ajustes > Sobre > Atualizações > Verificar agora**. Releases estáveis com versão superior à instalada oferecem um botão para abrir a página de download. A consulta depende de releases acessíveis pela API pública do GitHub; um repositório privado sem autenticação gera uma mensagem de falha. Na compilação `APPSTORE`, as atualizações são administradas pela loja.
+O código está disponível no repositório público do GitHub. A consulta pública em 26 de outubro de 2026 confirmou que ainda não há releases publicadas. Para oferecer downloads e atualizações, publique uma release estável com tag de versão numérica (por exemplo, `v1.1.0`) e o DMG validado anexado. URLs de suporte e publicação na App Store ainda precisam ser configuradas. Na distribuição direta, o app consulta as releases de `HygorFerreira/NotchFlow` ao iniciar; a verificação manual fica no menu **Buscar atualizações…** ou em **Ajustes > Sobre > Atualizações > Verificar agora**. Releases estáveis com versão superior à instalada oferecem um botão para abrir a página de download. A consulta depende de releases acessíveis pela API pública do GitHub; um repositório privado sem autenticação gera uma mensagem de falha. Na compilação `APPSTORE`, as atualizações são administradas pela loja.
 
 ## Licença
 

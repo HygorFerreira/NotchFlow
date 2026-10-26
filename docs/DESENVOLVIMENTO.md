@@ -86,6 +86,8 @@ Uma compilação Debug oferece o modo de snapshots, com dados de demonstração 
 /tmp/notchflow-build/Build/Products/Debug/NotchFlow.app/Contents/MacOS/NotchFlow   -snapshot 1 -AppleLanguages '(pt-BR)'
 ```
 
+Para revisar apenas o guia de primeiros passos nas duas aparências, acrescente `-snapshotWelcomeOnly 1` ao comando de snapshots. Esse modo não altera a preferência de exibição do guia.
+
 Para inglês, use `'(en)'`. O programa imprime o diretório de saída e encerra após renderizar. Copie as imagens antes da próxima execução, pois a pasta temporária de snapshots é recriada.
 
 Para revisar o sistema visual completo com dados fictícios, acrescente `-snapshotVisualReview 1` ao comando. Esse modo gera as telas principais, todas as páginas de ajustes, detalhe de tarefa e captura rápida nas aparências clara e escura, além das cinco abas do notch e do timer compacto. As imagens são prévias reais de SwiftUI; confira também foco de teclado, popovers e redimensionamento no app.

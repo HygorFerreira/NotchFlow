@@ -34,6 +34,12 @@ struct FocusSettings: Codable, Equatable {
     var quickCaptureHotkeyEnabled: Bool = true
     var weeklyGoalMinutes: Int = 300
 
+    var dashboardModules: [String] = DashboardModule.allCases.map(\.rawValue)
+    var eyeBreaksEnabled = false
+    var eyeBreakMinutes = 20
+    var postureBreaksEnabled = false
+    var postureBreakMinutes = 60
+
     static let `default` = FocusSettings()
 
     /// Clamp the focus range to the same bounds the TaskDetailView uses, so
@@ -53,6 +59,7 @@ struct FocusSettings: Codable, Equatable {
         case showTimeline, rainbowTimeline, minimalMode
         case displayPreference, globalHotkeyEnabled
         case quickCaptureHotkeyEnabled, weeklyGoalMinutes
+        case dashboardModules, eyeBreaksEnabled, eyeBreakMinutes, postureBreaksEnabled, postureBreakMinutes
     }
 
     init() {}
@@ -73,6 +80,11 @@ struct FocusSettings: Codable, Equatable {
         displayPreference = try c.decodeIfPresent(DisplayPreference.self, forKey: .displayPreference) ?? d.displayPreference
         globalHotkeyEnabled = try c.decodeIfPresent(Bool.self, forKey: .globalHotkeyEnabled) ?? d.globalHotkeyEnabled
         quickCaptureHotkeyEnabled = try c.decodeIfPresent(Bool.self, forKey: .quickCaptureHotkeyEnabled) ?? d.quickCaptureHotkeyEnabled
+        dashboardModules = DashboardModule.normalized(try c.decodeIfPresent([String].self, forKey: .dashboardModules) ?? d.dashboardModules)
+        eyeBreaksEnabled = try c.decodeIfPresent(Bool.self, forKey: .eyeBreaksEnabled) ?? false
+        postureBreaksEnabled = try c.decodeIfPresent(Bool.self, forKey: .postureBreaksEnabled) ?? false
+        eyeBreakMinutes = min(180, max(15, try c.decodeIfPresent(Int.self, forKey: .eyeBreakMinutes) ?? 20))
+        postureBreakMinutes = min(180, max(15, try c.decodeIfPresent(Int.self, forKey: .postureBreakMinutes) ?? 60))
         weeklyGoalMinutes = max(1, min(10080, try c.decodeIfPresent(Int.self, forKey: .weeklyGoalMinutes) ?? d.weeklyGoalMinutes))
     }
 }

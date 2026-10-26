@@ -27,6 +27,44 @@ enum Snapshots {
         let store = demoStore()
         let focus = FocusTimer(store: store)
 
+        if UserDefaults.standard.bool(forKey: "snapshotRoutineOnly") {
+            let vm = NotchViewModel(store: store, focus: focus, metrics: .primary)
+            vm.debugSetUpcomingEvent(UpcomingEvent(title: isPortuguese ? "Reunião de produto" : "Product meeting",
+                start: Date().addingTimeInterval(480), end: Date().addingTimeInterval(2280),
+                meetingURL: URL(string: "https://meet.google.com/abc-defg-hij")))
+            vm.expanded = true
+            for tab in ["Activity", "Health", "Machine"] {
+                vm.dashboardTab = tab
+                render(notch(vm), size: vm.targetSize, scheme: .dark,
+                       to: out.appendingPathComponent("routine-\(tab.lowercased()).png"))
+            }
+            vm.expanded = false
+            vm.debugShowReminder(.routineBreak(.eyes))
+            render(notch(vm), size: vm.targetSize, scheme: .dark,
+                   to: out.appendingPathComponent("routine-reminder.png"))
+            render(AIUsageDashboardView(monitor: .demo()).padding(20).background(Color.black),
+                   size: CGSize(width: 700, height: 210), scheme: .dark,
+                   to: out.appendingPathComponent("routine-ai.png"))
+            for scheme in [ColorScheme.dark, .light] {
+                render(DashboardModuleSettings().environmentObject(store).padding(24).background(Theme.windowBackground).flowAppearance(), size: CGSize(width: 720, height: 430), scheme: scheme,
+                       to: out.appendingPathComponent("routine-modules-\(scheme == .dark ? "dark" : "light").png"))
+                render(RoutineBreakSettings().environmentObject(store).padding(24).background(Theme.windowBackground).flowAppearance(), size: CGSize(width: 720, height: 480), scheme: scheme,
+                       to: out.appendingPathComponent("routine-breaks-\(scheme == .dark ? "dark" : "light").png"))
+            }
+            print("SNAPSHOTS \(out.path)")
+            exit(0)
+        }
+
+        if UserDefaults.standard.bool(forKey: "snapshotWelcomeOnly") {
+            for scheme in [ColorScheme.dark, .light] {
+                render(WelcomeView(onCreateTask: {}, onShortcuts: {}, onClose: {}),
+                       size: CGSize(width: 600, height: 580), scheme: scheme,
+                       to: out.appendingPathComponent("welcome-\(scheme == .dark ? "dark" : "light").png"))
+            }
+            print("SNAPSHOTS \(out.path)")
+            exit(0)
+        }
+
         if UserDefaults.standard.bool(forKey: "snapshotNotchOnly") {
             store.medications.append(Medication(name: "Vitamina D", dosage: "1000 UI",
                                                 reminderTimes: [Date().addingTimeInterval(3600)]))

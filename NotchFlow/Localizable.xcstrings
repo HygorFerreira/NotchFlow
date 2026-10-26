@@ -1,6 +1,486 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Ends at %@" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termina às %@"
+          }
+        }
+      }
+    },
+    "Open calendar" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir calendário"
+          }
+        }
+      }
+    },
+    "Rest your eyes" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanse os olhos"
+          }
+        }
+      }
+    },
+    "Time to stretch" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hora de se alongar"
+          }
+        }
+      }
+    },
+    "Look into the distance for 20 seconds" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olhe para longe por 20 segundos"
+          }
+        }
+      }
+    },
+    "Stand up and change your posture" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Levante-se e mude de postura"
+          }
+        }
+      }
+    },
+    "Healthy breaks" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausas saudáveis"
+          }
+        }
+      }
+    },
+    "Gentle reminders in the notch. Snooze for 5 minutes or dismiss at any time." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lembretes discretos no notch. Adie por 5 minutos ou dispense quando quiser."
+          }
+        }
+      }
+    },
+    "Eye breaks" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausas para os olhos"
+          }
+        }
+      }
+    },
+    "Posture breaks" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausas de postura"
+          }
+        }
+      }
+    },
+    "Eye break interval" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalo para os olhos"
+          }
+        }
+      }
+    },
+    "Posture break interval" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalo de postura"
+          }
+        }
+      }
+    },
+    "Notch modules" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Módulos do notch"
+          }
+        }
+      }
+    },
+    "Choose the visible tabs and their order. Keep at least one module visible." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha as abas visíveis e sua ordem. Mantenha pelo menos um módulo visível."
+          }
+        }
+      }
+    },
+    "Health settings" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes de saúde"
+          }
+        }
+      }
+    },
+    "Water settings" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes de água"
+          }
+        }
+      }
+    },
+    "Machine settings" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes da máquina"
+          }
+        }
+      }
+    },
+    "Calendar event" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evento do calendário"
+          }
+        }
+      }
+    },
+    "Open event" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir evento"
+          }
+        }
+      }
+    },
+    "Join meeting" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrar na reunião"
+          }
+        }
+      }
+    },
+    "Now" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agora"
+          }
+        }
+      }
+    },
+    "No upcoming events" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum evento próximo"
+          }
+        }
+      }
+    },
+    "Connect your calendar" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecte seu calendário"
+          }
+        }
+      }
+    },
+    "Keep Mac awake" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manter o Mac acordado"
+          }
+        }
+      }
+    },
+    "Awake for %lld min" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acordado por %lld min"
+          }
+        }
+      }
+    },
+    "Could not keep this Mac awake" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível manter o Mac acordado"
+          }
+        }
+      }
+    },
+    "Prevents idle sleep until the timer ends. Closing the lid or choosing Sleep still works." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evita o repouso por inatividade até o tempo acabar. Fechar a tampa ou escolher Repouso continua funcionando."
+          }
+        }
+      }
+    },
+    "Every %lld min" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cada %lld min"
+          }
+        }
+      }
+    },
+    "Snooze for 5 minutes" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adiar por 5 minutos"
+          }
+        }
+      }
+    },
+    "used" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "usado"
+          }
+        }
+      }
+    },
+    "Reconnect" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconectar"
+          }
+        }
+      }
+    },
+    "Refreshing…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizando…"
+          }
+        }
+      }
+    },
+    "Getting started" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primeiros passos"
+          }
+        }
+      }
+    },
+    "Getting started…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primeiros passos…"
+          }
+        }
+      }
+    },
+    "Welcome to NotchFlow" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boas-vindas ao NotchFlow"
+          }
+        }
+      }
+    },
+    "A little space for a more focused day" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um pequeno espaço para um dia com mais foco"
+          }
+        }
+      }
+    },
+    "Find your notch" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontre seu notch"
+          }
+        }
+      }
+    },
+    "Move your pointer to the top center of your screen to open the panel. On a Mac without a notch, look for the small pill. The hourglass in the menu bar also opens your tools." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mova o ponteiro até o centro do topo da tela para abrir o painel. Em um Mac sem notch, procure a pequena pílula. A ampulheta na barra de menus também dá acesso às suas ferramentas."
+          }
+        }
+      }
+    },
+    "Create a task and focus" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crie uma tarefa e comece o foco"
+          }
+        }
+      }
+    },
+    "Add your first task, choose its duration, then press play beside it to start a focus block. Your tasks, water, medications and weekly summary share one workspace." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicione sua primeira tarefa, escolha a duração e clique no botão de início ao lado dela para começar um bloco de foco. Tarefas, água, medicamentos e resumo semanal ficam na mesma janela."
+          }
+        }
+      }
+    },
+    "Keep your shortcuts close" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenha os atalhos por perto"
+          }
+        }
+      }
+    },
+    "Capture a task from any app with ⌘⇧N. Start or stop focus with ⌘⇧Space. You can check shortcut availability and turn them on or off in Settings." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture uma tarefa de qualquer aplicativo com ⌘⇧N. Inicie ou pare o foco com ⌘⇧Espaço. Nos Ajustes, você pode conferir a disponibilidade dos atalhos e ativá-los ou desativá-los."
+          }
+        }
+      }
+    },
+    "Review shortcuts…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferir atalhos…"
+          }
+        }
+      }
+    },
+    "You can reopen this guide from the menu bar or Settings → General." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você pode reabrir este guia pela barra de menus ou em Ajustes → Geral."
+          }
+        }
+      }
+    },
+    "Maybe later" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agora não"
+          }
+        }
+      }
+    },
+    "Create my first task" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criar minha primeira tarefa"
+          }
+        }
+      }
+    },
+    "Find the notch, create your first task and learn the shortcuts" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontre o notch, crie sua primeira tarefa e conheça os atalhos"
+          }
+        }
+      }
+    },
+    "Open guide" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir guia"
+          }
+        }
+      }
+    },
     "" : {
 
     },
@@ -1516,7 +1996,14 @@
       }
     },
     "Done" : {
-
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concluído"
+          }
+        }
+      }
     },
     "Dose (optional, e.g. 10 mg)" : {
       "localizations" : {

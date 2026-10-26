@@ -9,12 +9,6 @@ struct AIUsageDashboardView: View {
                 HStack {
                     Label("AI usage", systemImage: "sparkles").font(.system(size: 12, weight: .semibold))
                     Spacer()
-                    Button { AppDelegate.shared?.showAIUsageWindow() } label: {
-                        Image(systemName: "slider.horizontal.3").frame(width: 24, height: 22)
-                    }
-                    .buttonStyle(.plain)
-                    .help("Connect AI services")
-                    .accessibilityLabel("Connect AI services")
                 }
                 HStack(spacing: 10) {
                     ForEach(AIProvider.allCases) { provider in
@@ -33,20 +27,31 @@ struct AIUsageDashboardView: View {
         let settings = monitor.preferences[provider] ?? AIUsagePreferences()
         let window = reading?.primaryWindow(weekly: settings.weeklyPrimary)
         let stale = reading?.isStale(at: now) == true || monitor.errors[provider] != nil
-        return Button { AppDelegate.shared?.showAIUsageWindow() } label: {
+        return Button {
+            if stale && monitor.errors[provider] == nil {
+                _Concurrency.Task { await monitor.refresh(provider) }
+            } else { AppDelegate.shared?.showAIUsageWindow() }
+        } label: {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 10) {
                     AIUsageRings(reading: reading, preferences: settings, stale: stale, size: 48)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(provider.name).font(.system(size: 12, weight: .semibold))
-                        Text(window?.title.localized ?? String(localized: "No reading"))
+                        Text(window.map { "\($0.title.localized) · \($0.usedPercent.formatted(.number.precision(.fractionLength(0))))% \(String(localized: "used"))" } ?? String(localized: "No reading"))
                             .font(.system(size: 10)).foregroundStyle(Theme.textSecondary)
-                        Text(stale ? String(localized: "Last known reading")
-                             : monitor.connected.contains(provider) ? String(localized: "Connected") : String(localized: "Connect"))
+                        Text(monitor.refreshing.contains(provider) ? String(localized: "Refreshing…")
+                             : stale ? String(localized: "Last known reading")
+                             : monitor.connected.contains(provider) ? (reading == nil ? String(localized: "Waiting for the first reading…") : String(localized: "Connected")) : String(localized: "Connect"))
                             .font(.system(size: 9)).foregroundStyle(stale ? .orange : Theme.textSecondary)
                     }
                 }
-                if let reset = window?.resetsAt {
+                if let error = monitor.errors[provider] {
+                    Label("Reconnect", systemImage: "exclamationmark.triangle")
+                        .font(.system(size: 10, weight: .medium)).foregroundStyle(.orange).help(error)
+                } else if stale {
+                    Label("Refresh", systemImage: "arrow.clockwise")
+                        .font(.system(size: 10, weight: .medium)).foregroundStyle(.orange)
+                } else if let reset = window?.resetsAt {
                     Text(aiResetLabel(reset, now: now, remaining: settings.remainingTime))
                         .font(.system(size: 9)).foregroundStyle(Theme.textSecondary).lineLimit(1)
                 } else {

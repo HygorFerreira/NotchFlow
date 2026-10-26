@@ -20,6 +20,10 @@ struct HealthDashboardView: View {
 
     private var medicationPanel: some View {
         VStack(alignment: .leading, spacing: NotchViewModel.columnSpacing) {
+            VStack(spacing: 8) {
+                breakRow(.eyes, enabled: $store.settings.eyeBreaksEnabled)
+                breakRow(.posture, enabled: $store.settings.postureBreaksEnabled)
+            }
             HStack {
                 Label("Medications", systemImage: "pills.fill")
                     .font(.system(size: 13, weight: .semibold))
@@ -63,6 +67,19 @@ struct HealthDashboardView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    private func breakRow(_ kind: RoutineBreak, enabled: Binding<Bool>) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: kind.symbol).foregroundStyle(Theme.accent).frame(width: 22)
+            Text(kind == .eyes ? "Eye breaks" : "Posture breaks")
+            Spacer()
+            let minutes = kind == .eyes ? store.settings.eyeBreakMinutes : store.settings.postureBreakMinutes
+            Text("Every \(minutes) min").foregroundStyle(Theme.textSecondary)
+            Toggle(kind.title.localized, isOn: enabled).labelsHidden().toggleStyle(.switch).controlSize(.mini)
+        }
+        .font(.system(size: 10, weight: .medium))
+        .frame(height: 28)
     }
 
     private func medicationRow(_ medication: Medication) -> some View {
