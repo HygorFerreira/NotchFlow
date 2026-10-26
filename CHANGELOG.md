@@ -1,8 +1,15 @@
 # Histórico de alterações do NotchFlow
 
-Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvimento** descreve mudanças presentes no código que ainda não possuem uma nova versão publicada. A versão configurada no projeto é **1.1.0**, build **2**, preparada para teste privado por DMG.
+Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvimento** descreve mudanças presentes no código que ainda não possuem uma nova versão publicada. A versão configurada no projeto é **1.2.0**, build **3**, preparada para distribuição de teste com atualizações internas.
 
-## Em desenvolvimento - atualizado em 2026-10-26
+## 1.2.0 — 2026-10-26
+
+- Atualizador Sparkle 2.10.1 integrado: busca, download, validação Ed25519 e instalação pelo próprio app, com verificações a cada seis horas e instalação automática ao encerrar.
+- Pacotes ZIP e catálogos assinados gerados junto do DMG; chave privada armazenada no Chaves, fora do repositório e do aplicativo.
+- Opções de atualização nos Ajustes → Sobre e verificação manual no menu, sem abrir o navegador.
+- Distribuição ad-hoc para amigos sem Developer ID, com os componentes do Sparkle assinados e permissão de biblioteca apenas nessa variante e em Debug.
+- Target separado NotchFlowAppStore mantém o pacote da loja sem Sparkle ou permissões de instalação externa.
+- Versão anterior à 1.2.0 exige uma instalação manual inicial para receber o atualizador.
 
 - Guia opcional de primeiros passos exibido uma vez, com orientações sobre o notch, criação da primeira tarefa e atalhos; pode ser reaberto pelo menu ou em Ajustes → Geral. Disponível em português e inglês.
 - Documentação de distribuição atualizada para o repositório público; consulta anônima confirmou a ausência de releases publicadas em 26/10/2026.

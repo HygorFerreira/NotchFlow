@@ -32,8 +32,12 @@ NOTARY_PROFILE="${NOTCHFLOW_NOTARY_PROFILE:-}"
 
 APP_NAME="NotchFlow"
 BUILD_DIR="build/dmg"
+PACKAGES_DIR="${NOTCHFLOW_PACKAGES_DIR:-build/SourcePackages}"
 APP_PATH="${BUILD_DIR}/Build/Products/Release/${APP_NAME}.app"
 ENTITLEMENTS="NotchFlow/NotchFlow.entitlements"
+if [[ -z "$IDENTITY" ]]; then
+  ENTITLEMENTS="NotchFlow/NotchFlow-Local.entitlements"
+fi
 BG_IMAGE="scripts/dmg/background.tiff"
 
 if ! command -v create-dmg &>/dev/null; then
@@ -49,6 +53,8 @@ xcodebuild -project NotchFlow.xcodeproj -scheme NotchFlow \
   -configuration Release \
   -destination 'generic/platform=macOS' \
   -derivedDataPath "$BUILD_DIR" \
+  -clonedSourcePackagesDirPath "$PACKAGES_DIR" \
+  CODE_SIGN_ENTITLEMENTS="$ENTITLEMENTS" \
   ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
   CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= \
   -quiet clean build
@@ -58,10 +64,42 @@ DMG="build/${APP_NAME}-${VERSION}.dmg"
 echo "-> ${APP_NAME} ${VERSION}"
 
 # ── 2. Sign + notarize the app ──────────────────────────────────────────────
+# Sign nested Sparkle code from the inside out. Ad-hoc builds for friends use
+# the same flow without timestamping; EdDSA still authenticates update archives.
+# Expand the bundle identifier as Xcode does when producing entitlements.
+SIGN_ENTITLEMENTS="$BUILD_DIR/signing.entitlements"
+python3 - "$ENTITLEMENTS" "$APP_PATH/Contents/Info.plist" "$SIGN_ENTITLEMENTS" <<'PYENT'
+import plistlib
+import sys
+from pathlib import Path
+source, app_info, output = map(Path, sys.argv[1:])
+with source.open('rb') as f:
+    entitlements = plistlib.load(f)
+with app_info.open('rb') as f:
+    identifier = plistlib.load(f)['CFBundleIdentifier']
+key = 'com.apple.security.temporary-exception.mach-lookup.global-name'
+entitlements[key] = [name.replace('$(PRODUCT_BUNDLE_IDENTIFIER)', identifier) for name in entitlements[key]]
+with output.open('wb') as f:
+    plistlib.dump(entitlements, f)
+PYENT
+SIGN_ARGS=(--force --options runtime --sign "${IDENTITY:--}")
+if [[ -n "$IDENTITY" ]]; then SIGN_ARGS+=(--timestamp); fi
+SPARKLE="$APP_PATH/Contents/Frameworks/Sparkle.framework"
+for component in XPCServices/Installer.xpc XPCServices/Downloader.xpc Autoupdate Updater.app; do
+  extra=()
+  if [[ "$component" == XPCServices/Downloader.xpc ]]; then
+    extra+=(--preserve-metadata=entitlements)
+  fi
+  codesign "${SIGN_ARGS[@]}" "${extra[@]+"${extra[@]}"}" "$SPARKLE/Versions/B/$component"
+done
+codesign "${SIGN_ARGS[@]}" "$SPARKLE"
+codesign "${SIGN_ARGS[@]}" --entitlements "$SIGN_ENTITLEMENTS" "$APP_PATH"
+codesign --verify --deep --strict "$APP_PATH"
+
 if [[ -n "$IDENTITY" ]]; then
   echo "-> Signing with: $IDENTITY"
   codesign --force --options runtime --timestamp \
-    --entitlements "$ENTITLEMENTS" \
+    --entitlements "$SIGN_ENTITLEMENTS" \
     --sign "$IDENTITY" \
     "$APP_PATH"
   codesign --verify --strict --verbose=2 "$APP_PATH"
@@ -77,7 +115,7 @@ if [[ -n "$IDENTITY" ]]; then
     echo "   (NOTCHFLOW_NOTARY_PROFILE not set, skipping notarization)"
   fi
 else
-  echo "   (NOTCHFLOW_SIGN_IDENTITY not set, the app stays ad-hoc signed)"
+  echo "   (No Apple Developer ID: ad-hoc build; Sparkle updates are signed separately)"
 fi
 
 # ── 3. DMG ──────────────────────────────────────────────────────────────────
@@ -117,3 +155,7 @@ fi
 
 echo ""
 echo "Done. DMG ready: $DMG"
+
+# Generate a signed ZIP and signed appcast for in-app updates as well.
+NOTCHFLOW_SPARKLE_BIN="${NOTCHFLOW_SPARKLE_BIN:-$PACKAGES_DIR/artifacts/sparkle/Sparkle/bin}" \
+  bash scripts/prepare-update.sh "$APP_PATH"

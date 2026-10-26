@@ -113,7 +113,7 @@ export NOTCHFLOW_NOTARY_PROFILE='nome-do-perfil'
 bash scripts/create-dmg.sh
 ```
 
-A saída é `build/NotchFlow-<versão>.dmg`. Sem essas variáveis, o script pode gerar um pacote sem assinatura de distribuição ou sem notarização; gerar o arquivo não comprova que ele esteja pronto para distribuição.
+A saída inclui `build/NotchFlow-<versão>.dmg` e `build/updates/v<versão>/`, com ZIP, catálogo assinado e checksums. A geração do catálogo requer a chave do NotchFlow no Chaves; veja [ATUALIZACOES.md](ATUALIZACOES.md). Sem essas variáveis, o script pode gerar um pacote sem assinatura de distribuição ou sem notarização; gerar o arquivo não comprova que ele esteja pronto para distribuição.
 
 ## App Store
 
@@ -129,7 +129,7 @@ Esse comando recria `build/appstore/`, arquiva com a condição `APPSTORE` e exp
 bash scripts/appstore.sh --upload
 ```
 
-A opção `--upload` envia o build ao App Store Connect. As credenciais e os certificados são administrados pelo Xcode e não devem ser versionados. A condição `APPSTORE` desativa o verificador próprio de atualizações e usa os entitlements da loja.
+A opção `--upload` envia o build ao App Store Connect. As credenciais e os certificados são administrados pelo Xcode e não devem ser versionados. O esquema **NotchFlowAppStore** define `APPSTORE`, usa Info.plist e entitlements próprios e não liga nem incorpora o Sparkle. Não distribua um build do esquema NotchFlow com apenas a condição APPSTORE: use o target da loja para excluir o framework do pacote.
 
 ## Preparar uma versão
 
@@ -139,4 +139,4 @@ A opção `--upload` envia o build ao App Store Connect. As credenciais e os cer
 4. Configure as URLs de suporte e privacidade e revise [LISTING.md](../appstore/LISTING.md).
 5. Valide assinatura, exportação e notarização conforme o canal escolhido.
 
-O verificador em `UpdateChecker.swift` consulta `HygorFerreira/NotchFlow` pela API de releases do GitHub na distribuição direta. A consulta automática ocorre ao iniciar, com intervalo mínimo de seis horas entre verificações na sessão; **Verificar agora** ignora esse intervalo. Apenas releases estáveis com versão superior à instalada são oferecidas. O endpoint precisa estar acessível sem autenticação: repositórios privados ou sem releases acessíveis podem retornar erro, exibido nos ajustes. A condição `APPSTORE` mantém o verificador desativado.
+O atualizador em `UpdateChecker.swift` usa o driver `SparkleUpdateDriver.swift` na distribuição direta. O Sparkle é fixado em 2.10.1 via Swift Package Manager e o lockfile é versionado. Catálogo e ZIP são assinados com Ed25519; as verificações automáticas ocorrem a cada seis horas e, por padrão, o app instala ao encerrar. Veja [ATUALIZACOES.md](ATUALIZACOES.md) para as chaves, validação e publicação das releases. O esquema **NotchFlowAppStore** não incorpora esse framework.

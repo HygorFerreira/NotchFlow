@@ -790,12 +790,22 @@ struct AboutSettingsPage: View {
                         symbol: "arrow.down.circle.fill", color: Color(hex: "#22C55E"), title: "Updates",
                         subtitle: updateStatus
                     ) {
-                        if let update = updates.availableUpdate {
-                            Button(String(localized: "Download \(update.version)")) { updates.openReleasePage() }
-                        }
-                        Button("Check Now") { updates.checkForUpdates(force: true) }
-                            .disabled(updates.isChecking)
+                        Button("Check Now") { updates.checkForUpdates() }
+                            .disabled(!updates.state.canCheck)
                     }
+                }
+                if UpdateChecker.isEnabled {
+                    SettingsToggleRow(symbol: "arrow.triangle.2.circlepath", color: Theme.accent,
+                                      title: "Check for updates automatically",
+                                      subtitle: "Look for new versions in the background",
+                                      isOn: Binding(get: { updates.state.automaticallyChecks },
+                                                    set: { updates.setAutomaticChecks($0) }))
+                    SettingsToggleRow(symbol: "arrow.down.circle", color: Theme.accent,
+                                      title: "Install updates automatically",
+                                      subtitle: "Download signed updates and install them when NotchFlow quits",
+                                      isOn: Binding(get: { updates.state.automaticallyDownloads },
+                                                    set: { updates.setAutomaticDownloads($0) }))
+                        .disabled(!updates.state.automaticallyChecks)
                 }
                 SettingsRow(
                     symbol: "hand.raised.fill", color: Color(hex: "#3B82F6"), title: "Privacy",
@@ -808,10 +818,10 @@ struct AboutSettingsPage: View {
     }
 
     private var updateStatus: String {
-        if updates.isChecking { return String(localized: "Checking…") }
-        if updates.checkFailed { return updates.errorMessage ?? String(localized: "Could not check for updates. Try again later.") }
-        if let update = updates.availableUpdate { return String(localized: "Version \(update.version) is available") }
-        if updates.lastChecked != nil { return String(localized: "You have the latest version") }
-        return String(localized: "Checks GitHub for new versions")
+        if updates.state.isChecking { return String(localized: "Checking…") }
+        if let error = updates.state.errorMessage { return error }
+        if let version = updates.state.availableVersion { return String(localized: "Version \(version) is available") }
+        if updates.state.lastChecked != nil { return String(localized: "No compatible update is available") }
+        return String(localized: "Downloads and installs updates inside NotchFlow")
     }
 }

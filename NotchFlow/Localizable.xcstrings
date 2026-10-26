@@ -1,6 +1,86 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Updates are not configured in this build." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As atualizações não estão configuradas nesta versão."
+          }
+        }
+      }
+    },
+    "Could not update NotchFlow. Try again later." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível atualizar o NotchFlow. Tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "Check for updates automatically" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar atualizações automaticamente"
+          }
+        }
+      }
+    },
+    "Look for new versions in the background" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar novas versões em segundo plano"
+          }
+        }
+      }
+    },
+    "Install updates automatically" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar atualizações automaticamente"
+          }
+        }
+      }
+    },
+    "Download signed updates and install them when NotchFlow quits" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixar atualizações assinadas e instalá-las ao encerrar o NotchFlow"
+          }
+        }
+      }
+    },
+    "No compatible update is available" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma atualização compatível está disponível"
+          }
+        }
+      }
+    },
+    "Downloads and installs updates inside NotchFlow" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixa e instala atualizações pelo próprio NotchFlow"
+          }
+        }
+      }
+    },
     "Ends at %@" : {
       "localizations" : {
         "pt-BR" : {

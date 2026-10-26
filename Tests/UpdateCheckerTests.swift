@@ -3,66 +3,93 @@ import Foundation
 @main
 struct UpdateCheckerTests {
     @MainActor
-    static func main() async throws {
-        precondition(UpdateChecker.isNewer("v1.2.1", than: "1.2"))
-        precondition(UpdateChecker.isNewer("2.0", than: "1.99"))
-        precondition(!UpdateChecker.isNewer("1.2.0", than: "1.2"))
-        for invalid in ["latest", "1..2", "1.2-beta", "", "9999999999999999999999999"] {
-            precondition(!UpdateChecker.isNewer(invalid, than: "1.0"))
+    static func main() throws {
+        let key = Data(repeating: 7, count: 32).base64EncodedString()
+        let valid: [String: Any] = ["SUFeedURL": "https://example.com/appcast.xml", "SUPublicEDKey": key]
+        try UpdateConfiguration.validate(valid)
+        for bad in [
+            [:],
+            ["SUFeedURL": "http://example.com/appcast.xml", "SUPublicEDKey": key],
+            ["SUFeedURL": "https://user:password@example.com/feed", "SUPublicEDKey": key],
+            ["SUFeedURL": "https://example.com/feed", "SUPublicEDKey": "not-a-key"],
+            ["SUFeedURL": "https://example.com/feed", "SUPublicEDKey": Data(repeating: 0, count: 31).base64EncodedString()]
+        ] as [[String: Any]] {
+            do {
+                try UpdateConfiguration.validate(bad)
+                preconditionFailure("An invalid trust configuration was accepted")
+            } catch {}
         }
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.protocolClasses = [UpdateStub.self]
-        let checker = UpdateChecker(session: URLSession(configuration: configuration), currentVersion: "1.0.0")
-        func check() async throws {
-            checker.checkForUpdates(force: true)
-            let deadline = Date().addingTimeInterval(5)
-            while checker.isChecking, Date() < deadline {
-                try await _Concurrency.Task.sleep(for: .milliseconds(10))
-            }
-            precondition(!checker.isChecking)
-        }
-        func payload(_ version: String, url: String = "https://github.com/HygorFerreira/NotchFlow/releases/tag/v1.1.0", prerelease: Bool = false) throws -> Data {
-            try JSONSerialization.data(withJSONObject: ["tag_name": version, "html_url": url, "draft": false, "prerelease": prerelease])
-        }
-        UpdateStub.body = try payload("v1.1.0")
-        try await check()
-        precondition(checker.availableUpdate?.version == "1.1.0" && !checker.checkFailed)
-        precondition(checker.lastChecked != nil)
-        let requests = UpdateStub.requests
+
+        let driver = FakeUpdateDriver()
+        let checker = UpdateChecker(driver: driver)
+        checker.start()
+        #if APPSTORE
         checker.checkForUpdates()
-        precondition(UpdateStub.requests == requests && !checker.isChecking)
-        UpdateStub.status = 404
-        try await check()
-        precondition(checker.checkFailed && checker.errorMessage != nil)
-        precondition(checker.availableUpdate?.version == "1.1.0")
-        UpdateStub.status = 429
-        try await check()
-        precondition(checker.checkFailed && checker.errorMessage != nil)
-        UpdateStub.status = 200
-        for body in [try payload("latest"), try payload("v1.2.0", url: "https://example.com/update"), try payload("v1.2.0", prerelease: true), Data("{}".utf8)] {
-            UpdateStub.body = body
-            try await check()
-            precondition(checker.checkFailed && checker.availableUpdate?.version == "1.1.0")
-        }
-        UpdateStub.body = try payload("v1.0.0")
-        try await check()
-        precondition(!checker.checkFailed && checker.errorMessage == nil && checker.availableUpdate == nil)
-        print("Update checker tests passed")
+        checker.setAutomaticChecks(false)
+        checker.setAutomaticDownloads(false)
+        precondition(driver.starts == 0 && driver.checks == 0 && driver.preferenceChanges == 0)
+        print("App Store updater isolation passed")
+        #else
+        precondition(driver.starts == 1 && checker.state.canCheck)
+        checker.start()
+        precondition(driver.starts == 1)
+        checker.checkForUpdates()
+        precondition(driver.checks == 1 && checker.state.isChecking)
+        checker.checkForUpdates()
+        precondition(driver.checks == 1, "A second check must not start during an update session")
+        driver.state.isChecking = false
+        driver.state.canCheck = true
+        driver.state.availableVersion = "1.3.0"
+        driver.state.lastChecked = Date()
+        precondition(checker.state.availableVersion == "1.3.0" && checker.state.lastChecked != nil)
+        checker.setAutomaticChecks(false)
+        checker.setAutomaticDownloads(false)
+        precondition(!checker.state.automaticallyChecks && !checker.state.automaticallyDownloads)
+        checker.checkForUpdates()
+        precondition(driver.checks == 2, "Disabling scheduled checks must keep manual checks available")
+        driver.state.errorMessage = "Network unavailable"
+        precondition(checker.state.errorMessage == "Network unavailable")
+
+        let failing = FakeUpdateDriver()
+        failing.startError = NSError(domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Missing signing key"])
+        let broken = UpdateChecker(driver: failing)
+        broken.checkForUpdates()
+        precondition(!broken.state.canCheck && broken.state.errorMessage == "Missing signing key")
+        precondition(failing.checks == 0)
+        // A corrected configuration can be retried without restarting the app.
+        failing.startError = nil
+        broken.checkForUpdates()
+        precondition(failing.starts == 2 && failing.checks == 1)
+        print("In-app update state and configuration tests passed")
+        #endif
     }
 }
 
-final class UpdateStub: URLProtocol, @unchecked Sendable {
-    static var status = 200
-    static var body = Data()
-    static var requests = 0
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-    override func startLoading() {
-        Self.requests += 1
-        let response = HTTPURLResponse(url: request.url!, statusCode: Self.status, httpVersion: nil, headerFields: nil)!
-        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: Self.body)
-        client?.urlProtocolDidFinishLoading(self)
+@MainActor
+final class FakeUpdateDriver: AppUpdateDriver {
+    var onChange: ((AppUpdateState) -> Void)?
+    var state = AppUpdateState() { didSet { onChange?(state) } }
+    var starts = 0
+    var checks = 0
+    var preferenceChanges = 0
+    var startError: Error?
+
+    func start() throws {
+        starts += 1
+        if let startError { throw startError }
+        state.canCheck = true
     }
-    override func stopLoading() {}
+    func checkForUpdates() {
+        checks += 1
+        state.canCheck = false
+        state.isChecking = true
+    }
+    func setAutomaticChecks(_ enabled: Bool) {
+        preferenceChanges += 1
+        state.automaticallyChecks = enabled
+    }
+    func setAutomaticDownloads(_ enabled: Bool) {
+        preferenceChanges += 1
+        state.automaticallyDownloads = enabled
+    }
 }

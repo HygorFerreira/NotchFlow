@@ -39,19 +39,13 @@ struct NotchFlowApp: App {
                 .keyboardShortcut(",")
             Button("Getting started…") { appDelegate.showWelcomeWindow() }
             if UpdateChecker.isEnabled {
-                Button(updateChecker.isChecking ? "Checking…" : "Check for Updates…") {
+                Button(updateChecker.state.isChecking ? "Checking…" : "Check for Updates…") {
                     appDelegate.showSettingsWindow(.about)
-                    updateChecker.checkForUpdates(force: true)
-                }.disabled(updateChecker.isChecking)
+                    updateChecker.checkForUpdates()
+                }.disabled(!updateChecker.state.canCheck)
             }
-            if let update = updateChecker.availableUpdate {
-                Button("Update to \(update.version) available…") {
-                    updateChecker.openReleasePage()
-                }
-            } else {
-                Button("Version \(updateChecker.currentVersion)") {}
-                    .disabled(true)
-            }
+            Button("Version \(updateChecker.currentVersion)") {}
+                .disabled(true)
             Divider()
             Button("Quit NotchFlow") { NSApp.terminate(nil) }
                 .keyboardShortcut("q")
@@ -167,8 +161,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .removeDuplicates()
             .sink { [weak self] enabled in self?.applyQuickCaptureHotkey(enabled) }
 
-        // Check GitHub for a newer release so the menu can offer an update.
-        UpdateChecker.shared.checkForUpdates()
+        // Start the signed in-app updater and its background schedule.
+        UpdateChecker.shared.start()
 
         let vm = NotchViewModel(store: store, focus: focus, metrics: .primary)
         // Hydrate from the persisted preference before the controller subscribes

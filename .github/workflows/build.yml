@@ -57,15 +57,17 @@ jobs:
         run: |
           set -o pipefail
           configuration=Release
+          scheme=NotchFlow
           extra=()
           if [[ '${{ matrix.variant }}' == Debug ]]; then configuration=Debug; fi
           if [[ '${{ matrix.variant }}' == AppStore ]]; then
+            scheme=NotchFlowAppStore
             extra+=('SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) APPSTORE')
             extra+=(CODE_SIGN_ENTITLEMENTS=NotchFlow/NotchFlow-AppStore.entitlements)
           fi
           xcodebuild \
             -project NotchFlow.xcodeproj \
-            -scheme NotchFlow \
+            -scheme "$scheme" \
             -configuration "$configuration" \
             -destination 'platform=macOS' \
             CODE_SIGNING_ALLOWED=NO \

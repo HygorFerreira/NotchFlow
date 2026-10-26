@@ -61,7 +61,7 @@ enum SettingsPageID: String, CaseIterable, Identifiable {
         case .medications: return ["Add medication", "Daily reminders", "Reminder times"]
         case .general: return ["Getting started", "Open at login", "Language", "Your data", "Restore defaults"]
         case .shortcuts: return ["Start or stop focus", "Quick capture", "From any app", "Tasks window", "Menu bar"]
-        case .about: return ["Updates", "Privacy"]
+        case .about: return ["Updates", "Check for updates automatically", "Install updates automatically", "Privacy"]
         }
     }
 

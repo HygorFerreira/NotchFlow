@@ -14,7 +14,9 @@ Feito com **SwiftUI e AppKit**, para **macOS 14 ou superior**, com interface em 
 
 ## Atualizações recentes
 
-Atualizado em **15 de outubro de 2026**. Versão configurada no projeto: **1.1.0**, build **2**, preparada para teste privado por DMG. As novidades abaixo estão no código em desenvolvimento; não indicam uma nova versão publicada.
+- **Atualizações dentro do app:** Sparkle baixa pacotes e catálogos assinados com Ed25519 e instala as novas versões ao encerrar o aplicativo. As opções ficam em **Ajustes → Sobre**. Quem usa uma versão anterior à 1.2.0 precisa instalar esta primeira versão com o atualizador uma vez.
+
+Atualizado em **26 de outubro de 2026**. Versão configurada no projeto: **1.2.0**, build **3**, com atualizações dentro do app para a distribuição direta. As novidades abaixo estão no código em desenvolvimento; não indicam uma nova versão publicada.
 
 - **Anéis, alertas e custos de IA:** Codex e Claude com anéis de sessão e semana (interno, externo ou desativado), seleção do limite principal, porcentagens e tempo até a renovação. Alertas opcionais em 80% e 100%, aviso de renovação e som configurável por serviço. Estimativa do valor consumido da assinatura com preço mensal informado por você, em BRL, USD ou EUR.
 - **Consumo de IA:** acompanhamento dos limites das assinaturas do Codex e Claude Code, com login existente, horários de renovação e atualização automática a cada dois minutos. O painel identifica leituras antigas, sessões expiradas e falhas de conexão.
@@ -153,7 +155,13 @@ Os scripts compilam executáveis Swift independentes. O fluxo de integração co
 - [Histórico de alterações](CHANGELOG.md): melhorias atuais e marcos anteriores.
 - [Textos para a App Store](appstore/LISTING.md): rascunho em português e inglês.
 
-O código está disponível no repositório público do GitHub. A consulta pública em 26 de outubro de 2026 confirmou que ainda não há releases publicadas. Para oferecer downloads e atualizações, publique uma release estável com tag de versão numérica (por exemplo, `v1.1.0`) e o DMG validado anexado. URLs de suporte e publicação na App Store ainda precisam ser configuradas. Na distribuição direta, o app consulta as releases de `HygorFerreira/NotchFlow` ao iniciar; a verificação manual fica no menu **Buscar atualizações…** ou em **Ajustes > Sobre > Atualizações > Verificar agora**. Releases estáveis com versão superior à instalada oferecem um botão para abrir a página de download. A consulta depende de releases acessíveis pela API pública do GitHub; um repositório privado sem autenticação gera uma mensagem de falha. Na compilação `APPSTORE`, as atualizações são administradas pela loja.
+O código está disponível no [repositório público do GitHub](https://github.com/HygorFerreira/NotchFlow). Na distribuição direta, o NotchFlow usa Sparkle 2 para consultar um catálogo assinado (`appcast.xml`), baixar um ZIP assinado e instalar a atualização no lugar do aplicativo existente. O DMG fica disponível para a primeira instalação; as atualizações seguintes chegam pelo próprio app. Instale o aplicativo em **Aplicativos** antes de usar o atualizador.
+
+As verificações automáticas ocorrem a cada seis horas. Por padrão, o app baixa as atualizações em segundo plano e instala ao encerrar; você também pode usar **Buscar atualizações…** no menu ou **Ajustes → Sobre → Verificar agora** para atualizar e reiniciar pelo próprio app. Nessa mesma página, é possível desativar as verificações e a instalação automática. Não são enviados dados de rotina nem relatórios de perfil do sistema.
+
+Quem instalou um DMG anterior à versão **1.2.0** precisa substituir o aplicativo uma vez para passar a receber esse mecanismo. A distribuição de teste para amigos pode usar assinatura ad-hoc, sem certificado pago da Apple: os pacotes e o catálogo continuam autenticados com a chave Ed25519 do NotchFlow. Isso não equivale a assinatura Developer ID ou notarização; o macOS pode exigir autorização na instalação inicial. A compilação **NotchFlowAppStore** exclui o Sparkle e recebe atualizações pela loja.
+
+Cada atualização exige uma nova versão, um número de build maior e uma release estável com os arquivos gerados. Commits sozinhos não publicam atualizações. Consulte o [fluxo de releases](docs/ATUALIZACOES.md) para preparar e publicar os arquivos.
 
 ## Licença
 

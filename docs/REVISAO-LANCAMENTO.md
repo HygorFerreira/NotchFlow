@@ -43,3 +43,22 @@ As conexões de IA foram testadas com credenciais fictícias e rede simulada. Re
 5. Revisar capturas finais, número de build e dados no App Store Connect antes do envio.
 
 Nenhum pacote foi publicado ou enviado à loja nesta revisão.
+
+## Atualizador integrado — 26/10/2026
+
+A versão 1.2.0 substitui o verificador de links pelo Sparkle. O pacote direto pode ser assinado ad-hoc para testes com amigos; catálogo e ZIP são assinados com Ed25519 e a chave privada permanece no Chaves. A distribuição App Store usa um target separado que não incorpora Sparkle. Versões anteriores precisam de uma instalação manual inicial. O fluxo de geração e publicação está em [ATUALIZACOES.md](ATUALIZACOES.md).
+
+Validação do atualizador em 26/10/2026:
+
+| Verificação | Resultado |
+| --- | --- |
+| Debug com Sparkle | Passou |
+| Release universal ad-hoc, Apple Silicon e Intel | Passou |
+| Release NotchFlowAppStore, sem framework Sparkle nem configuração SU | Passou |
+| Estado do atualizador, configuração de confiança e isolamento App Store | Passou |
+| Persistência, produtividade, IA, foco e manter Mac acordado | Passou |
+| Assinaturas do ZIP e catálogo verificadas com a chave pública do app | Passou |
+| ZIP e catálogo alterados rejeitados criptograficamente | Passou |
+| Instalação real via Sparkle entre duas cópias descartáveis, build 2 → 3 | Passou |
+
+O teste de instalação usou um driver de teste ligado ao framework distribuído, identificadores próprios e um servidor de teste apenas em localhost; substituiu uma cópia descartável sem abrir dados pessoais. Esse teste confirma a instalação ad-hoc e não substitui o teste do fluxo de interface e permissões no Mac de outro usuário. O DMG inicial continua sem notarização enquanto não houver Developer ID.

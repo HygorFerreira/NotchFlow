@@ -5,7 +5,7 @@
 #   ./scripts/appstore.sh            archive and export a signed .pkg into build/appstore (nothing leaves this Mac)
 #   ./scripts/appstore.sh --upload   archive and upload the build to App Store Connect
 #
-# The build is compiled with the APPSTORE condition, which drops the GitHub release check (the store delivers
+# The build is compiled with the APPSTORE condition, which excludes Sparkle entirely (the store delivers
 # updates). Network access remains enabled for the optional AI usage connections.
 # Signing is automatic through the Apple account signed in to Xcode (Settings > Accounts). The first run
 # creates the Apple Distribution and Mac Installer Distribution certificates and the App Store profile if they are
@@ -26,7 +26,7 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 
 echo "-> Archiving NotchFlow (Release, universal, APPSTORE)..."
-xcodebuild -project NotchFlow.xcodeproj -scheme NotchFlow \
+xcodebuild -project NotchFlow.xcodeproj -scheme NotchFlowAppStore \
   -configuration Release \
   -destination 'generic/platform=macOS' \
   -archivePath "$ARCHIVE" \

@@ -32,5 +32,23 @@
 	<string>NotchFlow shows today's events next to your tasks. It only reads your calendar and never writes to it.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 Hygor Ferreira. MIT License. See LICENSE.</string>
+	<key>SUFeedURL</key>
+	<string>https://github.com/HygorFerreira/NotchFlow/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>aO47aSJ9Xlo2Px4ZEhvmdoYzCXBQSjcjTKWCNz+YAFY=</string>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUAutomaticallyUpdate</key>
+	<true/>
+	<key>SUEnableSystemProfiling</key>
+	<false/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>21600</integer>
+	<key>SUVerifyUpdateBeforeExtraction</key>
+	<true/>
+	<key>SURequireSignedFeed</key>
+	<true/>
 </dict>
 </plist>

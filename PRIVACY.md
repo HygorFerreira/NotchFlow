@@ -1,6 +1,6 @@
 # Política de privacidade do NotchFlow
 
-Atualizada em **10 de outubro de 2026**. Responsável pelo aplicativo: **Hygor Ferreira**.
+Atualizada em **26 de outubro de 2026**. Responsável pelo aplicativo: **Hygor Ferreira**.
 
 ## Dados locais
 
@@ -32,9 +32,9 @@ O acompanhamento de IA é opcional. Ao conectar Codex ou Claude Code, o NotchFlo
 
 As consultas ocorrem a cada dois minutos enquanto o app está aberto e ao retornar ao aplicativo. Os serviços recebem o token de autenticação, o identificador da conta quando necessário e metadados normais de rede, como o endereço IP. Tarefas, prompts e respostas não são enviados. Percentuais, horários de renovação, última leitura e permissões de pasta são guardados nas preferências locais para continuidade entre aberturas. Desativar o interruptor do serviço remove esses dados e interrompe novas consultas; o login na ferramenta de origem permanece ativo. Quando já autorizada pelo macOS, a leitura da sessão existente usa sua localização padrão automaticamente.
 
-Na distribuição direta, o aplicativo consulta a API de releases do GitHub para o repositório `HygorFerreira/NotchFlow` ao iniciar e quando você solicita uma verificação nos ajustes. Os dados da rotina não são enviados pela aplicação.
+Na distribuição direta, o Sparkle consulta por HTTPS um catálogo de atualizações assinado hospedado nas releases do repositório `HygorFerreira/NotchFlow`, no GitHub. As verificações automáticas ocorrem a cada seis horas e também podem ser iniciadas manualmente. Por padrão, o app baixa pacotes de atualização assinados e os instala ao encerrar. Verificações e instalação automática podem ser desativadas em Ajustes → Sobre. Os dados da rotina não são enviados.
 
-Essas requisições estão sujeitas ao processamento de metadados de rede pelo GitHub, como o endereço IP. Ao escolher baixar uma atualização, o app abre a página da release no navegador. A compilação com a condição `APPSTORE` desativa esse verificador; atualizações pela loja são administradas pela Apple.
+O GitHub e sua infraestrutura de downloads recebem metadados normais da requisição, como endereço IP, versão do aplicativo e do sistema conforme o protocolo de atualização. A opção de perfil estatístico do sistema do Sparkle fica desativada. Catálogo, notas de versão e pacotes são autenticados com Ed25519 antes de serem utilizados. Downloads temporários e preferências do atualizador ficam no Mac. A compilação **NotchFlowAppStore** não inclui Sparkle; atualizações pela loja são administradas pela Apple.
 
 ## Backup e exclusão
 
