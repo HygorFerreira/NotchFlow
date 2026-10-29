@@ -57,10 +57,10 @@ enum SettingsPageID: String, CaseIterable, Identifiable {
         case .notch: return ["Notch modules", "Appearance", "Standard", "Minimal", "Liquid Glass", "Transparency", "Progress timeline", "RGB timeline"]
         case .display: return ["Show the notch on", "Connected displays"]
         case .alerts: return ["Notification", "Sound", "Notifications are off"]
-        case .calendar: return ["Calendar access"]
+        case .calendar: return ["Calendar access", "Upcoming event in the notch", "Event notice"]
         case .medications: return ["Add medication", "Daily reminders", "Reminder times"]
         case .general: return ["Getting started", "Open at login", "Language", "Your data", "Restore defaults"]
-        case .shortcuts: return ["Start or stop focus", "Quick capture", "From any app", "Tasks window", "Menu bar"]
+        case .shortcuts: return ["Start or stop focus", "Quick capture", "Command palette", "From any app", "Tasks window", "Menu bar"]
         case .about: return ["Updates", "Check for updates automatically", "Install updates automatically", "Privacy"]
         }
     }

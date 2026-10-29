@@ -32,6 +32,9 @@ struct FocusSettings: Codable, Equatable {
     /// combination for another app that wants it.
     var globalHotkeyEnabled: Bool = true
     var quickCaptureHotkeyEnabled: Bool = true
+    var commandPaletteHotkeyEnabled = true
+    var upcomingEventEnabled = true
+    var upcomingEventLeadMinutes = 10
     var weeklyGoalMinutes: Int = 300
 
     var dashboardModules: [String] = DashboardModule.allCases.map(\.rawValue)
@@ -59,6 +62,7 @@ struct FocusSettings: Codable, Equatable {
         case showTimeline, rainbowTimeline, minimalMode
         case displayPreference, globalHotkeyEnabled
         case quickCaptureHotkeyEnabled, weeklyGoalMinutes
+        case commandPaletteHotkeyEnabled, upcomingEventEnabled, upcomingEventLeadMinutes
         case dashboardModules, eyeBreaksEnabled, eyeBreakMinutes, postureBreaksEnabled, postureBreakMinutes
     }
 
@@ -80,6 +84,9 @@ struct FocusSettings: Codable, Equatable {
         displayPreference = try c.decodeIfPresent(DisplayPreference.self, forKey: .displayPreference) ?? d.displayPreference
         globalHotkeyEnabled = try c.decodeIfPresent(Bool.self, forKey: .globalHotkeyEnabled) ?? d.globalHotkeyEnabled
         quickCaptureHotkeyEnabled = try c.decodeIfPresent(Bool.self, forKey: .quickCaptureHotkeyEnabled) ?? d.quickCaptureHotkeyEnabled
+        commandPaletteHotkeyEnabled = try c.decodeIfPresent(Bool.self, forKey: .commandPaletteHotkeyEnabled) ?? true
+        upcomingEventEnabled = try c.decodeIfPresent(Bool.self, forKey: .upcomingEventEnabled) ?? true
+        upcomingEventLeadMinutes = min(60, max(1, try c.decodeIfPresent(Int.self, forKey: .upcomingEventLeadMinutes) ?? 10))
         dashboardModules = DashboardModule.normalized(try c.decodeIfPresent([String].self, forKey: .dashboardModules) ?? d.dashboardModules)
         eyeBreaksEnabled = try c.decodeIfPresent(Bool.self, forKey: .eyeBreaksEnabled) ?? false
         postureBreaksEnabled = try c.decodeIfPresent(Bool.self, forKey: .postureBreaksEnabled) ?? false

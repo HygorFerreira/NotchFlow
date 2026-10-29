@@ -23,5 +23,20 @@
 	<!-- Needed to load Sparkle in ad-hoc builds without an Apple Team ID. -->
 	<key>com.apple.security.cs.disable-library-validation</key>
 	<true/>
+	<key>com.apple.security.automation.apple-events</key>
+	<true/>
+	<key>com.apple.security.scripting-targets</key>
+	<dict>
+		<key>com.spotify.client</key>
+		<array>
+			<string>com.spotify.playback</string>
+			<string>com.spotify.library</string>
+		</array>
+		<key>com.apple.Music</key>
+		<array>
+			<string>com.apple.Music.playback</string>
+			<string>com.apple.Music.library.read</string>
+		</array>
+	</dict>
 </dict>
 </plist>

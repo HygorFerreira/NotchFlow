@@ -42,6 +42,8 @@ O script encerra uma instância em execução antes de abrir o produto compilado
 | `NotchFlow/Models/` | Modelos de rotina, métricas, resumo e Store com persistência JSON. |
 | `NotchFlow/AI/` | Conexões de consumo do Codex/Claude, leitura autorizada de credenciais e painéis de limites da assinatura. |
 | `NotchFlow/Focus/` | Timer, atalhos globais e notificações locais. |
+| `NotchFlow/Music/` | Automação dos players, letras opcionais via LRCLIB e interfaces. |
+| `NotchFlow/Tools/` | Paleta, clipboard em memória, importação de arquivos e interfaces de notas/ferramentas. |
 | `NotchFlow/Notch/` | Painéis de atividade, saúde, máquina e apresentação do timer. |
 | `NotchFlow/Tasks/` | Calendário, tarefas, captura rápida, formulários e resumo semanal. |
 | `NotchFlow/Water/` | Painel e janela de hidratação. |
@@ -72,13 +74,24 @@ bash scripts/test-store.sh
 bash scripts/test-productivity.sh
 bash scripts/test-ai-usage.sh
 bash scripts/test-focus.sh
+bash scripts/test-music.sh
+bash scripts/test-tools.sh
 ```
 
 Esses scripts compilam executáveis Swift independentes; não dependem de um target de testes do Xcode. Cubra regras de negócio, migração, persistência e recuperação conforme a área alterada. Para mudanças visuais, faça a compilação e confira os fluxos reais e as prévias.
 
 O teste do timer usa relógio controlado para conferir pausas, conclusão, edição de tarefas e limites de duração. O CI compila Debug, Release e a variante `APPSTORE`, além de executar as quatro suítes. Se `xcode-select` apontar para CommandLineTools, use `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` antes do comando para selecionar o Xcode apenas naquela execução.
 
+O teste de ferramentas usa um pasteboard privado (`NSPasteboard.withUniqueName`) e diretórios temporários. Precisa de acesso ao serviço de pasteboard do macOS; não lê nem substitui o clipboard geral. O CI deve rodar em uma sessão gráfica do macOS.
+
 ## Gerar imagens
+
+Use `-snapshot 1 -snapshotToolsOnly 1` para gerar notas, clipboard e arquivos fictícios, paleta e compromisso compacto. O modo não monitora o clipboard geral. Para uma janela interativa isolada, use `-preview 1 -previewTools 1`.
+
+
+Para revisar música, use `-snapshot 1 -snapshotMusicOnly 1`. Esse modo usa uma faixa fictícia, sem consultar os players nem persistir preferências de música, e gera player completo, compacto, prévia, foco simultâneo, lembrete e estado vazio. Execute com `-AppleLanguages '(pt-BR)'` e `'(en)'` para revisar os dois idiomas.
+
+A integração de música usa `NSAppleEventDescriptor` em uma fila serial, com timeout de um segundo por evento. Os entitlements de todos os canais incluem os grupos de scripting de reprodução e leitura dos players, além de `NSAppleEventsUsageDescription`. Testes unitários simulam respostas; valide a autorização e os comandos com aplicativos reais em um build assinado antes de distribuir. A revisão da App Store continua dependendo da Apple.
 
 Uma compilação Debug oferece o modo de snapshots, com dados de demonstração isolados:
 

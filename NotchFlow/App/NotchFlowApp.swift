@@ -30,6 +30,13 @@ struct NotchFlowApp: App {
             Button("Water…") { appDelegate.showWaterWindow() }
             Button("AI usage…") { appDelegate.showAIUsageWindow() }
                 .keyboardShortcut("i", modifiers: [.command, .shift])
+            Button("Music…") { appDelegate.showMusic() }
+            Button("Command palette…") { appDelegate.showCommandPalette() }
+                .keyboardShortcut("k", modifiers: [.control, .option])
+            Button("Quick notes…") { appDelegate.showTools(.notes) }
+            Button("Clipboard…") { appDelegate.showTools(.clipboard) }
+            Button("File shelf…") { appDelegate.showTools(.files) }
+            Button("Audio mixer…") { appDelegate.showTools(.audio) }
             Button(focusMenu.isFocusing ? "Stop focus" : "Start focus") {
                 appDelegate.focus.toggleStartStop()
             }
@@ -85,6 +92,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var quickCaptureController: QuickCaptureWindowController?
     private var welcomeController: WelcomeWindowController?
     private var viewModel: NotchViewModel?
+    func showMusic() { viewModel?.openMusic() }
+    private var toolsController: ToolsWindowController?
+    private let commandController = CommandPaletteController()
+    private let paletteHotkey = GlobalHotkey(id: 3)
+    private var paletteHotkeyCancellable: AnyCancellable?
+
+    func showTools(_ section: ToolsSection) {
+        guard let model = viewModel?.tools else { return }
+        model.section = section
+        if toolsController == nil { toolsController = ToolsWindowController(store: store, model: model) }
+        toolsController?.show()
+    }
+
+    func showCommandPalette() {
+        commandController.show(store: store) { [weak self] command in
+            guard let self else { return }
+            if let id = command.taskID, let task = self.store.tasks.first(where: { $0.id == id && !$0.isDone }) {
+                self.focus.start(task: task)
+                return
+            }
+            guard let action = command.action else { return }
+            switch action {
+            case .capture: self.showQuickCapture()
+            case .focus: self.focus.toggleStartStop()
+            case .water: self.store.recordWater()
+            case .tasks: self.showTasksWindow()
+            case .notes: self.showTools(.notes)
+            case .clipboard: self.showTools(.clipboard)
+            case .files: self.showTools(.files)
+            case .audio: self.showTools(.audio)
+            case .music: self.showMusic()
+            case .ai: self.showAIUsageWindow()
+            case .settings: self.showSettingsWindow()
+            case .musicToggle, .musicNext, .musicPrevious:
+                if let music = self.viewModel?.music, music.playback != nil {
+                    music.perform(action == .musicToggle ? .toggle : action == .musicNext ? .next : .previous)
+                } else { self.showMusic() }
+            }
+        }
+    }
     private let hotkey = GlobalHotkey()
     private let quickCaptureHotkey = GlobalHotkey(id: 2)
     private var focusCancellable: AnyCancellable?
@@ -173,6 +220,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         vm.openTasksWindow = { [weak self] in self?.showTasksWindow() }
         vm.openMedicationsWindow = { [weak self] in self?.showMedicationsWindow() }
         viewModel = vm
+        paletteHotkeyCancellable = store.$settings.map(\.commandPaletteHotkeyEnabled).removeDuplicates()
+            .sink { [weak self] enabled in
+                guard let self else { return }
+                if enabled {
+                    FocusMenuState.shared.commandPaletteHotkeyRegistered = self.paletteHotkey.register(
+                        keyCode: UInt32(kVK_ANSI_K), modifiers: UInt32(controlKey | optionKey)
+                    ) { [weak self] in self?.showCommandPalette() }
+                } else {
+                    self.paletteHotkey.unregister()
+                    FocusMenuState.shared.commandPaletteHotkeyRegistered = false
+                }
+            }
         displayPreferenceCancellable = store.$settings
             .map(\.displayPreference)
             .removeDuplicates()
@@ -188,6 +247,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         // Preserve an in-flight block when quitting normally or logging out.
         KeepAwakeController.shared.stop()
+        if #available(macOS 14.2, *) { AudioMixerModel.shared.stop() }
         focus.stop(record: true)
     }
 

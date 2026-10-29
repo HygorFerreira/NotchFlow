@@ -1,10 +1,10 @@
 # NotchFlow
 
-**Foco, tarefas e rotina no notch do seu Mac.** Desenvolvido por **Hygor Ferreira**.
+**Foco, rotina, música e ferramentas no notch do seu Mac.** Desenvolvido por **Hygor Ferreira**.
 
 Repositório público: [HygorFerreira/NotchFlow](https://github.com/HygorFerreira/NotchFlow).
 
-O NotchFlow reúne timer de foco, planejamento, lembretes de medicamentos, acompanhamento de água e uso da máquina em um aplicativo nativo para macOS. Passe o mouse sobre o notch para abrir o painel e acessar sua rotina sem ocupar uma janela permanentemente.
+O NotchFlow reúne timer de foco, planejamento, lembretes de medicamentos, acompanhamento de água, música, mixer de áudio e ferramentas rápidas em um aplicativo nativo para macOS. Passe o mouse sobre o notch para abrir o painel e acessar sua rotina sem ocupar uma janela permanentemente.
 
 O painel minimalista do notch usa abas centralizadas, cartões grafite e uma grade dos últimos sete dias com intervalos de foco de 40 minutos. A duração das tarefas continua editável ao clicar no tempo; os filtros de projetos e etiquetas ficam no botão no canto superior direito. O modo compacto mostra o progresso abaixo do nome da tarefa.
 
@@ -12,19 +12,20 @@ Feito com **SwiftUI e AppKit**, para **macOS 14 ou superior**, com interface em 
 
 ![Painel do NotchFlow](docs/images/1-dashboard.png)
 
-## Atualizações recentes
+## Versão 1.3.0
 
-- **Atualizações dentro do app:** Sparkle baixa pacotes e catálogos assinados com Ed25519 e instala as novas versões ao encerrar o aplicativo. As opções ficam em **Ajustes → Sobre**. Quem usa uma versão anterior à 1.2.0 precisa instalar esta primeira versão com o atualizador uma vez.
+Atualizado em **29 de outubro de 2026**. Versão **1.3.0**, build **4**, para Apple Silicon e Intel.
 
-Atualizado em **26 de outubro de 2026**. Versão configurada no projeto: **1.2.0**, build **3**, com atualizações dentro do app para a distribuição direta. As novidades abaixo estão no código em desenvolvimento; não indicam uma nova versão publicada.
+[**Baixar NotchFlow 1.3.0 para macOS**](https://github.com/HygorFerreira/NotchFlow/releases/download/v1.3.0/NotchFlow-1.3.0.dmg) · [Notas da versão](releases/1.3.0.md)
 
-- **Anéis, alertas e custos de IA:** Codex e Claude com anéis de sessão e semana (interno, externo ou desativado), seleção do limite principal, porcentagens e tempo até a renovação. Alertas opcionais em 80% e 100%, aviso de renovação e som configurável por serviço. Estimativa do valor consumido da assinatura com preço mensal informado por você, em BRL, USD ou EUR.
-- **Consumo de IA:** acompanhamento dos limites das assinaturas do Codex e Claude Code, com login existente, horários de renovação e atualização automática a cada dois minutos. O painel identifica leituras antigas, sessões expiradas e falhas de conexão.
-- **Lembretes no notch:** avisos de água e medicamentos em uma pílula com ações rápidas **Bebi** e **Tomei**, além de intervalo de hidratação configurável.
-- **Aparência:** Liquid Glass opcional, transparência ajustável, melhorias no calendário e no resumo semanal, com respeito às preferências de acessibilidade do macOS.
-- **Foco e tarefas:** pausas preservam frações de segundo; editar uma tarefa mantém o foco já registrado e sua ordenação. Sessões em andamento são registradas ao encerrar normalmente o app.
-- **Estabilidade:** validação de títulos, notas e durações, correção da atualização de credenciais do Claude no Chaves e verificação da permissão de leitura do calendário.
-- **Qualidade:** testes de regressão do timer e integração contínua para compilações Debug, Release e App Store, além de traduções em português dos lembretes de medicamentos.
+- **Música e letras:** Spotify ou Apple Music no notch, com capa, controles, posição da faixa e letras sincronizadas opcionais via LRCLIB.
+- **Mixer de áudio:** volume e silenciamento por processo, com processamento local. Requer macOS 14.2 ou superior e uma saída compatível.
+- **Ferramentas:** notas rápidas com criação de tarefas, histórico opcional de clipboard em memória e cópias de arquivos para arrastar entre aplicativos.
+- **Paleta de comandos:** busque ações e tarefas com o atalho global `⌃⌥K`, em português ou inglês.
+- **Próximo compromisso:** aviso no notch com antecedência configurável e acesso ao link da reunião.
+- **Interface renovada:** navegação com ícones, player com letras e novas telas de ferramentas, mixer e paleta nos temas claro e escuro.
+
+Quem já usa a versão 1.2.0 pode atualizar em **Ajustes → Sobre → Verificar agora**. Em versões anteriores, instale o DMG para receber o atualizador. O pacote direto usa assinatura ad-hoc e não é notarizado; o macOS pode exigir autorização na instalação inicial.
 
 O [histórico de alterações](CHANGELOG.md) reúne os detalhes e os marcos anteriores.
 
@@ -42,6 +43,38 @@ O [histórico de alterações](CHANGELOG.md) reúne os detalhes e os marcos ante
 | Resumo semanal | Comparar semanas, consultar foco por dia e por tarefa e ajustar a meta semanal. |
 | Personalização | Escolher tela, tema claro/escuro/sistema, estilo do notch, Liquid Glass, transparência, alertas, atalhos e abertura ao iniciar sessão. |
 | Calendário | Consultar eventos mediante permissão do macOS, sem alterar o calendário. |
+| Música | Conectar Spotify ou Apple Music, controlar reprodução e acompanhar letras sincronizadas. |
+| Mixer de áudio | Ajustar volume e silenciar processos de áudio em saídas compatíveis no macOS 14.2 ou superior. |
+| Ferramentas | Notas rápidas, clipboard opcional e cópias de arquivos para arrastar entre aplicativos. |
+| Paleta | Buscar ações e tarefas pendentes com `⌃⌥K`, de qualquer app. |
+
+### Música no notch
+
+Em **Ajustes → Notch → Módulos do notch**, habilite a aba **Música** se ela ainda não estiver visível. Você também pode abrir **Música…** pelo menu da ampulheta. Abra essa aba, escolha **Spotify** ou **Apple Music** e ative **Música no notch**. Abra o player e autorize a automação quando solicitado pelo macOS. Se a autorização estiver pendente, use **Autorizar acesso**; permissões negadas podem ser alteradas em **Ajustes do Sistema → Privacidade e Segurança → Automação**.
+
+Enquanto uma faixa toca, o notch fechado mostra a capa e um indicador de reprodução. Passe o mouse para ver a faixa, o artista e os controles; clique no título para abrir a aba Música ou no botão de painel para acessar as outras abas. O player completo inclui anterior, reproduzir/pausar, próxima e posição da reprodução. Sem música tocando, o compacto volta ao timer ou ao estado ocioso. Durante o foco, a capa aparece junto da contagem e o nome da tarefa continua visível no modo padrão. O modo mínimo mantém sua preferência de ocultar os textos. Lembretes de água, medicamentos e pausas usam sua própria pílula abaixo da atividade atual.
+
+A integração começa desativada e consulta apenas o player selecionado, a cada dois segundos, sem abrir aplicativos automaticamente. Não exige uma conta adicional e não usa APIs privadas. A capa do Spotify é carregada por HTTPS a partir da URL informada pelo player; a do Apple Music é lida localmente quando disponível. Ative **Letras sincronizadas** para consultar o LRCLIB com título, artista, álbum e duração da faixa. A letra acompanha o progresso e os saltos da reprodução quando há marcações de tempo; letras sem marcações aparecem como texto.
+
+### Mixer de áudio
+
+Abra **ampulheta → Mixer de áudio…** ou **Ferramentas → Mixer de áudio**. Ative o mixer, reproduza áudio em um aplicativo e ajuste o volume de 0 a 100% ou use o botão de silenciar. O macOS solicita autorização para áudio do sistema no primeiro controle de uma fonte.
+
+Requer macOS 14.2 ou superior. Os controles são por processo de áudio: janelas e abas do mesmo aplicativo podem compartilhar uma fonte, e processos auxiliares podem aparecer separados. Esta primeira versão aceita saídas estéreo Float32 com um único stream e sem entrada de microfone no mesmo dispositivo; outras saídas mostram uma mensagem antes de alterar o som.
+
+O áudio é processado localmente, sem gravação. Os ajustes duram durante a sessão e continuam ao fechar o painel. Desativar o mixer, voltar a 100% ou encerrar o NotchFlow restaura a saída original. Ao detectar troca de dispositivo ou taxa de amostragem, o mixer desativa e pede uma nova ativação.
+
+### Paleta e ferramentas
+
+Use **ampulheta → Paleta de comandos…** ou o atalho global **⌃⌥K**. Busque em português ou inglês, navegue com ↑/↓ e pressione Enter para executar. A paleta inclui ações de foco, água, música, IA, ajustes e início de foco para tarefas pendentes. O atalho pode ser desativado em **Ajustes → Atalhos**; conflitos aparecem nessa página.
+
+A aba **Ferramentas** reúne **Notas rápidas**, **Clipboard** e **Arquivos temporários**. Também há entradas diretas no menu da ampulheta e um botão para abrir uma janela maior. Habilite a aba em **Ajustes → Notch → Módulos do notch** se estiver oculta.
+
+- **Notas:** escreva e edite até 10.000 caracteres por nota. O app salva após uma breve pausa na digitação, ao sair da tela e no encerramento normal. **Criar tarefa** gera uma tarefa sem data e mantém a nota original completa; o campo de notas da tarefa conserva seu limite de 500 caracteres. Exclusões podem ser desfeitas enquanto a tela estiver aberta.
+- **Clipboard:** começa desativado. Ao ativar, guarda novas cópias de texto (até 100 KB) e imagens PNG (até 5 MB), com busca, copiar novamente e limpeza. São até 30 itens em memória, descartados ao desativar ou encerrar. Cópias marcadas como confidenciais, transitórias ou automáticas pelos aplicativos são ignoradas. O histórico não é um cofre de senhas; pause-o antes de copiar conteúdo sensível.
+- **Arquivos:** arraste arquivos sobre o notch ou use **Adicionar arquivos…**. O app guarda até 20 cópias de arquivos comuns, com limite de 200 MB por arquivo, e permite arrastá-las para outro aplicativo. As cópias sobrevivem ao reiniciar. Remover uma cópia a envia para a Lixeira; o original permanece no lugar. Pastas e links simbólicos não são importados.
+
+Em **Ajustes → Calendário**, configure **Próximo compromisso no notch** e a antecedência do aviso. Quando o calendário estiver autorizado, o compromisso aparece abaixo da atividade compacta, com acesso à reunião quando o evento tiver um link compatível. O aviso permanece até cinco minutos após o início, respeitando o fim do evento. Desativar essa opção mantém a consulta de eventos no painel.
 
 Os lembretes de medicamentos aparecem em uma pílula abaixo do notch, com a ação **Tomei**. Em **Água → Suas configurações de água**, ative os lembretes e escolha o intervalo (15 a 180 minutos). Com o app aberto, os avisos de água aparecem das 8h às 22h, pausam ao atingir a meta diária e permitem registrar **Bebi** diretamente na pílula. Avisos simultâneos são apresentados em sequência; cada aviso fica visível por 20 segundos.
 
@@ -58,6 +91,14 @@ Capturas da interface atual em português, com dados de demonstração.
 ### Foco
 
 ![Timer de foco nos estilos padrão, mínimo e RGB](docs/images/2-focus.png)
+
+### Música e letras sincronizadas
+
+![Player com controles e letras sincronizadas](docs/images/6-music.png)
+
+### Notas rápidas
+
+![Ferramentas com editor de notas rápidas](docs/images/7-tools.png)
 
 ### Planejamento de tarefas
 
@@ -92,7 +133,7 @@ Para executar a configuração Release:
 bash scripts/run.sh release
 ```
 
-O aplicativo aparece na barra de menus. Use o ícone de ampulheta para abrir tarefas, água, medicamentos, resumo semanal ou ajustes. O ícone do Dock aparece quando uma janela é aberta.
+O aplicativo aparece na barra de menus. Use o ícone de ampulheta para abrir tarefas, água, medicamentos, resumo semanal, música, ferramentas, mixer de áudio, paleta ou ajustes. O ícone do Dock aparece quando uma janela é aberta.
 
 A janela principal reúne **Tarefas, Medicamentos, Água, Resumo semanal e Consumo de IA** na mesma barra lateral. Trocar de área preserva a busca, os filtros e o estado das telas já visitadas enquanto a janela permanece aberta. Selecionar uma data no calendário abre as tarefas daquele dia. Para trabalhar lado a lado, use **Abrir em nova janela** na barra de ferramentas ou no menu de contexto da área desejada.
 
@@ -114,6 +155,8 @@ Consulte o [guia de uso](docs/USO.md) para detalhes e solução de problemas.
 | --- | --- |
 | `⌘⇧Espaço` | Iniciar ou parar o foco, inclusive a partir de outro aplicativo. |
 | `⌘⇧N` | Abrir a captura rápida global. |
+| `⌃⌥K` | Abrir a paleta de comandos global. |
+| `⌘⇧I` | Abrir Consumo de IA com o NotchFlow ativo. |
 | `⌘N` | Adicionar tarefa na janela de tarefas. |
 | `⌘T` | Abrir tarefas pelo menu do aplicativo. |
 | `⌘,` | Abrir ajustes. |
@@ -146,9 +189,13 @@ bash scripts/test-productivity.sh
 bash scripts/test-ai-usage.sh
 bash scripts/test-focus.sh
 bash scripts/test-updates.sh
+bash scripts/test-keep-awake.sh
+bash scripts/test-music.sh
+bash scripts/test-audio-mixer.sh
+bash scripts/test-tools.sh
 ```
 
-Os scripts compilam executáveis Swift independentes. O fluxo de integração contínua em [build.yml](.github/workflows/build.yml) executa essas quatro suítes e compila as configurações Debug, Release e a variante `APPSTORE`.
+Os scripts compilam executáveis Swift independentes. O fluxo de integração contínua em [build.yml](.github/workflows/build.yml) executa essas nove suítes e compila as configurações Debug, Release e a variante `APPSTORE`.
 
 - [Guia de desenvolvimento](docs/DESENVOLVIMENTO.md): arquitetura, compilação, testes, imagens e distribuição.
 - [Como contribuir](CONTRIBUTING.md): organização das alterações e validação.

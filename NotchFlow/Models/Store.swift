@@ -7,6 +7,7 @@ import SwiftUI
 final class Store: ObservableObject {
     @Published var tasks: [Task] = []
     @Published var sessions: [FocusSession] = []
+    @Published private(set) var quickNotes: [QuickNote] = []
     @Published private(set) var waterIntakes: [WaterIntake] = []
     @Published private(set) var hydrationSettings = HydrationSettings()
     @Published var medications: [Medication] = []
@@ -67,6 +68,34 @@ final class Store: ObservableObject {
     }
 
     // MARK: - Task operations
+
+    @discardableResult
+    func addQuickNote(_ text: String) -> UUID? {
+        let text = String(text.trimmingCharacters(in: .whitespacesAndNewlines).prefix(QuickNote.limit))
+        guard !text.isEmpty else { return nil }
+        let note = QuickNote(text: text)
+        quickNotes.insert(note, at: 0)
+        save()
+        return note.id
+    }
+
+    func updateQuickNote(_ id: UUID, text: String) {
+        guard let index = quickNotes.firstIndex(where: { $0.id == id }) else { return }
+        quickNotes[index].text = String(text.prefix(QuickNote.limit))
+        quickNotes[index].updatedAt = Date()
+        save()
+    }
+
+    func removeQuickNote(_ id: UUID) {
+        quickNotes.removeAll { $0.id == id }
+        save()
+    }
+
+    func convertQuickNote(_ id: UUID) {
+        guard let note = quickNotes.first(where: { $0.id == id }), !note.title.isEmpty else { return }
+        add(title: note.title, notes: note.text, date: nil)
+        // Keep the full note: task notes have a smaller length limit.
+    }
 
     /// Add a new task. `estimate` defaults to the user's current `focusMinutes`
     /// setting; pass an explicit value to override per task.
@@ -425,6 +454,7 @@ final class Store: ObservableObject {
     private struct Payload: Codable {
         var tasks: [Task]
         var sessions: [FocusSession]
+        var quickNotes: [QuickNote]?
         var waterIntakes: [WaterIntake]?
         var hydrationSettings: HydrationSettings?
         var medications: [Medication]?
@@ -436,6 +466,7 @@ final class Store: ObservableObject {
         let payload = Payload(
             tasks: tasks,
             sessions: sessions,
+            quickNotes: quickNotes,
             waterIntakes: waterIntakes,
             hydrationSettings: hydrationSettings,
             medications: medications,
@@ -507,6 +538,11 @@ final class Store: ObservableObject {
         defer { isLoading = false }
         tasks = payload.tasks
         sessions = payload.sessions
+        quickNotes = (payload.quickNotes ?? []).map { note in
+            var note = note
+            note.text = String(note.text.prefix(QuickNote.limit))
+            return note
+        }
         waterIntakes = payload.waterIntakes ?? []
         hydrationSettings = payload.hydrationSettings ?? HydrationSettings()
         medications = payload.medications ?? []

@@ -21,6 +21,8 @@ struct CollapsedTimerView: View {
             } else {
                 fullPill
             }
+        } else if vm.music.hasActivity || vm.musicPeek {
+            MusicCompactView(monitor: vm.music)
         } else {
             Color.clear
         }
@@ -34,6 +36,7 @@ struct CollapsedTimerView: View {
                 HStack(spacing: 0) {
                     // left ear: countdown, pushed toward the notch
                     HStack(spacing: 6) {
+                        if vm.music.hasActivity { MusicArtwork(playback: vm.music.playback, size: 22) }
                         if focus.state == .paused {
                         Image(systemName: "pause.fill")
                             .font(.system(size: 11, weight: .medium))
@@ -52,10 +55,13 @@ struct CollapsedTimerView: View {
 
                     // right ear: active task title
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(focus.activeTask?.title ?? "")
+                        HStack(spacing: 5) {
+                            if vm.music.hasActivity { Image(systemName: "waveform").foregroundStyle(Theme.accent) }
+                            Text(focus.activeTask?.title ?? "")
                             .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(Theme.textSecondary)
                             .lineLimit(1)
+                        }
                         if vm.store.settings.showTimeline && !vm.store.settings.rainbowTimeline {
                             FlowProgressBar(value: focus.progress, height: 3, color: NotchPalette.accent)
                         }

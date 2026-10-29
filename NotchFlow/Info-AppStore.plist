@@ -24,6 +24,10 @@
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>NotchFlow processes audio locally to control the volume of each app. Audio is never saved or sent.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>NotchFlow reads song information and controls playback in Spotify or Apple Music when you enable music in the notch.</string>
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSCalendarsFullAccessUsageDescription</key>

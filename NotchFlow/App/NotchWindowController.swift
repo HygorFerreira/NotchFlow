@@ -49,6 +49,18 @@ final class NotchWindowController {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.reposition(animated: true) }
             .store(in: &cancellables)
+        viewModel.$musicPeek
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.reposition(animated: true) }
+            .store(in: &cancellables)
+        viewModel.$compactEvent
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.reposition(animated: true) }
+            .store(in: &cancellables)
+        viewModel.music.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.reposition(animated: true) }
+            .store(in: &cancellables)
         viewModel.$reminderAlert
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
@@ -101,6 +113,7 @@ final class NotchWindowController {
         let x = (screen.frame.midX - w / 2).rounded()
         let y = screen.frame.maxY - h              // top edge flush with screen top
         let frame = NSRect(x: x, y: y, width: w, height: h)
+        guard frame != panel.frame else { return }
 
         if animated {
             NSAnimationContext.runAnimationGroup { ctx in

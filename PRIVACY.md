@@ -1,10 +1,10 @@
 # Política de privacidade do NotchFlow
 
-Atualizada em **26 de outubro de 2026**. Responsável pelo aplicativo: **Hygor Ferreira**.
+Atualizada em **28 de outubro de 2026**. Responsável pelo aplicativo: **Hygor Ferreira**.
 
 ## Dados locais
 
-O NotchFlow mantém no Mac suas tarefas, notas, projetos, etiquetas, sessões de foco, configurações, medicamentos cadastrados, registros de tomada e registros de água. O aplicativo não exige conta e não inclui publicidade, analytics ou rastreamento.
+O NotchFlow mantém no Mac suas tarefas, notas rápidas, notas de tarefas, projetos, etiquetas, sessões de foco, configurações, medicamentos cadastrados, registros de tomada e registros de água. O aplicativo não exige conta e não inclui publicidade, analytics ou rastreamento.
 
 Esses registros são persistidos em `Application Support/NotchFlow/data.json`, no diretório de suporte disponibilizado pelo macOS. Em uma execução com sandbox, o caminho fica dentro do contêiner do aplicativo. Preferências auxiliares também podem ser armazenadas pelo macOS.
 
@@ -25,6 +25,29 @@ Gerencie a permissão em **Ajustes do Sistema > Notificações > NotchFlow**.
 ## Uso da máquina
 
 O painel consulta métricas do sistema para mostrar utilização de CPU e memória. A amostragem ocorre enquanto a área correspondente está visível. O aplicativo não envia essas métricas a um servidor.
+
+## Mixer de áudio
+
+O mixer é opcional e começa desativado a cada abertura. Ao ajustar uma fonte, usa Core Audio Taps para receber seu áudio, aplicar o volume e reproduzi-lo na saída selecionada pelo sistema, mediante autorização do macOS. Não acessa o microfone, não salva áudio e não o envia à rede. Nomes, identificadores dos processos e volumes ficam apenas em memória. Fechar o painel mantém os controles; desligar o mixer ou encerrar o aplicativo libera as fontes.
+
+## Música
+
+A integração é opcional e começa desativada. Ao ativá-la, o NotchFlow consulta apenas o player escolhido (Spotify ou Apple Music) por Apple Events, mediante autorização de Automação do macOS. Lê título, artista, identificador, capa, duração, estado e posição da faixa e envia comandos de reprodução solicitados por você. Não lê suas credenciais nem solicita login adicional.
+
+As consultas ocorrem a cada dois segundos enquanto a integração está ativa e o player está aberto. O estado de ativação e a escolha de player ficam nas preferências locais; não há histórico de músicas no arquivo de dados. Metadados de reprodução permanecem em memória e são descartados ao desativar a integração. O Apple Music fornece a capa localmente quando disponível. Para Spotify, a interface busca a capa via HTTPS na URL informada pelo aplicativo; o servidor de imagens recebe os metadados normais da requisição, como endereço IP, e o sistema pode manter cache de rede.
+
+Desative **Música no notch** para interromper as consultas. Você também pode revogar o acesso em **Ajustes do Sistema → Privacidade e Segurança → Automação**.
+
+## Clipboard e arquivos temporários
+
+O histórico de clipboard começa desativado e só consulta novas alterações após ser ativado. Até 30 cópias de texto ou PNG ficam em memória, sem histórico em disco. Desativar o recurso ou encerrar o app limpa a lista; a cópia atual do clipboard do macOS permanece no sistema. Itens sinalizados pelos aplicativos com os tipos confidencial, transitório ou automático são ignorados. Nem todo aplicativo sinaliza conteúdo sensível, portanto desative o histórico antes de copiar senhas ou outros segredos.
+
+Arquivos arrastados para o notch ou escolhidos pelo seletor são copiados para `Application Support/NotchFlow/FileShelf`, dentro do contêiner quando há sandbox. Os originais não são alterados. As cópias persistem entre aberturas e podem ser arrastadas para outro app por sua ação. Removê-las as envia à Lixeira, quando permitido pelo macOS. A pasta de cópias também deve ser considerada ao fazer backup ou excluir dados.
+
+## Letras sincronizadas
+
+Letras são opcionais. Ao ativá-las, o app envia título, artista, álbum quando disponível e duração da faixa a `https://lrclib.net/api/get`. O serviço também recebe os metadados normais da requisição, como endereço IP. As respostas são mantidas em memória por uma sessão de rede efêmera e não são incluídas no arquivo de dados. A preferência de ativação é salva localmente. Desativar a opção cancela a consulta pendente.
+
 
 ## Rede e atualizações
 

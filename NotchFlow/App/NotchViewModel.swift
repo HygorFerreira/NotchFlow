@@ -14,8 +14,10 @@ enum NotchReminder: Equatable {
 final class NotchViewModel: ObservableObject {
     @Published var dashboardTab = "Activity"
     @Published private(set) var upcomingEvent: UpcomingEvent?
+    @Published private(set) var compactEvent: UpcomingEvent?
     @Published private(set) var calendarAuthorized = false
     @Published var expanded = false
+    @Published var musicPeek = false
     @Published private(set) var reminderAlert: NotchReminder?
 
     /// Mirrors `store.settings.displayPreference`. Owned here (not derived) so
@@ -27,6 +29,8 @@ final class NotchViewModel: ObservableObject {
 
     let store: Store
     let focus: FocusTimer
+    let music: MusicMonitor
+    let tools: ToolsModel
     /// Metrics for the fallback screen (used when the preferred screen is not
     /// currently connected, e.g. external unplugged or clamshell). The active
     /// screen is recomputed live via `currentScreen` / `currentMetrics`.
@@ -40,6 +44,18 @@ final class NotchViewModel: ObservableObject {
         self.store = store
         self.focus = focus
         self.metrics = metrics
+        #if DEBUG
+        music = MusicMonitor(start: !Snapshots.isRequested)
+        tools = ToolsModel(isolated: Snapshots.isRequested)
+        #else
+        music = MusicMonitor()
+        tools = ToolsModel()
+        #endif
+        music.objectWillChange.receive(on: RunLoop.main).sink { [weak self] _ in
+            guard let self else { return }
+            if self.music.playback == nil { self.musicPeek = false }
+            self.objectWillChange.send()
+        }.store(in: &routineCancellables)
         refreshCalendar(at: Date())
         startMedicationReminderMonitor()
         NotificationCenter.default.publisher(for: .EKEventStoreChanged)
@@ -119,6 +135,7 @@ final class NotchViewModel: ObservableObject {
     static let dashboardTabHeight: CGFloat = 30
     static let dashboardTabSpacing: CGFloat = 14
     static let dashboardBottomPadding: CGFloat = 20
+    static let musicPeekHeight: CGFloat = 82
 
     static var todoListHeight: CGFloat {
         let rows = CGFloat(visibleTodoRows)
@@ -133,7 +150,7 @@ final class NotchViewModel: ObservableObject {
         let contentHeight = dashboardTab == "Health"
             ? max(todoColumn + Self.headerHeight + Self.columnSpacing, heatmapColumn)
             : max(todoColumn, 178)
-        let extra: CGFloat = dashboardTab == "Activity" ? 48 : dashboardTab == "Health" ? 72 : dashboardTab == "Machine" ? 36 : 0
+        let extra: CGFloat = dashboardTab == "Music" ? (music.enabled ? 210 : 30) : dashboardTab == "Tools" ? 45 : dashboardTab == "Activity" ? 48 : dashboardTab == "Health" ? 72 : dashboardTab == "Machine" ? 36 : 0
         return extra + notchHeight + Self.dashboardTopGap + Self.dashboardTabHeight + 6
             + Self.dashboardTabSpacing + contentHeight
             + Self.dashboardBottomPadding
@@ -149,9 +166,11 @@ final class NotchViewModel: ObservableObject {
                 ? notchWidth + minimalSideMargin * 2
                 : notchWidth + activeEarWidth * 2
         } else {
-            baseWidth = notchWidth
+            baseWidth = music.hasActivity ? notchWidth + activeEarWidth * 2 : notchWidth
         }
-        return baseWidth
+        if musicPeek { return max(500, baseWidth) }
+        let activeWidth = music.hasActivity && focus.isActive && !store.settings.minimalMode ? baseWidth + 48 : baseWidth
+        return max(activeWidth, compactEvent == nil ? 0 : 480)
     }
     var expandedWidth: CGFloat { 700 }
 
@@ -160,7 +179,22 @@ final class NotchViewModel: ObservableObject {
                height: notchContentHeight + (reminderAlert == nil ? 0 : 68))
     }
 
-    var notchContentHeight: CGFloat { expanded ? expandedHeight : collapsedHeight }
+    var notchContentHeight: CGFloat { expanded ? expandedHeight : collapsedHeight + (musicPeek ? Self.musicPeekHeight : 0) + (compactEvent == nil ? 0 : 42) }
+
+    func openTools(_ section: ToolsSection = .notes) {
+        if !store.settings.dashboardModules.contains("Tools") { store.settings.dashboardModules.append("Tools") }
+        tools.section = section
+        dashboardTab = "Tools"
+        musicPeek = false
+        withAnimation(.easeInOut(duration: 0.24)) { expanded = true }
+    }
+
+    func openMusic() {
+        if !store.settings.dashboardModules.contains("Music") { store.settings.dashboardModules.append("Music") }
+        dashboardTab = "Music"
+        musicPeek = false
+        withAnimation(.easeInOut(duration: 0.24)) { expanded = true }
+    }
 
     // MARK: Routine reminders
 
@@ -173,6 +207,9 @@ final class NotchViewModel: ObservableObject {
 
     private func checkReminders(at date: Date) {
         if date.timeIntervalSince(lastCalendarRefresh) >= 30 { refreshCalendar(at: date) }
+        let next = calendarCandidates.first { $0.isCompactDue(at: date, enabled: store.settings.upcomingEventEnabled,
+            leadMinutes: store.settings.upcomingEventLeadMinutes) }
+        if compactEvent != next { compactEvent = next }
         let calendar = Calendar.current
         let day = calendar.startOfDay(for: date)
         if reminderDay != day {
@@ -251,7 +288,10 @@ final class NotchViewModel: ObservableObject {
     #if DEBUG
     func debugSetUpcomingEvent(_ event: UpcomingEvent?) {
         upcomingEvent = event
+        calendarCandidates = event.map { [$0] } ?? []
         calendarAuthorized = true
+        compactEvent = event.flatMap { $0.isCompactDue(at: Date(), enabled: store.settings.upcomingEventEnabled,
+            leadMinutes: store.settings.upcomingEventLeadMinutes) ? $0 : nil }
     }
 
     func debugShowReminder(_ reminder: NotchReminder) {
@@ -277,6 +317,7 @@ final class NotchViewModel: ObservableObject {
     }
 
     private var lastCalendarRefresh = Date.distantPast
+    private var calendarCandidates: [UpcomingEvent] = []
     private var routineCancellables = Set<AnyCancellable>()
     private var breakSchedules: [RoutineBreak: BreakSchedule] = [:]
 
@@ -288,14 +329,15 @@ final class NotchViewModel: ObservableObject {
         calendarAuthorized = CalendarService.shared.authState() == .authorized
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now) ?? now
         let events = CalendarService.shared.events(on: now) + CalendarService.shared.events(on: tomorrow)
-        upcomingEvent = events.filter { event in
+        calendarCandidates = events.filter { event in
             !event.isAllDay && event.endDate > now && event.status != .canceled
                 && !(event.attendees ?? []).contains(where: { $0.isCurrentUser && $0.participantStatus == .declined })
-        }.sorted { $0.startDate < $1.startDate }.first.map { event in
+        }.sorted { $0.startDate < $1.startDate }.map { event in
             UpcomingEvent(title: event.title ?? String(localized: "Calendar event"), start: event.startDate,
                           end: event.endDate, meetingURL: UpcomingEvent.meetingLink(in:
                             [event.url?.absoluteString, event.location, event.notes].compactMap { $0 }.joined(separator: "\n")))
         }
+        upcomingEvent = calendarCandidates.first
     }
 
     // MARK: Hover handling
@@ -328,7 +370,10 @@ final class NotchViewModel: ObservableObject {
 
         if inside {
             guard reminderAlert == nil, !expanded else { return }
-            withAnimation(.easeInEaseOut(duration: 0.24)) { expanded = true }
+            withAnimation(.easeInEaseOut(duration: 0.24)) {
+                if music.hasActivity { musicPeek = true }
+                else { expanded = true }
+            }
         } else {
             scheduleCollapse()
         }
@@ -353,9 +398,9 @@ final class NotchViewModel: ObservableObject {
         guard holdCount == 0 else { return }   // held open by a popover/menu
         collapseTask?.cancel()
         let task = DispatchWorkItem { [weak self] in
-            guard let self, self.expanded, self.holdCount == 0,
+            guard let self, (self.expanded || self.musicPeek), self.holdCount == 0,
                   !self.isPointerInside() else { return }
-            withAnimation(.easeInEaseOut(duration: 0.24)) { self.expanded = false }
+            withAnimation(.easeInEaseOut(duration: 0.24)) { self.expanded = false; self.musicPeek = false }
         }
         collapseTask = task
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: task)

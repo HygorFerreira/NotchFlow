@@ -6,6 +6,11 @@ struct UpcomingEvent: Equatable {
     let end: Date
     let meetingURL: URL?
 
+    func isCompactDue(at now: Date, enabled: Bool, leadMinutes: Int) -> Bool {
+        enabled && end > now && start.timeIntervalSince(now) <= Double(min(60, max(1, leadMinutes))) * 60
+            && start.timeIntervalSince(now) > -300
+    }
+
     static func meetingLink(in text: String) -> URL? {
         guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else { return nil }
         let range = NSRange(text.startIndex..., in: text)

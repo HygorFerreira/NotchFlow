@@ -1,6 +1,23 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "NSAppleEventsUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NotchFlow reads song information and controls playback in Spotify or Apple Music when you enable music in the notch."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O NotchFlow lê as informações das músicas e controla a reprodução no Spotify ou Apple Music quando você ativa música no notch."
+          }
+        }
+      }
+    },
     "CFBundleName" : {
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
@@ -63,6 +80,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "© 2026 Hygor Ferreira. Licença MIT. Consulte LICENSE."
+          }
+        }
+      }
+    },
+    "NSAudioCaptureUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NotchFlow processes audio locally to control the volume of each app. Audio is never saved or sent."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O NotchFlow processa o áudio localmente para controlar o volume de cada aplicativo. O áudio nunca é salvo ou enviado."
           }
         }
       }

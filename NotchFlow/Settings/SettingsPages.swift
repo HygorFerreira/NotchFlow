@@ -399,10 +399,20 @@ struct AlertsSettingsPage: View {
 
 struct CalendarSettingsPage: View {
     @StateObject private var calendar = CalendarAuthModel()
+    @EnvironmentObject private var store: Store
 
     var body: some View {
         SettingsPage {
             SettingsSectionTitle(title: "Calendar", subtitle: "Your events next to your tasks")
+            SettingsGroup(title: "Upcoming event in the notch") {
+                SettingsToggleRow(symbol: "calendar.badge.clock", color: Theme.accent, title: "Upcoming event in the notch",
+                    subtitle: "Show a compact reminder before a meeting starts", isOn: $store.settings.upcomingEventEnabled)
+                SettingsRow(symbol: "clock", color: Theme.accent, title: "Event notice") {
+                    Picker("Event notice", selection: $store.settings.upcomingEventLeadMinutes) {
+                        ForEach([1, 5, 10, 15, 30, 60], id: \.self) { Text("\($0) min").tag($0) }
+                    }.labelsHidden().frame(width: 120).disabled(!store.settings.upcomingEventEnabled)
+                }
+            }
             SettingsGroup(footer: "NotchFlow only reads your events to list them under the day's tasks in the Tasks window. It never changes them, and they never leave your Mac.") {
                 SettingsRow(
                     symbol: "calendar", color: SettingsPageID.calendar.color, title: "Calendar access",
@@ -697,6 +707,17 @@ struct ShortcutsSettingsPage: View {
                         KeyCaps(keys: ["⌘", "⇧", "N"])
                         Toggle("", isOn: $store.settings.quickCaptureHotkeyEnabled)
                             .labelsHidden().toggleStyle(.switch)
+                    }
+                }
+            }
+            SettingsGroup(footer: store.settings.commandPaletteHotkeyEnabled && !menuState.commandPaletteHotkeyRegistered
+                ? "The command palette shortcut is unavailable. You can still open it from the menu bar."
+                : "Search actions and unfinished tasks from any app.") {
+                SettingsRow(symbol: "command", color: SettingsPageID.shortcuts.color,
+                    title: "Command palette", subtitle: "Works while any other app is in front") {
+                    HStack(spacing: 10) {
+                        KeyCaps(keys: ["⌃", "⌥", "K"])
+                        Toggle("", isOn: $store.settings.commandPaletteHotkeyEnabled).labelsHidden().toggleStyle(.switch)
                     }
                 }
             }

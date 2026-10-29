@@ -53,6 +53,18 @@ jobs:
         if: matrix.variant == 'Debug'
         run: bash scripts/test-keep-awake.sh
 
+      - name: Test music playback
+        if: matrix.variant == 'Debug'
+        run: bash scripts/test-music.sh
+
+      - name: Test audio mixer
+        if: matrix.variant == 'Debug'
+        run: bash scripts/test-audio-mixer.sh
+
+      - name: Test tools
+        if: matrix.variant == 'Debug'
+        run: bash scripts/test-tools.sh
+
       - name: Build
         run: |
           set -o pipefail

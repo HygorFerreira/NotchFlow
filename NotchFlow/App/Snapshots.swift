@@ -17,6 +17,7 @@ enum Snapshots {
 
     static func run() {
         if UserDefaults.standard.bool(forKey: "preview") {
+            if UserDefaults.standard.bool(forKey: "previewTools") { showToolsPreview(); return }
             showPreview()
             return
         }
@@ -26,6 +27,65 @@ enum Snapshots {
 
         let store = demoStore()
         let focus = FocusTimer(store: store)
+
+        if UserDefaults.standard.bool(forKey: "snapshotToolsOnly") {
+            let vm = NotchViewModel(store: store, focus: focus, metrics: .primary)
+            store.addQuickNote(isPortuguese ? "Ideias para a próxima versão\nRevisar o fluxo de foco e organizar as tarefas da semana." : "Ideas for the next release\nReview the focus flow and organize this week's tasks.")
+            store.addQuickNote(isPortuguese ? "Preparar a reunião\nSeparar as decisões e os próximos passos." : "Prepare the meeting\nGather decisions and next steps.")
+            vm.tools.clipboard.setDemo()
+            let file = out.appendingPathComponent("Project brief.txt")
+            try? Data("Demo file for visual review".utf8).write(to: file)
+            vm.tools.shelf.importFiles([file])
+            for section in ToolsSection.allCases {
+                vm.tools.section = section
+                render(ToolsView(model: vm.tools).padding(20).background(Theme.windowBackground).flowAppearance().environmentObject(store),
+                    size: CGSize(width: 760, height: 460), scheme: .dark, to: out.appendingPathComponent("tools-\(section.id.replacingOccurrences(of: " ", with: "-").lowercased()).png"))
+                render(ToolsView(model: vm.tools).padding(20).background(Theme.windowBackground).flowAppearance().environmentObject(store),
+                    size: CGSize(width: 640, height: 400), scheme: .light, to: out.appendingPathComponent("tools-\(section.id.replacingOccurrences(of: " ", with: "-").lowercased())-light.png"))
+                vm.openTools(section)
+                render(notch(vm), size: vm.targetSize, scheme: .dark,
+                    to: out.appendingPathComponent("notch-tools-\(section.id.replacingOccurrences(of: " ", with: "-").lowercased()).png"))
+            }
+            render(CommandPaletteView(onRun: { _ in }, onClose: {}).environmentObject(store),
+                size: CGSize(width: 560, height: 420), scheme: .dark, to: out.appendingPathComponent("command-palette.png"))
+            vm.debugSetUpcomingEvent(UpcomingEvent(title: isPortuguese ? "Reunião de produto" : "Product meeting",
+                start: Date().addingTimeInterval(300), end: Date().addingTimeInterval(2100), meetingURL: URL(string: "https://meet.google.com/abc-defg-hij")))
+            if let task = store.tasks.first { focus.start(task: task) }
+            vm.expanded = false
+            render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("upcoming-event.png"))
+            print("SNAPSHOTS \(out.path)")
+            exit(0)
+        }
+
+        if UserDefaults.standard.bool(forKey: "snapshotMusicOnly") {
+            let vm = NotchViewModel(store: store, focus: focus, metrics: .primary)
+            let track = MusicPlayback(id: "demo", title: "A Walk Through the City", artist: "NotchFlow Sessions",
+                duration: 245, position: 84, isPlaying: true, sampledAt: Date())
+            vm.music.setDemo(track)
+            vm.music.lyrics.setDemo()
+            vm.openMusic()
+            render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("music-player.png"))
+            vm.expanded = false
+            render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("music-compact.png"))
+            vm.musicPeek = true
+            render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("music-peek.png"))
+            if let task = store.tasks.first {
+                focus.start(task: task)
+                focus.debugAdvance(seconds: 90)
+                vm.musicPeek = false
+                render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("music-focus.png"))
+                vm.musicPeek = true
+                vm.debugShowReminder(.water)
+                render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("music-focus-reminder.png"))
+                vm.dismissReminder()
+            }
+            vm.music.setDemo(nil)
+            vm.musicPeek = false
+            vm.openMusic()
+            render(notch(vm), size: vm.targetSize, scheme: .dark, to: out.appendingPathComponent("music-empty.png"))
+            print("SNAPSHOTS \(out.path)")
+            exit(0)
+        }
 
         if UserDefaults.standard.bool(forKey: "snapshotRoutineOnly") {
             let vm = NotchViewModel(store: store, focus: focus, metrics: .primary)
@@ -255,6 +315,23 @@ enum Snapshots {
         settings.orderFront(nil)
         tasks.makeKeyAndOrderFront(nil)
         NSApp.activate()
+    }
+
+    private static func showToolsPreview() {
+        let store = demoStore()
+        store.addQuickNote("Preview note\nThis is isolated demo data.")
+        let model = ToolsModel(isolated: true)
+        model.clipboard.setDemo()
+        NSApp.setActivationPolicy(.regular)
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 760, height: 520),
+            styleMask: [.titled, .closable, .resizable], backing: .buffered, defer: false)
+        window.title = "Tools · Preview"
+        window.isReleasedWhenClosed = false
+        window.contentView = NSHostingView(rootView: ToolsView(model: model).padding(20).background(Theme.windowBackground).flowAppearance().environmentObject(store))
+        window.center()
+        previewWindows = [window]
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     /// A focused, repeatable review of the shared design in both appearances.

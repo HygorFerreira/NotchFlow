@@ -324,13 +324,35 @@ struct FlowPageHeading: View {
         HStack(spacing: 12) {
             Image(systemName: symbol)
                 .font(.system(size: 20, weight: .regular))
-                .foregroundStyle(Theme.textSecondary)
-                .frame(width: 32, height: 36)
+                .foregroundStyle(color)
+                .frame(width: 44, height: 44)
+                .background(color.opacity(0.10), in: RoundedRectangle(cornerRadius: 13))
             VStack(alignment: .leading, spacing: 4) {
                 Text(title).font(Theme.pageTitle).tracking(-0.6)
                 Text(subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+/// Compact empty states that also fit inside the notch's tool panels.
+struct FlowEmptyState: View {
+    let symbol: String
+    let title: LocalizedStringKey
+    let detail: LocalizedStringKey
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: symbol)
+                .font(.system(size: 23, weight: .light))
+                .foregroundStyle(Theme.accent)
+            Text(title).font(.system(size: 12, weight: .semibold))
+            Text(detail).font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .combine)
     }
 }
 

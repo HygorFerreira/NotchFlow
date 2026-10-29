@@ -1,6 +1,24 @@
 # Histórico de alterações do NotchFlow
 
-Este arquivo registra os principais marcos do projeto. A seção **Em desenvolvimento** descreve mudanças presentes no código que ainda não possuem uma nova versão publicada. A versão configurada no projeto é **1.2.0**, build **3**, preparada para distribuição de teste com atualizações internas.
+Este arquivo registra os principais marcos do projeto. A versão atual é **1.3.0**, build **4**.
+
+## 1.3.0 — 2026-10-29
+
+- Mixer de áudio com volume e silenciamento por processo usando APIs públicas de áudio do macOS 14.2 ou superior, processamento local sem gravação, validação da saída e restauração do áudio ao desativar.
+
+- Renovação visual das novas funções: navegação do notch com ícones e aba ativa, player com reprodução destacada e letras, ferramentas com editor de notas e estados vazios, área de arquivos demarcada, mixer e paleta de comandos com hierarquia consistente. Prévias em `output/refresh-review/`.
+
+- Paleta de comandos global `⌃⌥K`, com busca em português/inglês, navegação por teclado, ações do aplicativo e início de foco por tarefa. Atalho configurável e indicação de conflito.
+- Ferramentas no notch e em janela própria: notas com salvamento e backup no Store, criação de tarefas preservando o texto original, clipboard opcional em memória e arquivo de cópias para arrastar entre apps.
+- Importação de arquivos em fila e por área temporária, sem modificar os originais, com limites de tamanho/quantidade e remoção para a Lixeira.
+- Próximo compromisso no compacto com antecedência configurável e acesso a links de reunião, convivendo com timer, música e lembretes de rotina.
+- Letras sincronizadas opcionais via LRCLIB, com tratamento de indisponibilidade, faixas instrumentais e letras sem marcações. Consultas usam sessão de rede efêmera.
+- Testes de notas/persistência, clipboard privado, fila de arquivos, calendário, paleta, letras; prévias isoladas em `-snapshotToolsOnly 1`.
+
+- Música no notch com seleção entre Spotify e Apple Music, ativação opcional e autorização de Automação do macOS. Usa Apple Events públicos e permissões de scripting específicas dos dois players.
+- Aba Música com capa, faixa, artista, controles anterior/reproduzir/pausar/próxima e busca pela posição da faixa. Exibe estados de player fechado, sem faixa, acesso pendente e falha de leitura.
+- Notch compacto com capa e indicador de reprodução; hover abre uma prévia com controles e acesso ao painel. Timer e tarefa continuam visíveis no modo padrão durante a música; lembretes permanecem em sua pílula separada.
+- Testes de duração por player, progresso, pausa, dados inválidos e falhas de permissão; prévias isoladas de música, foco e lembretes em `-snapshotMusicOnly 1`.
 
 ## 1.2.0 — 2026-10-26
 

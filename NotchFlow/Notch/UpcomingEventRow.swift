@@ -1,6 +1,23 @@
 import SwiftUI
 import AppKit
 
+struct CompactEventView: View {
+    @EnvironmentObject private var vm: NotchViewModel
+    let event: UpcomingEvent
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "calendar").foregroundStyle(Theme.accent)
+            Text(event.start, format: .dateTime.hour().minute()).monospacedDigit().foregroundStyle(.secondary)
+            Text(event.title).lineLimit(1).help(event.title)
+            Spacer(minLength: 4)
+            Button(event.meetingURL == nil ? "Open event" : "Join meeting") {
+                if let url = event.meetingURL { NSWorkspace.shared.open(url) }
+                else { vm.musicPeek = false; vm.dashboardTab = "Activity"; vm.expanded = true }
+            }.buttonStyle(.bordered)
+        }.font(.system(size: 11)).foregroundStyle(.white).padding(.horizontal, 14)
+    }
+}
+
 struct UpcomingEventRow: View {
     @EnvironmentObject private var vm: NotchViewModel
     @State private var showingDetails = false

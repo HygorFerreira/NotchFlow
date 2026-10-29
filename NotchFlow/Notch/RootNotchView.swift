@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// A black camera footprint connects to the rounded graphite dashboard below.
 /// The compact state keeps the camera gap clear and shows an inline timeline.
@@ -49,7 +50,7 @@ struct RootNotchView: View {
                 }
                 trayOverlay
                     .padding(.top, vm.expanded ? vm.notchHeight : 0)
-                    .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.notchContentHeight)
+                    .frame(width: vm.expanded ? vm.expandedWidth : vm.collapsedWidth, height: vm.expanded ? vm.notchContentHeight : vm.collapsedHeight)
                 if let reminder = vm.reminderAlert {
                     RoutineReminderPill(reminder: reminder, serving: store.hydrationSettings.servingMilliliters,
                                         confirm: vm.confirmReminder, dismiss: vm.dismissReminder, snooze: vm.snoozeBreak)
@@ -65,6 +66,10 @@ struct RootNotchView: View {
         .ignoresSafeArea()
         .contentShape(Rectangle())
         .onHover { hovering in vm.hover(hovering) }
+        .onDrop(of: [UTType.fileURL.identifier], isTargeted: nil) { providers in
+            vm.openTools(.files)
+            return vm.tools.shelf.accept(providers)
+        }
     }
 
     @ViewBuilder private var content: some View {
@@ -72,7 +77,11 @@ struct RootNotchView: View {
             NotchDashboardView()
                 .transition(.opacity)
         } else {
-            CollapsedTimerView()
+            VStack(spacing: 0) {
+                CollapsedTimerView().frame(height: vm.collapsedHeight)
+                if vm.musicPeek { MusicPeekView(monitor: vm.music) }
+                if let event = vm.compactEvent { CompactEventView(event: event).frame(height: 42) }
+            }
                 .transition(.opacity)
         }
     }

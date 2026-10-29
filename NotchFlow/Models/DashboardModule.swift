@@ -1,7 +1,7 @@
 import Foundation
 
 enum DashboardModule: String, CaseIterable, Identifiable {
-    case activity = "Activity", health = "Health", machine = "Machine", water = "Water", ai = "AI"
+    case activity = "Activity", health = "Health", machine = "Machine", water = "Water", ai = "AI", music = "Music", tools = "Tools"
     var id: String { rawValue }
     var symbol: String {
         switch self {
@@ -10,6 +10,8 @@ enum DashboardModule: String, CaseIterable, Identifiable {
         case .machine: return "desktopcomputer"
         case .water: return "drop.fill"
         case .ai: return "sparkles"
+        case .music: return "music.note"
+        case .tools: return "square.grid.2x2"
         }
     }
 

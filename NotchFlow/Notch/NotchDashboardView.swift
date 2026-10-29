@@ -18,12 +18,10 @@ struct NotchDashboardView: View {
 
     var body: some View {
         VStack(spacing: NotchViewModel.dashboardTabSpacing) {
-            tabBar
-                .frame(width: 370)
-                .frame(maxWidth: .infinity)
-                .overlay(alignment: .trailing) {
+            HStack(spacing: 10) {
+                tabBar
                     Button(action: headerAction) {
-                        Image(systemName: selectedTab == .activity ? "line.3.horizontal.decrease" : "slider.horizontal.3")
+                        Image(systemName: selectedTab == .activity ? "line.3.horizontal.decrease" : selectedTab == .tools ? "arrow.up.right.square" : "slider.horizontal.3")
                             .font(.system(size: 11))
                             .foregroundStyle(NotchPalette.secondary)
                             .frame(width: 26, height: 30)
@@ -52,6 +50,10 @@ struct NotchDashboardView: View {
                     WaterDashboardView()
                 case .ai:
                     AIUsageDashboardView()
+                case .music:
+                    MusicDashboardView(monitor: vm.music)
+                case .tools:
+                    ToolsView(model: vm.tools, compact: true)
                 }
             }
         }
@@ -74,6 +76,8 @@ struct NotchDashboardView: View {
         case .health: return String(localized: "Health settings")
         case .water: return String(localized: "Water settings")
         case .machine: return String(localized: "Machine settings")
+        case .music: return String(localized: "Music player")
+        case .tools: return String(localized: "Open tools window")
         }
     }
 
@@ -84,6 +88,8 @@ struct NotchDashboardView: View {
         case .water: AppDelegate.shared?.showWaterWindow()
         case .health: AppDelegate.shared?.showSettingsWindow(.focus)
         case .machine: showMachineOptions.toggle()
+        case .music: vm.music.openPlayer()
+        case .tools: AppDelegate.shared?.showTools(vm.tools.section)
         }
     }
 
@@ -95,7 +101,15 @@ struct NotchDashboardView: View {
                         selectedTab = tab
                     }
                 } label: {
-                    Text(tab.rawValue.localized)
+                    HStack(spacing: 5) {
+                        Image(systemName: tab.symbol)
+                            .symbolRenderingMode(.monochrome)
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(selectedTab == tab ? Color(hex: "#24262C") : NotchPalette.secondary)
+                        if visibleTabs.count <= 5 || selectedTab == tab {
+                            Text(tab.rawValue.localized).lineLimit(1).fixedSize()
+                        }
+                    }
                         .font(.system(size: 11, weight: selectedTab == tab ? .semibold : .medium))
                         .foregroundStyle(selectedTab == tab ? Color(hex: "#24262C") : NotchPalette.secondary)
                         .frame(maxWidth: .infinity)
@@ -105,6 +119,8 @@ struct NotchDashboardView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(FlowCompactButtonStyle())
+                .help(tab.rawValue.localized)
+                .accessibilityLabel(Text(tab.rawValue.localized))
                 .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
         }

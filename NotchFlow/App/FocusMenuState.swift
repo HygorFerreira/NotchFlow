@@ -13,6 +13,7 @@ final class FocusMenuState: ObservableObject {
     /// or when another app already owns the combination.
     @Published var hotkeyRegistered: Bool = false
     @Published var quickCaptureHotkeyRegistered: Bool = false
+    @Published var commandPaletteHotkeyRegistered = false
     static let shared = FocusMenuState()
 
     func update(isFocusing: Bool) {
